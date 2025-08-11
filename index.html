@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; background: #f5f5f5; }
+  h1 { margin: 10px 0; }
+
+  #numeros {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr); /* 10 por linha */
+    gap: 2px;
+    max-width: 520px; /* largura para 10 botões de 50px + espaçamento */
+    margin-right: 10px;
+  }
+
+  .numero {
+    width: 39px;
+    height: 35px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    background: #3498db;
+    color: white;
+    border: none;
+  }
+
+  .numero.marcado { background: #27ae60; }
+
+  textarea { width: 90%; height: 150px; margin-top: 15px; }
+  input { padding: 5px; margin: 10px; width: 200px; border-radius :10px;}
+  button#salvar {
+    padding: 8px 15px;
+    margin-top: 10px;
+    background: #2ecc71;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>Rifa Online</h1>
+<input type="text" id="nome" placeholder="Seu nome"><br>
+<div id="numeros"></div>
+<button id="salvar">Salvar Escolhas</button>
+<h3>Último Código Gerado</h3>
+<textarea id="codigo" readonly></textarea>
+
+<script>
+  // Configuração Firebase
+  const firebaseConfig = {
+    apiKey: "SUA_API_KEY",
+    authDomain: "SEU_DOMINIO.firebaseapp.com",
+    databaseURL: "https://SEU_DATABASE.firebaseio.com",
+    projectId: "SEU_PROJECT_ID",
+    storageBucket: "SEU_BUCKET.appspot.com",
+    messagingSenderId: "SUA_SENDER_ID",
+    appId: "SEU_APP_ID"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const numerosDiv = document.getElementById('numeros');
+  const nomeInput = document.getElementById('nome');
+  const codigoTextarea = document.getElementById('codigo');
+
+  let selecionados = [];
+
+  // Criar botões de 00 a 99
+  for (let i = 0; i < 100; i++) {
+    let num = i.toString().padStart(2, '0');
+    let btn = document.createElement('button');
+    btn.textContent = num;
+    btn.className = 'numero';
+    btn.addEventListener('click', () => toggleNumero(btn, num));
+    numerosDiv.appendChild(btn);
+  }
+
+  function toggleNumero(botao, numero) {
+    if (botao.classList.contains('marcado')) {
+      botao.classList.remove('marcado');
+      selecionados = selecionados.filter(n => n !== numero);
+    } else {
+      botao.classList.add('marcado');
+      selecionados.push(numero);
+    }
+  }
+
+  // Salvar compra
+  document.getElementById('salvar').addEventListener('click', () => {
+    const nome = nomeInput.value.trim();
+    if (!nome) return alert("Digite seu nome!");
+    if (selecionados.length === 0) return alert("Selecione pelo menos um número!");
+
+    const codigo = "RIFA-" + Date.now(); // Código único
+    const dataHora = new Date().toLocaleString();
+
+    const dados = {
+      nome,
+      numeros: selecionados,
+      dataHora,
+      codigo
+    };
+
+    db.ref("compras/" + codigo).set(dados);
+
+    codigoTextarea.value = codigo;
+    selecionados = [];
+    nomeInput.value = '';
+    document.querySelectorAll('.numero.marcado').forEach(b => b.classList.remove('marcado'));
+  });
+</script>
+
+</body>
+</html>
