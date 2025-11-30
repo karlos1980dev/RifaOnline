@@ -62,20 +62,6 @@
     color: #ffd700;
     margin-top: 20px;
   }
-
-  /* BOTÃO WHATSAPP */
-  #btnWhatsapp {
-    margin-top: 25px;
-    padding: 12px 20px;
-    background-color: #25D366;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-  }
 </style>
 </head>
 <body>
@@ -108,9 +94,6 @@
       <span class="label">Status</span>
       <span class="value status-aguardando" id="statusValor">Aguardando resultado</span>
     </div>
-
-    <!-- BOTÃO WHATSAPP -->
-    <button id="btnWhatsapp">Enviar via WhatsApp</button>
   </div>
 
   <div id="message"></div>
@@ -191,17 +174,13 @@
         resultadoDiv.style.display = "block";
         messageDiv.textContent = "";
 
-        // BOTÃO WHATSAPP
-        document.getElementById("btnWhatsapp").onclick = function() {
-          const link = window.location.origin + window.location.pathname + "?codigo=" + encontrado.codigo;
-          const url = "https://wa.me/?text=" + encodeURIComponent(link);
-          window.open(url, "_blank");
-        };
-
       } else {
         messageDiv.textContent = "Código não encontrado.";
         resultadoDiv.style.display = "none";
       }
+    }).catch(err => {
+      messageDiv.textContent = "Erro ao buscar dados: " + err;
+      resultadoDiv.style.display = "none";
     });
   }
 </script>
