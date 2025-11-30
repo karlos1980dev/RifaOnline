@@ -52,27 +52,29 @@
     word-wrap: break-word;
   }
 
-  /* Status colors */
-  .status-ganhou {
-    color: #27ae60; /* verde */
-  }
-
-  .status-perdeu {
-    color: #e74c3c; /* vermelho */
-  }
-
-  .status-cancelou {
-    color: #2980b9; /* azul */
-  }
-
-  .status-aguardando {
-    color: #f1c40f; /* amarelo */
-  }
+  .status-ganhou { color: #27ae60; }
+  .status-perdeu { color: #e74c3c; }
+  .status-cancelou { color: #2980b9; }
+  .status-aguardando { color: #f1c40f; }
 
   #message {
     font-size: 1.2rem;
     color: #ffd700;
     margin-top: 20px;
+  }
+
+  /* BOTÃO WHATSAPP */
+  #btnWhatsapp {
+    margin-top: 25px;
+    padding: 12px 20px;
+    background-color: #25D366;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
   }
 </style>
 </head>
@@ -94,7 +96,7 @@
       <span class="label">Nome</span>
       <span class="value" id="nomeValor"></span>
     </div>
-     <div class="linha">
+    <div class="linha">
       <span class="label">Horário</span>
       <span class="value" id="horarioValor"></span>
     </div>
@@ -102,19 +104,19 @@
       <span class="label">Números</span>
       <span class="value" id="numerosValor"></span>
     </div>
-   
-    
     <div class="linha">
       <span class="label">Status</span>
       <span class="value status-aguardando" id="statusValor">Aguardando resultado</span>
     </div>
+
+    <!-- BOTÃO WHATSAPP -->
+    <button id="btnWhatsapp">Enviar via WhatsApp</button>
   </div>
 
   <div id="message"></div>
 </div>
 
 <script>
-  // Configuração Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
     authDomain: "rifa-782a3.firebaseapp.com",
@@ -137,7 +139,6 @@
   const resultadoDiv = document.getElementById("resultado");
   const messageDiv = document.getElementById("message");
 
-  // Função para pegar parâmetro da URL
   function getParametro(nome) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(nome);
@@ -145,17 +146,11 @@
 
   function atualizarStatus(texto) {
     statusValor.textContent = texto;
-    statusValor.classList.remove("status-ganhou", "status-perdeu", "status-cancelou", "status-aguardando");
-    texto = texto.toLowerCase();
-    if (texto.includes("ganhou")) {
-      statusValor.classList.add("status-ganhou");
-    } else if (texto.includes("perdeu")) {
-      statusValor.classList.add("status-perdeu");
-    } else if (texto.includes("cancelou")) {
-      statusValor.classList.add("status-cancelou");
-    } else {
-      statusValor.classList.add("status-aguardando");
-    }
+    statusValor.className = "value";
+    if (texto.toLowerCase().includes("ganhou")) statusValor.classList.add("status-ganhou");
+    else if (texto.toLowerCase().includes("perdeu")) statusValor.classList.add("status-perdeu");
+    else if (texto.toLowerCase().includes("cancelou")) statusValor.classList.add("status-cancelou");
+    else statusValor.classList.add("status-aguardando");
   }
 
   const codigoParam = getParametro("codigo");
@@ -164,6 +159,7 @@
     messageDiv.textContent = "Nenhum código informado na URL.";
   } else {
     messageDiv.textContent = "Carregando...";
+
     db.ref("compras-dia").once("value").then(snapshot => {
       let encontrado = null;
       let horarioEncontrado = "";
@@ -189,24 +185,26 @@
         numerosValor.textContent = encontrado.numeros.join(", ");
         horarioValor.textContent = horarioEncontrado;
         dataHoraValor.textContent = encontrado.dataHora;
-        // Usa o status vindo do banco, ou padrão "Aguardando resultado"
-        if (encontrado.status) {
-          atualizarStatus(encontrado.status);
-        } else {
-          atualizarStatus("Aguardando resultado");
-        }
+
+        atualizarStatus(encontrado.status || "Aguardando resultado");
+
         resultadoDiv.style.display = "block";
         messageDiv.textContent = "";
+
+        // BOTÃO WHATSAPP
+        document.getElementById("btnWhatsapp").onclick = function() {
+          const link = window.location.origin + window.location.pathname + "?codigo=" + encontrado.codigo;
+          const url = "https://wa.me/?text=" + encodeURIComponent(link);
+          window.open(url, "_blank");
+        };
+
       } else {
         messageDiv.textContent = "Código não encontrado.";
         resultadoDiv.style.display = "none";
       }
-    }).catch(err => {
-      messageDiv.textContent = "Erro ao buscar dados: " + err;
-      resultadoDiv.style.display = "none";
     });
   }
 </script>
 
 </body>
-        </html>
+</html>
