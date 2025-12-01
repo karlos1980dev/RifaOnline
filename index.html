@@ -440,13 +440,13 @@ h1{
         atualizarBloqueados();
         return;
       }
-
+const link = "https://mjonline.netlify.app/";
       const codigoSimples = gerarCodigoSimples();
       const chave = "ID-" + Date.now();
       const dataHoje = new Date().toISOString().slice(0,10);
       const dataHora = new Date().toLocaleString();
       const dados = { nome, numeros: [...selecionados], dataHora, codigo: codigoSimples, valorUnitario: valorUnit };
-
+       
       let promessas = [];
       promessas.push(db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados));
       // salva bloqueio com timestamp (para limpeza 24h)
@@ -486,7 +486,8 @@ const mensagem =
 
 🔑 Chave PIX: 71992290058
 
-      Código: ${codigoSimples}`;
+      Código: ${codigoSimples}
+      ${link}`;
 
 window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
         // limpar seleção na UI
