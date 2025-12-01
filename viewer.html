@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<title>Visualizador da Rifa</title>
+<title>Visualizar da Rifa Aqui</title>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
@@ -51,7 +51,7 @@
 
   .label {
     font-size: 1.1rem;
-    color: 6500ff;
+    color: #6500ff;
     text-transform: uppercase;
     letter-spacing: 1.5px;
     font-weight: 700;
@@ -113,8 +113,8 @@
     </div>
 
     <div class="linha">
-      <span class="label"> Status : </span>
-      <span class="value" id="statusValor"> Aguardando resultado : </span>
+      <span class="label">Status : </span>
+      <span class="value" id="statusValor">Aguardando resultado</span>
     </div>
   </div>
 
@@ -135,6 +135,10 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
+  function dataHoje() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
   const codigoValor = document.getElementById("codigoValor");
   const nomeValor = document.getElementById("nomeValor");
   const numerosValor = document.getElementById("numerosValor");
@@ -153,11 +157,11 @@
     statusValor.textContent = texto;
     statusValor.className = "value";
 
-    if (texto.toLowerCase().includes("ganhou"))
+    if (texto.toLowerCase() === "ganhou")
       statusValor.classList.add("status-ganhou");
-    else if (texto.toLowerCase().includes("perdeu"))
+    else if (texto.toLowerCase() === "perdeu")
       statusValor.classList.add("status-perdeu");
-    else if (texto.toLowerCase().includes("cancelou"))
+    else if (texto.toLowerCase() === "cancelou")
       statusValor.classList.add("status-cancelou");
     else
       statusValor.classList.add("status-aguardando");
@@ -170,23 +174,20 @@
   } else {
     messageDiv.textContent = "🔍 Buscando informações...";
 
-    db.ref("compras-dia").once("value").then(snapshot => {
+    const hoje = dataHoje();
+
+    db.ref(`compras-dia/${hoje}`).once("value").then(snapshot => {
       let encontrado = null;
       let horarioEncontrado = "";
 
-      snapshot.forEach(diaSnap => {
-        diaSnap.forEach(horarioSnap => {
-          horarioSnap.forEach(reservaSnap => {
-            const dados = reservaSnap.val();
-            if (dados.codigo === codigoParam) {
-              encontrado = dados;
-              horarioEncontrado = horarioSnap.key;
-              return true;
-            }
-          });
-          if (encontrado) return true;
+      snapshot.forEach(horarioSnap => {
+        horarioSnap.forEach(reservaSnap => {
+          const dados = reservaSnap.val();
+          if (dados.codigo === codigoParam) {
+            encontrado = dados;
+            horarioEncontrado = horarioSnap.key;
+          }
         });
-        if (encontrado) return true;
       });
 
       if (encontrado) {
@@ -200,7 +201,6 @@
 
         resultadoDiv.style.display = "block";
         messageDiv.textContent = "";
-
       } else {
         messageDiv.textContent = "❌ Código não encontrado.";
       }
