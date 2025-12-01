@@ -1,121 +1,125 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8" />
+<title>Visualizador da Rifa</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<style>
+  body {
+    background: radial-gradient(circle at top, #13111a, #0a0a0f);
+    color: #e8ffe8;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    padding: 15px;
+    text-align: center;
+  }
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #222;
-      color: #fff;
-      text-align: center;
-      padding: 20px;
-    }
-    h1 {
-      margin-bottom: 20px;
-    }
-    #grid-numeros {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 5px;
-      max-width: 360px;
-      margin: 0 auto 20px auto;
-    }
-    .item-numero {
-      background: #333;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 0 6px #000;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .numero-texto {
-      font-size: 1.4rem;
-      font-weight: bold;
-    }
-    .bloqueado {
-      background: #c0392b;
-      color: #fff;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .liberado {
-      background: #27ae60;
-      color: #fff;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    #reservasContainer {
-      max-width: 700px;
-      margin: 0 auto;
-      text-align: left;
-      background: #111;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0 0 10px #000;
-      color: #0f0;
-      font-family: monospace;
-      font-size: 1rem;
-      max-height: 450px;
-      overflow-y: auto;
-    }
-    .reserva-item {
-      padding: 10px;
-      border-bottom: 1px solid #333;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 12px;
-    }
-    .reserva-dados {
-      flex-grow: 1;
-    }
-    .reserva-label {
-      font-weight: bold;
-      color: #aaffaa;
-      margin-right: 6px;
-    }
-    select.status-select {
-      background: #222;
-      color: #0f0;
-      border-radius: 6px;
-      border: 1px solid #0f0;
-      padding: 4px 8px;
-      font-weight: bold;
-      min-width: 130px;
-    }
-    button.salvar-status-btn {
-      background: #2980b9;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-  </style>
+  #container {
+    width: 90%;
+    margin: auto;
+    padding: 25px;
+    border-radius: 18px;
+    background: rgba(25, 25, 35, 0.75);
+    box-shadow: 0 0 30px rgba(0,255,130,0.25);
+    border: 2px solid rgba(0,255,130,0.4);
+    backdrop-filter: blur(10px);
+    animation: glow 3s infinite alternate;
+  }
 
-  <title>Painel ADM - Bloquear/Desbloquear</title>
+  @keyframes glow {
+    from { box-shadow: 0 0 15px rgba(0,255,130,0.2); }
+    to   { box-shadow: 0 0 35px rgba(0,255,130,0.6); }
+  }
+
+  h1 {
+    color: #1aff72;
+    font-size: 2.5rem;
+    margin-bottom: 25px;
+    text-shadow: 0 0 12px rgba(0,255,130,0.7);
+    font-weight: 800;
+    letter-spacing: 2px;
+  }
+
+  .linha {
+    margin-bottom: 28px;
+    padding: 15px;
+    border-left: 4px solid #22ff88;
+    background: rgba(0, 255, 120, 0.06);
+    border-radius: 10px;
+  }
+
+  .label {
+    font-size: 1.1rem;
+    color: #000;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+  }
+
+  .value {
+    margin-top: 6px;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #fafafa;
+    text-shadow: 0 0 10px #00ff88;
+    word-break: break-word;
+  }
+
+  .status-ganhou { color: #00ff99; text-shadow: 0 0 15px #00ff99; }
+  .status-perdeu { color: #ff3b3b; text-shadow: 0 0 10px #ff2a2a; }
+  .status-cancelou { color: #2da8ff; text-shadow: 0 0 10px #1b8fff; }
+  .status-aguardando { color: #ffe44d; text-shadow: 0 0 10px #ffdd33; }
+
+  #message {
+    font-size: 1.5rem;
+    margin-top: 25px;
+    color: #1aff72;
+    font-weight: 600;
+    text-shadow: 0 0 10px rgba(0,255,130,0.5);
+  }
+</style>
+
 </head>
 <body>
 
-<h1>Painel Bloquear/Desbloquear Números</h1>
+<div id="container">
+  <h1>🔮 Visualizador da Rifa</h1>
 
-<div id="grid-numeros"></div>
+  <div id="resultado" style="display:none;">
+    <div class="linha">
+      <span class="label">Código</span>
+      <span class="value" id="codigoValor"></span>
+    </div>
 
-<h2>Reservas do Dia Atual</h2>
-<div id="reservasContainer">Carregando reservas...</div>
+    <div class="linha">
+      <span class="label">Data e Hora : </span>
+      <span class="value" id="dataHoraValor"></span>
+    </div>
+
+    <div class="linha">
+      <span class="label">Nome : </span>
+      <span class="value" id="nomeValor"></span>
+    </div>
+
+    <div class="linha">
+      <span class="label">Horário : </span>
+      <span class="value" id="horarioValor"></span>
+    </div>
+
+    <div class="linha">
+      <span class="label">Números : </span>
+      <span class="value" id="numerosValor"></span>
+    </div>
+
+    <div class="linha">
+      <span class="label"> Status : </span>
+      <span class="value" id="statusValor"> Aguardando resultado : </span>
+    </div>
+  </div>
+
+  <div id="message"></div>
+</div>
 
 <script>
   const firebaseConfig = {
@@ -123,171 +127,85 @@
     authDomain: "rifa-782a3.firebaseapp.com",
     databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
     projectId: "rifa-782a3",
-    storageBucket: "rifa-782a3",
+    storageBucket: "rifa-782a3.firebasestorage.app",
     messagingSenderId: "88068598855",
-    appId: "1:88068598855:web:a230a06db76a4bbc125562"
+    appId: "1:88068598855:web:a230a06db6a4bbc125562"
   };
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  const grid = document.getElementById('grid-numeros');
-  const reservasContainer = document.getElementById('reservasContainer');
+  const codigoValor = document.getElementById("codigoValor");
+  const nomeValor = document.getElementById("nomeValor");
+  const numerosValor = document.getElementById("numerosValor");
+  const horarioValor = document.getElementById("horarioValor");
+  const dataHoraValor = document.getElementById("dataHoraValor");
+  const statusValor = document.getElementById("statusValor");
+  const resultadoDiv = document.getElementById("resultado");
+  const messageDiv = document.getElementById("message");
 
-  function getDataHoje() {
-    return new Date().toISOString().slice(0, 10);
+  function getParametro(nome) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(nome);
   }
 
-  // LIMPAR RESERVA AO LIBERAR
-  function limparReservasPorNumero(numero) {
-    const dataHoje = getDataHoje();
+  function atualizarStatus(texto) {
+    statusValor.textContent = texto;
+    statusValor.className = "value";
 
-    return db.ref(`compras-dia/${dataHoje}`).once('value').then(snapshot => {
-      const horarios = snapshot.val() || {};
-      let updates = {};
-
-      for (const horario in horarios) {
-        const reservas = horarios[horario];
-
-        for (const codigo in reservas) {
-          const reserva = reservas[codigo];
-
-          if (reserva.numeros.includes(numero)) {
-            const novos = reserva.numeros.filter(n => n !== numero);
-
-            if (novos.length === 0) {
-              updates[`compras-dia/${dataHoje}/${horario}/${codigo}`] = null;
-            } else {
-              updates[`compras-dia/${dataHoje}/${horario}/${codigo}/numeros`] = novos;
-            }
-          }
-        }
-      }
-
-      return db.ref().update(updates);
-    });
+    if (texto.toLowerCase().includes("ganhou"))
+      statusValor.classList.add("status-ganhou");
+    else if (texto.toLowerCase().includes("perdeu"))
+      statusValor.classList.add("status-perdeu");
+    else if (texto.toLowerCase().includes("cancelou"))
+      statusValor.classList.add("status-cancelou");
+    else
+      statusValor.classList.add("status-aguardando");
   }
 
-  // CARREGAR RESERVAS DO DIA
-  function carregarReservasDoDia() {
-    const dataHoje = getDataHoje();
-    reservasContainer.innerHTML = "Carregando reservas...";
+  const codigoParam = getParametro("codigo");
 
-    db.ref(`compras-dia/${dataHoje}`).once('value').then(snapshot => {
-      const dados = snapshot.val() || {};
+  if (!codigoParam) {
+    messageDiv.textContent = "⚠ Nenhum código informado.";
+  } else {
+    messageDiv.textContent = "🔍 Buscando informações...";
 
-      if (!Object.keys(dados).length) {
-        reservasContainer.textContent = "Nenhuma reserva registrada hoje.";
-        return;
-      }
+    db.ref("compras-dia").once("value").then(snapshot => {
+      let encontrado = null;
+      let horarioEncontrado = "";
 
-      reservasContainer.innerHTML = "";
-
-      for (const horario of Object.keys(dados).sort()) {
-        const blocoH = document.createElement("div");
-        blocoH.innerHTML = `<h3 style="color:#7fff7f;">Horário: ${horario}</h3>`;
-
-        const reservas = dados[horario];
-
-        for (const cod in reservas) {
-          const r = reservas[cod];
-
-          const item = document.createElement("div");
-          item.className = "reserva-item";
-
-          // EXIBIÇÃO COMPLETA COM STATUS
-          item.innerHTML = `
-            <div class="reserva-dados">
-              <span class="reserva-label">Nome:</span> ${r.nome}<br>
-              <span class="reserva-label">Números:</span> ${r.numeros.join(", ")}<br>
-              <span class="reserva-label">Código:</span> ${r.codigo}<br>
-              <span class="reserva-label">Status:</span> ${(r.status || "Aguardando resultado")}
-            </div>
-          `;
-
-          // SELECT DE STATUS
-          const select = document.createElement("select");
-          select.className = "status-select";
-
-          ["Aguardando resultado", "Ganhou", "Perdeu", "Cancelou"].forEach(st => {
-            const op = document.createElement("option");
-            op.value = st;
-            op.textContent = st;
-            if ((r.status || "Aguardando resultado") === st) op.selected = true;
-            select.appendChild(op);
-          });
-
-          const btn = document.createElement("button");
-          btn.className = "salvar-status-btn";
-          btn.textContent = "Salvar status";
-
-          btn.onclick = () => {
-            db.ref(`compras-dia/${dataHoje}/${horario}/${cod}/status`)
-              .set(select.value)
-              .then(() => {
-                alert("Status atualizado!");
-                carregarReservasDoDia();
-              });
-          };
-
-          item.appendChild(select);
-          item.appendChild(btn);
-          blocoH.appendChild(item);
-        }
-
-        reservasContainer.appendChild(blocoH);
-      }
-    });
-  }
-
-  // CARREGAR NUMERAÇÃO
-  function carregarNumeros() {
-    db.ref("numerosBloqueados").once("value").then(snapshot => {
-      const bloqueios = snapshot.val() || {};
-      grid.innerHTML = "";
-
-      for (let i = 0; i < 100; i++) {
-        let num = i.toString().padStart(2, "0");
-        let bloqueado = bloqueios[num] === true;
-
-        let item = document.createElement("div");
-        item.className = "item-numero";
-
-        let botaoClass = bloqueado ? "bloqueado" : "liberado";
-        let botaoTexto = bloqueado ? "Desbloquear" : "Bloquear";
-
-        item.innerHTML = `
-          <span class="numero-texto">${num}</span>
-          <button class="${botaoClass}" data-num="${num}" data-bloqueado="${bloqueado}">
-            ${botaoTexto}
-          </button>
-        `;
-
-        grid.appendChild(item);
-      }
-
-      document.querySelectorAll("#grid-numeros button").forEach(btn => {
-        btn.onclick = () => {
-          const numero = btn.getAttribute("data-num");
-          const estadoAtual = btn.getAttribute("data-bloqueado") === "true";
-          const novoEstado = !estadoAtual;
-
-          db.ref("numerosBloqueados/" + numero).set(novoEstado).then(() => {
-            btn.setAttribute("data-bloqueado", novoEstado);
-            btn.textContent = novoEstado ? "Desbloquear" : "Bloquear";
-            btn.className = novoEstado ? "bloqueado" : "liberado";
-
-            if (!novoEstado) {
-              limparReservasPorNumero(numero).then(() => carregarReservasDoDia());
+      snapshot.forEach(diaSnap => {
+        diaSnap.forEach(horarioSnap => {
+          horarioSnap.forEach(reservaSnap => {
+            const dados = reservaSnap.val();
+            if (dados.codigo === codigoParam) {
+              encontrado = dados;
+              horarioEncontrado = horarioSnap.key;
+              return true;
             }
           });
-        };
+          if (encontrado) return true;
+        });
+        if (encontrado) return true;
       });
+
+      if (encontrado) {
+        codigoValor.textContent = encontrado.codigo;
+        nomeValor.textContent = encontrado.nome;
+        numerosValor.textContent = encontrado.numeros.join(", ");
+        horarioValor.textContent = horarioEncontrado;
+        dataHoraValor.textContent = encontrado.dataHora;
+
+        atualizarStatus(encontrado.status || "Aguardando resultado");
+
+        resultadoDiv.style.display = "block";
+        messageDiv.textContent = "";
+
+      } else {
+        messageDiv.textContent = "❌ Código não encontrado.";
+      }
     });
   }
-
-  carregarNumeros();
-  carregarReservasDoDia();
 </script>
 
 </body>
