@@ -20,66 +20,70 @@
     }
 
     /* TOPO */
-    #topoWrapper {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background:#8098ff;
-        display:flex;
-        align-items:center;
-        justify-content: space-between;
-        padding:8px 10px;
-        gap:10px;
-        z-index:1000;
-        border-bottom:2px solid #000;
-    }
+/* TOPO */
+#topoWrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 95%;
+    background:#8098ff;
+    display:flex;
+    align-items:center;
+    padding:8px 10px;
+    gap:10px;
+    z-index:1000;
+    border-bottom:2px solid #000;
+}
 
+/* Botão do menu – largura fixa */
+#btnMenu {
+    background:#000;
+    color:#fff;
+    
+    font-size:20px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    flex: 0 0 55px; /* FIXO */
+}
+
+/* Grupo dos inputs */
+#topoInputs {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    width:100%;
+}
+
+/* Cada item com a mesma proporção */
+#topoInputs input,
+#topoInputs select,
+#salvar {
+    flex: 1;                /* MESMA LARGURA PARA TODOS */
+    padding:6px;
+    font-size:14px;
+    border-radius:8px;
+    border:none;
+    text-align:center;
+    background:#222;
+    color:#fff;
+}
+
+/* Botão salvar */
+#salvar {
+    background:#2ecc71;
+    cursor:pointer;
+    height:30px;
+    padding:8px;
+    font-size:25px;
+    flex: 1;
+}
+
+@media (max-width: 420px) {
     #btnMenu {
-        background:#000;
-        color:#fff;
-        padding:6px 12px;
-        font-size:20px;
-        border:none;
-        border-radius:8px;
-        cursor:pointer;
-        flex-shrink: 0;
+        flex: 0 0 45px;
     }
-
-    /* GRUPO DE INPUTS */
-    #topoInputs {
-        display:flex;
-        align-items:center;
-        gap:8px;
-        flex-wrap: nowrap;
-        width:100%;
-        justify-content:flex-end;
-    }
-
-    #topoInputs input,
-    #topoInputs select {
-        padding:6px;
-        font-size:14px;
-        border-radius:6px;
-        border:none;
-        background:#222;
-        color:#fff;
-        text-align:center;
-    }
-
-    #valor { width:90px; }
-    #horarios { width:120px !important; }
-
-    #salvar {
-        width:80px;
-        background:#2ecc71;
-        border:none;
-        padding:6px 10px;
-        border-radius:8px;
-        color:#fff;
-        cursor:pointer;
-    }
-
+}
     /* MENU LATERAL */
     #menu {
     margin:0;
@@ -148,11 +152,14 @@
         #horarios { width:90px !important; }
         #salvar { padding:6px 8px; font-size:12px; }
     }
+    h1{
+        font-size:22px;
+    }
   </style>
 </head>
 <body>
 
-<h1>Rifa Online <strong style="color:red;">1</strong> pra <strong style="color:red;">70</strong></h1>
+<h1>Rifa Online <strong style="color:red;">1.00</strong> pra <strong style="color:red;">70.00</strong></h1>
 
 <div id="topoWrapper">
   <button id="btnMenu" onclick="toggleMenu()">☰</button>
