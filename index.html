@@ -1,188 +1,154 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    
-    <link rel="shortcut icon" type="image/jpg" href="https://github.dev/karlos1980dev/RifaOnline/blob/main/images-2.jpg">
-    <link rel="icon" href="https://github.dev/karlos1980dev/RifaOnline/blob/main/images-2.jpg" type="image/jpeg">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    
-
-    
-    
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="shortcut icon" type="image/jpg" href="https://github.dev/karlos1980dev/RifaOnline/blob/main/images-2.jpg">
+  <link rel="icon" href="https://github.dev/karlos1980dev/RifaOnline/blob/main/images-2.jpg" type="image/jpeg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #232;
-    color:#fff;
+
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #232;
+        color:#fff;
+        margin:0;
+        padding-top: 70px;
+        text-align:center;
+    }
+
+    /* TOPO */
+    #topoWrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background:#8098ff;
+        display:flex;
+        align-items:center;
+        justify-content: space-between;
+        padding:8px 10px;
+        gap:10px;
+        z-index:1000;
+        border-bottom:2px solid #000;
+    }
+
+    #btnMenu {
+        background:#000;
+        color:#fff;
+        padding:6px 12px;
+        font-size:20px;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+        flex-shrink: 0;
+    }
+
+    /* GRUPO DE INPUTS */
+    #topoInputs {
+        display:flex;
+        align-items:center;
+        gap:8px;
+        flex-wrap: nowrap;
+        width:100%;
+        justify-content:flex-end;
+    }
+
+    #topoInputs input,
+    #topoInputs select {
+        padding:6px;
+        font-size:14px;
+        border-radius:6px;
+        border:none;
+        background:#222;
+        color:#fff;
+        text-align:center;
+    }
+
+    #valor { width:90px; }
+    #horarios { width:120px !important; }
+
+    #salvar {
+        width:80px;
+        background:#2ecc71;
+        border:none;
+        padding:6px 10px;
+        border-radius:8px;
+        color:#fff;
+        cursor:pointer;
+    }
+
+    /* MENU LATERAL */
+    #menu {
     margin:0;
-    padding-top:60px; /* espaço para o topo fixo */
-    text-align:center;
-    /* Espaço para o topo fixo */
+        position: fixed;
+        top: 50px;
+        left: -100%;
+        width: 90%;
+        height: 80%;
+        background:#111;
+        color:#fff;
+        padding:10px;
+        transition:0.3s;
+        overflow-y:auto;
+        z-index:9999;
+    }
 
-  padding-top: 70px !important;
+    #menu.open { left:0; }
 
-  }
-h1{ 
-    margin:0;
-    top:0;
-}
-/* TOPO FIXO */
-#topoWrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height:55px;
-    background:#8098ff;
-    display:flex;
-    align-items:center;
-    padding:0 5px;
-    gap:5px;
-    z-index:1000;
-    border-bottom:2px solid #333;
-}
+    #menu textarea {
+    margin-top:30px;
+        display:block;
+        width:100%;
+        height:300px;
+        margin-top:10px;
+        background:#000;
+        color:#fff;
+        border:none;
+        border-radius:10px;
+        padding:10px;
+        box-sizing:border-box;
+        white-space:pre-wrap;
+    }
 
-/* BOTÃO MENU FIXO NA ESQUERDA */
-#btnMenu {
-    background:#000;
-    color:#fff;
-    padding:4px 8px;
-    font-size:20px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-}
+    /* NÚMEROS */
+    #numeros {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 4px;
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
 
-/* LINHA COM OS CAMPOS (4 ITENS) */
-#topoInputs {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    
-    width:85%;
-}
+    .numero {
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      border-radius: 8px;
+      background: #3498db;
+      color: #fff;
+      border: none;
+      font-weight: bold;
+      font-size: clamp(8px, 3.3vw, 18px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-/* INPUTS AJUSTADOS PARA CABER NA MESMA LINHA */
-#topoInputs input,
-#topoInputs select {
-    padding:6px;
-    font-size:15px;
-    border-radius:6px;
-    border:none;
-    gap:10px;
-    background:#222;
-    color:#fff;
-    text-align:center;
-}
+    .marcado { background:#27ae60 !important; }
+    .bloqueado { background:#777 !important; color:#ccc; cursor:not-allowed; }
 
-/* Larguras específicas para caber tudo */
-#nome{ width:90px !important; }
-#valor{ width:90px !important; }
-#horarios{ width:80px !important; }
+    #totalPagar { color:gold; font-weight:bold; }
 
-  #menu.open{
-    left:0;
-  }
-
-  /* textarea/reservados fica oculto até abrir menu */
-  #menu textarea{
-    display:none;
-    width:100%;
-    height:300px;
-    margin-top:10px;
-    background:#000;
-    color:#fff;
-    border:none;
-    border-radius:10px;
-    padding:10px;
-    box-sizing:border-box;
-    white-space:pre-wrap;
-  }
-
-  #menu.open textarea{
-    display:block;
-  }
-
-  /* NÚMEROS */
-#numeros {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 4px;
-  width: 100%;
-  max-width: 100%;
-  padding: 5px;
-  box-sizing: border-box;
-  overflow-x: hidden; /* evita estourar a tela */
-}
-
-.numero {
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  border-radius: 8px;
-  background: #3498db;
-  color: #fff;
-  border: none;
-  font-weight: bold;
-  font-size: clamp(8px, 3.3vw, 18px); /* REDUZ AUTOMÁTICO */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-  .marcado { background:#27ae60 !important; }
-  .bloqueado { background:#777 !important; color:#ccc; cursor:not-allowed; }
-
-  button#salvar{
-    margin-top:10px;
-    padding:10px 20px;
-    font-size:18px;
-    border:none;
-    border-radius:10px;
-    background:#2ecc71;
-    color:white;
-    cursor:pointer;
-  }
-
-  /* PIX container (oculto até gerar) */
-  #pixContainer {
-    margin-top: 10px;
-    background: #111;
-    padding: 10px;
-    border-radius: 10px;
-    max-width: 520px;
-    margin-left: auto;
-    margin-right: auto;
-    word-break: break-word;
-    display: none;
-  }
-
-  #qrcode { margin: 10px auto; width:200px; height:200px; }
-  #codigoPixInput {
-    width: 90%;
-    padding: 8px;
-    font-size: 16px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    border: none;
-    background: #222;
-    color: #fff;
-    user-select: all;
-  }#salvar{
-      width:100%;
-      margin-left:10;
-  }
-#totalPagar{
-    color:gold;
-    font-weight:bold;
-}
-  /* pequenos ajustes */
-  textarea#codigo { font-family: monospace; }
-</style>
+    @media (max-width: 420px) {
+        #topoInputs { gap:5px; }
+        #valor { width:70px; }
+        #horarios { width:90px !important; }
+        #salvar { padding:6px 8px; font-size:12px; }
+    }
+  </style>
 </head>
 <body>
 
@@ -191,7 +157,6 @@ h1{
 <div id="topoWrapper">
   <button id="btnMenu" onclick="toggleMenu()">☰</button>
   <div id="topoInputs">
-    <input style="width:110px" type="text" id="nome" placeholder="NOME">
     <input style="width:90px" type="number" id="valor" placeholder="R$" min="0" step="0.01">
     <select id="horarios" style="width:120px">
       <option value="" disabled selected>HORÁRIO</option>
@@ -201,35 +166,25 @@ h1{
       <option value="19:00">19:00</option>
       <option value="21:00">21:00</option>
     </select>
+    <button id="salvar">Salvar</button>
   </div>
 </div>
+
 <div>
     <strong>Total a pagar: R$ <span id="totalPagar">0,00</span></strong>
-  </div>
-<!-- MENU LATERAL (ESQUERDA) -->
+</div>
+
+<!-- MENU LATERAL -->
 <div id="menu" aria-hidden="true">
-  
-  <textarea id="codigo" readonly></textarea>
+  <h3>Reservas do dia</h3>
+  <textarea id="codigo" readonly>Nenhuma reserva carregada.</textarea>
 </div>
 
 <!-- Conteúdo principal -->
 <div id="conteudo" style="padding:12px;">
   <div id="numeros"></div>
-<div>
-  <strong>Você recebe: R$ <span id="totalReceber">0,00</span></strong>
-</div>
-  
-
-  <button id="salvar">Salvar Escolhas</button>
-
-  <!-- Container PIX -->
-  <div id="pixContainer">
-    <h3>Código PIX para pagamento:</h3>
-    <div id="qrcode"></div>
-    <input type="text" id="codigoPixInput" readonly placeholder="Código PIX aparecerá aqui...">
-    <br>
-    <button id="copiarPix">Copiar Código PIX</button>
-    <button id="enviarWhats">Enviar via WhatsApp</button>
+  <div>
+    <strong>Você recebe: R$ <span id="totalReceber">0,00</span></strong>
   </div>
 </div>
 
@@ -249,15 +204,9 @@ h1{
 
   /* ELEMENTOS */
   const numerosDiv = document.getElementById('numeros');
-  const nomeInput = document.getElementById('nome');
   const valorInput = document.getElementById('valor');
-  const codigoTextarea = document.getElementById('codigo');
+  const codigoTextarea = document.getElementById('codigo'); // já existe no DOM
   const horariosSelect = document.getElementById('horarios');
-  const pixContainer = document.getElementById('pixContainer');
-  const codigoPixInput = document.getElementById('codigoPixInput');
-  const btnCopiarPix = document.getElementById('copiarPix');
-  const btnEnviarWhats = document.getElementById('enviarWhats');
-  const qrcodeDiv = document.getElementById('qrcode');
   const totalPagarSpan = document.getElementById('totalPagar');
   const menuEl = document.getElementById('menu');
 
@@ -284,18 +233,17 @@ h1{
   }
 
   function toggleNumero(btn,num){
-  if(btn.classList.contains("bloqueado")) return;
+    if(btn.classList.contains("bloqueado")) return;
 
-  if(btn.classList.contains("marcado")){
-    btn.classList.remove("marcado");
-    selecionados = selecionados.filter(n=>n!==num);
-  } else {
-    btn.classList.add("marcado");
-    selecionados.push(num);
+    if(btn.classList.contains("marcado")){
+      btn.classList.remove("marcado");
+      selecionados = selecionados.filter(n=>n!==num);
+    } else {
+      btn.classList.add("marcado");
+      selecionados.push(num);
+    }
+    atualizarTotais();
   }
-  atualizarTotais();
-}
-
 
   function atualizarTotalPagar() {
     let valorUnit = parseFloat(valorInput.value.replace(',', '.'));
@@ -310,7 +258,6 @@ h1{
       bloqueados = new Set();
       const dados = snapshot.val() || {};
       for (let n in dados) {
-        // aceita tanto {n: true} quanto {n: { bloqueadoEm: ... }}
         if (dados[n] === true || (dados[n] && dados[n].bloqueadoEm)) bloqueados.add(n);
       }
       atualizarBotoes();
@@ -335,25 +282,37 @@ h1{
 
   /* CARREGA RESERVAS DO DIA (preenche textarea) */
   function atualizarTextareaReservas(dadosPorHorario) {
+    // protege contra null/undefined
+    if (!dadosPorHorario || Object.keys(dadosPorHorario).length === 0) {
+      if (codigoTextarea) codigoTextarea.value = "Nenhuma reserva para hoje.";
+      return;
+    }
+
     let texto = "";
     for (let horario of Object.keys(dadosPorHorario).sort()) {
       texto += `Horário: ${horario}\n`;
       for (let key in dadosPorHorario[horario]) {
         const d = dadosPorHorario[horario][key];
-        texto += `${d.dataHora} - ${d.nome}: ${d.numeros.join("-")}\n`;
+        // protege contra dados inesperados
+        const numeros = Array.isArray(d.numeros) ? d.numeros.join("-") : (d.numeros || "");
+        const dataHora = d.dataHora || "";
+        texto += `${dataHora} -  ${numeros}\n`;
       }
-      texto += "--------------------------\n";
+      texto += "---------------------------------\n";
     }
-    codigoTextarea.value = texto;
+    if (codigoTextarea) codigoTextarea.value = texto;
   }
 
   function carregarReservasDoDia(data) {
+    // protege se textarea ausente
+    if (!codigoTextarea) return;
+
     db.ref(`compras-dia/${data}`).once('value').then(snapshot => {
       const dadosPorHorario = snapshot.val() || {};
       atualizarTextareaReservas(dadosPorHorario);
     }).catch(err => {
       console.error(err);
-      codigoTextarea.value = "";
+      codigoTextarea.value = "Erro ao carregar reservas.";
     });
   }
 
@@ -366,7 +325,6 @@ h1{
       for (let n in dados) {
         const item = dados[n];
         const bloqueadoEm = (item && item.bloqueadoEm) ? item.bloqueadoEm : null;
-        // se não tiver timestamp, mantém (compatibilidade) — opcional: remover
         if (bloqueadoEm && (agora - bloqueadoEm >= limite)) {
           db.ref("numerosBloqueados/" + n).remove().catch(e => console.error(e));
         }
@@ -375,7 +333,7 @@ h1{
     }).catch(e => console.error(e));
   }
 
-  /* HORARIOS: desabilita horários passados e seleciona próximo disponível */
+  /* HORARIOS */
   function getHoraAtual() {
     const now = new Date();
     let h = now.getHours();
@@ -403,43 +361,14 @@ h1{
     return `RIFA-${letras[Math.floor(Math.random() * letras.length)]}${letras[Math.floor(Math.random() * letras.length)]}${Math.floor(100 + Math.random() * 900)}`;
   }
 
-  /* gerarPixCodeReal (simplificado) */
-  function gerarPixCodeReal(valorTotal) {
-    // Valor sem pontuação
-    let valorStr = (valorTotal.toFixed(2).replace('.', '')).padStart(10, '0');
-    const chavePix = "";
-    return `00020126580014BR.GOV.BCB.PIX0136${chavePix}0208Pagamento520400005303986540${valorStr}5802BR5925Rifa Online - Reserva6009Sao Paulo61080540900062070503***6304ABCD`;
-  }
-
-  /* COPIAR PIX */
-  btnCopiarPix && btnCopiarPix.addEventListener('click', () => {
-    if (!codigoPixInput || !codigoPixInput.value) return alert("Código PIX vazio!");
-    codigoPixInput.select();
-    codigoPixInput.setSelectionRange(0, 99999);
-    document.execCommand('copy');
-    alert("Código PIX copiado!");
-  });
-
-  /* ENVIAR WHATS (abre WhatsApp web) */
-  btnEnviarWhats && btnEnviarWhats.addEventListener('click', () => {
-    const texto = codigoPixInput.value || '';
-    const numero = '5571992290058'; // ajustar
-    if (!texto) return alert('Nenhum código PIX para enviar.');
-    const url = `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
-    window.open(url, '_blank');
-  });
-
   /* SALVAR RESERVA */
   document.getElementById('salvar').addEventListener('click', () => {
-    const nome = nomeInput.value.trim();
-    if (!nome) return alert("Digite seu nome!");
     if (selecionados.length === 0) return alert("Selecione pelo menos um número!");
     const horario = horariosSelect.value;
     if (!horario) return alert("Selecione um horário!");
     let valorUnit = parseFloat(valorInput.value.replace(',', '.'));
     if (isNaN(valorUnit) || valorUnit <= 0) return alert("Digite um valor válido maior que zero!");
 
-    // checa bloqueios atuais
     db.ref('numerosBloqueados').once('value').then(snapshot => {
       const bloqueios = snapshot.val() || {};
       const conflito = selecionados.find(n => bloqueios[n] === true || (bloqueios[n] && bloqueios[n].bloqueadoEm));
@@ -448,16 +377,15 @@ h1{
         atualizarBloqueados();
         return;
       }
-const link = "https://mjonline.netlify.app/";
+
       const codigoSimples = gerarCodigoSimples();
       const chave = "ID-" + Date.now();
       const dataHoje = new Date().toISOString().slice(0,10);
       const dataHora = new Date().toLocaleString();
-      const dados = { nome, numeros: [...selecionados], dataHora, codigo: codigoSimples, valorUnitario: valorUnit };
-       
+      const dados = { numeros: [...selecionados], dataHora, codigo: codigoSimples, valorUnitario: valorUnit };
+
       let promessas = [];
       promessas.push(db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados));
-      // salva bloqueio com timestamp (para limpeza 24h)
       selecionados.forEach(n => promessas.push(db.ref(`numerosBloqueados/${n}`).set({ bloqueadoEm: Date.now() })));
 
       Promise.all(promessas).then(() => {
@@ -465,44 +393,17 @@ const link = "https://mjonline.netlify.app/";
         carregarReservasDoDia(dataHoje);
         atualizarBloqueados();
 
-        // gerar PIX simples e mostrar container
-        const totalPagar = valorUnit * selecionados.length;
-        const codigoPix = gerarPixCodeReal(totalPagar);
-        codigoPixInput.value = codigoPix;
-        pixContainer.style.display = 'block';
-        qrcodeDiv.innerHTML = '';
-        try { QRCode.toCanvas(qrcodeDiv, codigoPix); } catch(e){ /* QR lib may differ */ }
-
-        // montar mensagem WhatsApp e abrir
         const telefoneDestino = "5571992290058";
-    // pegar data atual
-const hoje = new Date();
-const dataAtual = hoje.toLocaleDateString('pt-BR'); // DD/MM/AAAA
+        const mensagem = `🍀 *Rifa Online*\n\nCódigo do jogo: ${codigoSimples}`;
+        window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
 
-let v = parseFloat(document.getElementById("valor").value.replace(/\D/g, ""));
-if (isNaN(v) || v <= 0) v = 0;
-
-// total a receber correto (valor × 70)
-const totalReceber = v * 70;
-
-const mensagem = 
-`             🍀 *Rifa Online*
-      
-   ${link};
-      
-   Código: ${codigoSimples} `;
-
-window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
-        // limpar seleção na UI
         selecionados = [];
         document.querySelectorAll('.numero.marcado').forEach(b => b.classList.remove('marcado'));
-        nomeInput.value = '';
-        valorInput.value = '';
         totalPagarSpan.textContent = '0,00';
         horariosSelect.selectedIndex = -1;
-      }).catch(err => {
+      }).catch(err=>{
         console.error(err);
-        alert('Erro ao salvar: ' + err.message);
+        alert('Erro ao salvar: ' + (err.message || err));
       });
     });
   });
@@ -516,24 +417,19 @@ window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem
   valorInput.addEventListener('input', atualizarTotais);
   atualizarHorarios();
   setInterval(atualizarHorarios, 60000);
-  
-function atualizarTotais() {
+
+  function atualizarTotais() {
     let v = parseFloat(document.getElementById("valor").value.replace(",", "."));
     if (isNaN(v) || v <= 0) v = 0;
-
     let quantidade = selecionados.length;
-
-    // total a pagar = valor digitado × quantidade de dezenas
     let pagar = v * quantidade;
-
-    // total a receber = valor digitado × 70 (não multiplica pela quantidade)
     let receber = v * 70;
-
     totalPagarSpan.textContent = pagar.toFixed(2).replace(".", ",");
     document.getElementById("totalReceber").textContent =
         receber.toFixed(2).replace(".", ",");
-}
-document.getElementById("valor").oninput = atualizarTotais;
+  }
+  document.getElementById("valor").oninput = atualizarTotais;
+
 </script>
 </body>
 </html>
