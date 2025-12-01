@@ -55,14 +55,8 @@
       border:1px solid #333;
     }
 
-    .share-btn {
+    .viewer-btn {
       background:#27ae60;
-      margin-top:10px;
-      width:100%;
-    }
-
-    .zap-btn {
-      background:#25D366;
       margin-top:10px;
       width:100%;
     }
@@ -95,6 +89,13 @@
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+
+  // ---------- GERAR LINK DA VIEWER ----------
+  function copiarLinkViewer(codigo) {
+    const link = `https://mjonline.netlify.app/viewer.html?codigo=${codigo}`;
+    navigator.clipboard.writeText(link);
+    alert("🔗 Link da viewer copiado:\n\n" + link);
+  }
 
   // ---------- BUSCAR PELO CÓDIGO ----------
   function buscarPorCodigo(codigoManual = null) {
@@ -139,9 +140,6 @@
       const totalReceber = qtd > 0 ? (700 / qtd) : 0;
       const totalPagar = encontrado.valorUnitario * qtd;
 
-      // GERAR LINK DIRETO
-      const link = `${window.location.origin}${window.location.pathname}?codigo=${encontrado.codigo}`;
-
       box.innerHTML = `
         <h3>🔍 Resultado da Busca</h3>
 
@@ -151,26 +149,15 @@
         <strong>Números:</strong> ${encontrado.numeros.join(", ")}<br><br>
 
         <strong>Total pago:</strong> R$ ${totalPagar.toFixed(2).replace(".", ",")}<br>
-        <strong>Você concorre a:</strong> R$ ${totalReceber.toFixed(2).replace(".", ",")}<br><br>
+        <strong>Concorre a:</strong> R$ ${totalReceber.toFixed(2).replace(".", ",")}<br><br>
 
         <strong>Código da Reserva:</strong> ${encontrado.codigo}<br><br>
 
-        <button class="share-btn" onclick="compartilharLinkSimples('${link}')">📤 Copiar Link</button>
-        <button class="zap-btn" onclick="whatsappLink('${link}')">📲 Enviar no WhatsApp</button>
+        <button class="viewer-btn" onclick="copiarLinkViewer('${encontrado.codigo}')">
+            📤 Copiar link da VIEWER
+        </button>
       `;
     });
-  }
-
-  // ---------- COMPARTILHAR APENAS O LINK ----------
-  function compartilharLinkSimples(link) {
-    navigator.clipboard.writeText(link);
-    alert("🔗 Link copiado:\n\n" + link);
-  }
-
-  // ---------- ENVIAR PELO WHATSAPP (APENAS LINK) ----------
-  function whatsappLink(link) {
-    const url = "https://wa.me/?text=" + encodeURIComponent(link);
-    window.open(url, "_blank");
   }
 
   // ---------- BUSCAR AUTOMÁTICO SE TIVER ?codigo= ----------
