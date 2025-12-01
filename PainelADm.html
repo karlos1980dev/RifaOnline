@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
@@ -55,6 +56,54 @@
       cursor: pointer;
       font-weight: bold;
     }
+    #reservasContainer {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: left;
+      background: #111;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 0 10px #000;
+      color: #0f0;
+      font-family: monospace;
+      font-size: 1rem;
+      max-height: 450px;
+      overflow-y: auto;
+    }
+    .reserva-item {
+      padding: 10px;
+      border-bottom: 1px solid #333;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+    .reserva-dados {
+      flex-grow: 1;
+    }
+    .reserva-label {
+      font-weight: bold;
+      color: #aaffaa;
+      margin-right: 6px;
+    }
+    select.status-select {
+      background: #222;
+      color: #0f0;
+      border-radius: 6px;
+      border: 1px solid #0f0;
+      padding: 4px 8px;
+      font-weight: bold;
+      min-width: 130px;
+    }
+    button.salvar-status-btn {
+      background: #2980b9;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: bold;
+    }
   </style>
 
   <title>Painel ADM - Bloquear/Desbloquear</title>
@@ -64,6 +113,9 @@
 <h1>Painel Bloquear/Desbloquear Números</h1>
 
 <div id="grid-numeros"></div>
+
+<h2>Reservas do Dia Atual</h2>
+<div id="reservasContainer">Carregando reservas...</div>
 
 <script>
   const firebaseConfig = {
@@ -78,53 +130,125 @@
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+
   const grid = document.getElementById('grid-numeros');
+  const reservasContainer = document.getElementById('reservasContainer');
 
-  /* --------------------------------------------------
-      ➤ REMOVE BLOQUEIOS ANTIGOS (24h) / CORRIGIDO
-  -------------------------------------------------- */
-  function limparBloqueiosAntigos() {
-    const agora = Date.now();
-    const limite = 24 * 60 * 60 * 1000; // 24h
+  function getDataHoje() {
+    return new Date().toISOString().slice(0, 10);
+  }
 
-    db.ref("numerosBloqueados").once("value").then(snapshot => {
-      const dados = snapshot.val() || {};
+  // LIMPAR RESERVA AO LIBERAR
+  function limparReservasPorNumero(numero) {
+    const dataHoje = getDataHoje();
+
+    return db.ref(`compras-dia/${dataHoje}`).once('value').then(snapshot => {
+      const horarios = snapshot.val() || {};
       let updates = {};
 
-      for (let n in dados) {
-        const item = dados[n];
+      for (const horario in horarios) {
+        const reservas = horarios[horario];
 
-        // Se não existir timestamp → apagar bloqueio antigo do Firebase
-        if (!item || !item.bloqueadoEm) {
-          updates[`numerosBloqueados/${n}`] = null;
-          continue;
-        }
+        for (const codigo in reservas) {
+          const reserva = reservas[codigo];
 
-        // Se passou de 24 horas → liberar
-        if (agora - item.bloqueadoEm >= limite) {
-          updates[`numerosBloqueados/${n}`] = null;
+          if (reserva.numeros.includes(numero)) {
+            const novos = reserva.numeros.filter(n => n !== numero);
+
+            if (novos.length === 0) {
+              updates[`compras-dia/${dataHoje}/${horario}/${codigo}`] = null;
+            } else {
+              updates[`compras-dia/${dataHoje}/${horario}/${codigo}/numeros`] = novos;
+            }
+          }
         }
       }
 
-      if (Object.keys(updates).length > 0) {
-        db.ref().update(updates).then(() => carregarNumeros());
+      return db.ref().update(updates);
+    });
+  }
+
+  // CARREGAR RESERVAS DO DIA
+  function carregarReservasDoDia() {
+    const dataHoje = getDataHoje();
+    reservasContainer.innerHTML = "Carregando reservas...";
+
+    db.ref(`compras-dia/${dataHoje}`).once('value').then(snapshot => {
+      const dados = snapshot.val() || {};
+
+      if (!Object.keys(dados).length) {
+        reservasContainer.textContent = "Nenhuma reserva registrada hoje.";
+        return;
+      }
+
+      reservasContainer.innerHTML = "";
+
+      for (const horario of Object.keys(dados).sort()) {
+        const blocoH = document.createElement("div");
+        blocoH.innerHTML = `<h3 style="color:#7fff7f;">Horário: ${horario}</h3>`;
+
+        const reservas = dados[horario];
+
+        for (const cod in reservas) {
+          const r = reservas[cod];
+
+          const item = document.createElement("div");
+          item.className = "reserva-item";
+
+          // EXIBIÇÃO COMPLETA COM STATUS
+          item.innerHTML = `
+            <div class="reserva-dados">
+              <span class="reserva-label">Nome:</span> ${r.nome}<br>
+              <span class="reserva-label">Números:</span> ${r.numeros.join(", ")}<br>
+              <span class="reserva-label">Código:</span> ${r.codigo}<br>
+              <span class="reserva-label">Status:</span> ${(r.status || "Aguardando resultado")}
+            </div>
+          `;
+
+          // SELECT DE STATUS
+          const select = document.createElement("select");
+          select.className = "status-select";
+
+          ["Aguardando resultado", "Ganhou", "Perdeu", "Cancelou"].forEach(st => {
+            const op = document.createElement("option");
+            op.value = st;
+            op.textContent = st;
+            if ((r.status || "Aguardando resultado") === st) op.selected = true;
+            select.appendChild(op);
+          });
+
+          const btn = document.createElement("button");
+          btn.className = "salvar-status-btn";
+          btn.textContent = "Salvar status";
+
+          btn.onclick = () => {
+            db.ref(`compras-dia/${dataHoje}/${horario}/${cod}/status`)
+              .set(select.value)
+              .then(() => {
+                alert("Status atualizado!");
+                carregarReservasDoDia();
+              });
+          };
+
+          item.appendChild(select);
+          item.appendChild(btn);
+          blocoH.appendChild(item);
+        }
+
+        reservasContainer.appendChild(blocoH);
       }
     });
   }
 
-  /* --------------------------------------------------
-      ➤ GERAR A GRID DE NÚMEROS
-  -------------------------------------------------- */
+  // CARREGAR NUMERAÇÃO
   function carregarNumeros() {
-    limparBloqueiosAntigos();
-
     db.ref("numerosBloqueados").once("value").then(snapshot => {
       const bloqueios = snapshot.val() || {};
       grid.innerHTML = "";
 
       for (let i = 0; i < 100; i++) {
         let num = i.toString().padStart(2, "0");
-        let bloqueado = bloqueios[num] ? true : false;
+        let bloqueado = bloqueios[num] === true;
 
         let item = document.createElement("div");
         item.className = "item-numero";
@@ -142,30 +266,28 @@
         grid.appendChild(item);
       }
 
-      /* BOTÕES DE BLOQUEAR/DESBLOQUEAR */
       document.querySelectorAll("#grid-numeros button").forEach(btn => {
         btn.onclick = () => {
           const numero = btn.getAttribute("data-num");
           const estadoAtual = btn.getAttribute("data-bloqueado") === "true";
           const novoEstado = !estadoAtual;
 
-          if (novoEstado) {
-            // SALVANDO COM TIMESTAMP CORRETAMENTE ✔
-            db.ref("numerosBloqueados/" + numero).set({
-              bloqueadoEm: Date.now()
-            });
-          } else {
-            db.ref("numerosBloqueados/" + numero).remove();
-          }
+          db.ref("numerosBloqueados/" + numero).set(novoEstado).then(() => {
+            btn.setAttribute("data-bloqueado", novoEstado);
+            btn.textContent = novoEstado ? "Desbloquear" : "Bloquear";
+            btn.className = novoEstado ? "bloqueado" : "liberado";
 
-          carregarNumeros();
+            if (!novoEstado) {
+              limparReservasPorNumero(numero).then(() => carregarReservasDoDia());
+            }
+          });
         };
       });
     });
   }
 
   carregarNumeros();
-  setInterval(carregarNumeros, 15000);  // atualiza a cada 15s
+  carregarReservasDoDia();
 </script>
 
 </body>
