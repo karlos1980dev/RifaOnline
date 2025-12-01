@@ -483,14 +483,10 @@ const mensagem =
 📅 Data: ${dataAtual}
 👤 Nome: ${nome}
 🕒 Horário: ${horario}
-🎟️ Números: ${selecionados.join(', ')}
-
-💰 Total a pagar: *R$ ${totalPagar.toFixed(2).replace('.',',')}*
-🏆 Você pode ganhar: *R$ ${totalReceber.toFixed(2).replace('.',',')}*
 
 🔑 Chave PIX: 71992290058
 
-Código: ${codigoSimples}`;
+      Código: ${codigoSimples}`;
 
 window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
         // limpar seleção na UI
