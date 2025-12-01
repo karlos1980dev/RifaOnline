@@ -469,12 +469,13 @@ h1{
         const telefoneDestino = "5571992290058";
     // pegar data atual
 const hoje = new Date();
-const dataAtual = hoje.toLocaleDateString('pt-BR'); // formato  DD/MM/AAAA
+const dataAtual = hoje.toLocaleDateString('pt-BR'); // DD/MM/AAAA
 
-// calcular total a receber
-const totalReceber = selecionados.length > 0 
-  ? (700 / selecionados.length) 
-  : 0;
+let v = parseFloat(document.getElementById("valor").value.replace(/\D/g, ""));
+if (isNaN(v) || v <= 0) v = 0;
+
+// total a receber correto (valor × 70)
+const totalReceber = v * 70;
 
 const mensagem = 
 `.🍀 *Rifa Online*
@@ -490,8 +491,8 @@ const mensagem =
 🔑 Chave PIX: 71992290058
 
 Código: ${codigoSimples}`;
- window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
 
+window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
         // limpar seleção na UI
         selecionados = [];
         document.querySelectorAll('.numero.marcado').forEach(b => b.classList.remove('marcado'));
@@ -518,15 +519,15 @@ Código: ${codigoSimples}`;
   
 function atualizarTotais() {
     let v = parseFloat(document.getElementById("valor").value.replace(",", "."));
-    if (isNaN(v)) v = 0;
+    if (isNaN(v) || v <= 0) v = 0;
 
     let quantidade = selecionados.length;
 
-    // total a pagar = valor digitado × quantidade
+    // total a pagar = valor digitado × quantidade de dezenas
     let pagar = v * quantidade;
 
-    // total a receber = valor digitado × 70  (10 vira 700, 100 vira 7000)
-    let receber = v > 0 ? v * 70 : 0;
+    // total a receber = valor digitado × 70 (não multiplica pela quantidade)
+    let receber = v * 70;
 
     totalPagarSpan.textContent = pagar.toFixed(2).replace(".", ",");
     document.getElementById("totalReceber").textContent =
