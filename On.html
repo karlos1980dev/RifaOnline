@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #232;
+    color:#fff;
+    margin:0;
+    padding-top:60px; /* espaço para o topo fixo */
+    text-align:center;
+    /* Espaço para o topo fixo */
+
+  padding-top: 70px !important;
+
+  }
+h1{ 
+    margin:0;
+    top:0;
+}
+/* TOPO FIXO */
+#topoWrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height:55px;
+    background:#8098ff;
+    display:flex;
+    align-items:center;
+    padding:0 5px;
+    gap:5px;
+    z-index:1000;
+    border-bottom:2px solid #333;
+}
+
+/* BOTÃO MENU FIXO NA ESQUERDA */
+#btnMenu {
+    background:#000;
+    color:#fff;
+    padding:4px 8px;
+    font-size:20px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+/* LINHA COM OS CAMPOS (4 ITENS) */
+#topoInputs {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    
+    width:85%;
+}
+
+/* INPUTS AJUSTADOS PARA CABER NA MESMA LINHA */
+#topoInputs input,
+#topoInputs select {
+    padding:6px;
+    font-size:15px;
+    border-radius:6px;
+    border:none;
+    gap:10px;
+    background:#222;
+    color:#fff;
+    text-align:center;
+}
+
+/* Larguras específicas para caber tudo */
+#nome{ width:90px !important; }
+#valor{ width:90px !important; }
+#horarios{ width:80px !important; }
+
+  #menu.open{
+    left:0;
+  }
+
+  /* textarea/reservados fica oculto até abrir menu */
+  #menu textarea{
+    display:none;
+    width:100%;
+    height:300px;
+    margin-top:10px;
+    background:#000;
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    padding:10px;
+    box-sizing:border-box;
+    white-space:pre-wrap;
+  }
+
+  #menu.open textarea{
+    display:block;
+  }
+
+  /* NÚMEROS */
+#numeros {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  width: 100%;
+  max-width: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+  overflow-x: hidden; /* evita estourar a tela */
+}
+
+.numero {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  border-radius: 8px;
+  background: #3498db;
+  color: #fff;
+  border: none;
+  font-weight: bold;
+  font-size: clamp(8px, 3.3vw, 18px); /* REDUZ AUTOMÁTICO */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+  .marcado { background:#27ae60 !important; }
+  .bloqueado { background:#777 !important; color:#ccc; cursor:not-allowed; }
+
+  button#salvar{
+    margin-top:10px;
+    padding:10px 20px;
+    font-size:18px;
+    border:none;
+    border-radius:10px;
+    background:#2ecc71;
+    color:white;
+    cursor:pointer;
+  }
+
+  /* PIX container (oculto até gerar) */
+  #pixContainer {
+    margin-top: 10px;
+    background: #111;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+    word-break: break-word;
+    display: none;
+  }
+
+  #qrcode { margin: 10px auto; width:200px; height:200px; }
+  #codigoPixInput {
+    width: 90%;
+    padding: 8px;
+    font-size: 16px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: none;
+    background: #222;
+    color: #fff;
+    user-select: all;
+  }#salvar{
+      width:100%;
+      margin-left:10;
+  }
+#totalPagar{
+    color:gold;
+    font-weight:bold;
+}
+  /* pequenos ajustes */
+  textarea#codigo { font-family: monospace; }
+</style>
+</head>
+<body>
+
+<h1>Rifa Online <strong style="color:red;">1</strong> pra <strong style="color:red;">70</strong></h1>
+
+<div id="topoWrapper">
+  <button id="btnMenu" onclick="toggleMenu()">☰</button>
+  <div id="topoInputs">
+    <input style="width:110px" type="text" id="nome" placeholder="NOME">
+    <input style="width:90px" type="number" id="valor" placeholder="R$" min="0" step="0.01">
+    <select id="horarios" style="width:120px">
+      <option value="" disabled selected>HORÁRIO</option>
+      <option value="10:00">10:00</option>
+      <option value="12:00">12:00</option>
+      <option value="15:00">15:00</option>
+      <option value="19:00">19:00</option>
+      <option value="21:00">21:00</option>
+    </select>
+  </div>
+</div>
+<div>
+    <strong>Total a pagar: R$ <span id="totalPagar">0,00</span></strong>
+  </div>
+<!-- MENU LATERAL (ESQUERDA) -->
+<div id="menu" aria-hidden="true">
+  
+  <textarea id="codigo" readonly></textarea>
+</div>
+
+<!-- Conteúdo principal -->
+<div id="conteudo" style="padding:12px;">
+  <div id="numeros"></div>
+<div>
+  <strong>Você recebe: R$ <span id="totalReceber">0,00</span></strong>
+</div>
+  
+
+  <button id="salvar">Salvar Escolhas</button>
+
+  <!-- Container PIX -->
+  <div id="pixContainer">
+    <h3>Código PIX para pagamento:</h3>
+    <div id="qrcode"></div>
+    <input type="text" id="codigoPixInput" readonly placeholder="Código PIX aparecerá aqui...">
+    <br>
+    <button id="copiarPix">Copiar Código PIX</button>
+    <button id="enviarWhats">Enviar via WhatsApp</button>
+  </div>
+</div>
+
+<script>
+  /* FIREBASE CONFIG */
+  const firebaseConfig = {
+    apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+    authDomain: "rifa-782a3.firebaseapp.com",
+    databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+    projectId: "rifa-782a3",
+    storageBucket: "rifa-782a3.firebasestorage.app",
+    messagingSenderId: "88068598855",
+    appId: "1:88068598855:web:a230a06db76a4bbc125562"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  /* ELEMENTOS */
+  const numerosDiv = document.getElementById('numeros');
+  const nomeInput = document.getElementById('nome');
+  const valorInput = document.getElementById('valor');
+  const codigoTextarea = document.getElementById('codigo');
+  const horariosSelect = document.getElementById('horarios');
+  const pixContainer = document.getElementById('pixContainer');
+  const codigoPixInput = document.getElementById('codigoPixInput');
+  const btnCopiarPix = document.getElementById('copiarPix');
+  const btnEnviarWhats = document.getElementById('enviarWhats');
+  const qrcodeDiv = document.getElementById('qrcode');
+  const totalPagarSpan = document.getElementById('totalPagar');
+  const menuEl = document.getElementById('menu');
+
+  let selecionados = [];
+  let bloqueados = new Set();
+  let dataAtualReservas = new Date().toISOString().slice(0,10);
+
+  /* CRIA 00 A 99 */
+  for (let i = 0; i < 100; i++) {
+    let num = i.toString().padStart(2, '0');
+    let btn = document.createElement('button');
+    btn.textContent = num;
+    btn.className = 'numero';
+    btn.addEventListener('click', () => toggleNumero(btn, num));
+    numerosDiv.appendChild(btn);
+  }
+
+  /* FUNÇÕES DE UI */
+  function toggleMenu(){
+    menuEl.classList.toggle('open');
+    menuEl.setAttribute('aria-hidden', menuEl.classList.contains('open') ? 'false' : 'true');
+    // quando abrir, carregar reservas do dia atual (atualiza textarea)
+    if (menuEl.classList.contains('open')) carregarReservasDoDia(dataAtualReservas);
+  }
+
+  function toggleNumero(btn,num){
+  if(btn.classList.contains("bloqueado")) return;
+
+  if(btn.classList.contains("marcado")){
+    btn.classList.remove("marcado");
+    selecionados = selecionados.filter(n=>n!==num);
+  } else {
+    btn.classList.add("marcado");
+    selecionados.push(num);
+  }
+  atualizarTotais();
+}
+
+
+  function atualizarTotalPagar() {
+    let valorUnit = parseFloat(valorInput.value.replace(',', '.'));
+    if (isNaN(valorUnit) || valorUnit <= 0) valorUnit = 0;
+    const total = valorUnit * selecionados.length;
+    totalPagarSpan.textContent = total.toFixed(2).replace('.', ',');
+  }
+
+  /* BLOQUEIOS */
+  function atualizarBloqueados() {
+    db.ref('numerosBloqueados').once('value').then(snapshot => {
+      bloqueados = new Set();
+      const dados = snapshot.val() || {};
+      for (let n in dados) {
+        // aceita tanto {n: true} quanto {n: { bloqueadoEm: ... }}
+        if (dados[n] === true || (dados[n] && dados[n].bloqueadoEm)) bloqueados.add(n);
+      }
+      atualizarBotoes();
+    }).catch(err => console.error(err));
+  }
+
+  function atualizarBotoes() {
+    document.querySelectorAll('.numero').forEach(btn => {
+      const n = btn.textContent;
+      if (bloqueados.has(n)) {
+        btn.classList.add('bloqueado');
+        btn.classList.remove('marcado');
+        btn.disabled = true;
+        selecionados = selecionados.filter(x => x !== n);
+      } else {
+        btn.classList.remove('bloqueado');
+        btn.disabled = false;
+      }
+    });
+    atualizarTotais();
+  }
+
+  /* CARREGA RESERVAS DO DIA (preenche textarea) */
+  function atualizarTextareaReservas(dadosPorHorario) {
+    let texto = "";
+    for (let horario of Object.keys(dadosPorHorario).sort()) {
+      texto += `Horário: ${horario}\n`;
+      for (let key in dadosPorHorario[horario]) {
+        const d = dadosPorHorario[horario][key];
+        texto += `${d.dataHora} - ${d.nome}: ${d.numeros.join("-")}\n`;
+      }
+      texto += "--------------------------\n";
+    }
+    codigoTextarea.value = texto;
+  }
+
+  function carregarReservasDoDia(data) {
+    db.ref(`compras-dia/${data}`).once('value').then(snapshot => {
+      const dadosPorHorario = snapshot.val() || {};
+      atualizarTextareaReservas(dadosPorHorario);
+    }).catch(err => {
+      console.error(err);
+      codigoTextarea.value = "";
+    });
+  }
+
+  /* LIMPAR BLOQUEIOS ANTIGOS (>24h) */
+  function limparBloqueiosAntigos(){
+    const agora = Date.now();
+    const limite = 24 * 60 * 60 * 1000;
+    db.ref("numerosBloqueados").once("value").then(snap => {
+      const dados = snap.val() || {};
+      for (let n in dados) {
+        const item = dados[n];
+        const bloqueadoEm = (item && item.bloqueadoEm) ? item.bloqueadoEm : null;
+        // se não tiver timestamp, mantém (compatibilidade) — opcional: remover
+        if (bloqueadoEm && (agora - bloqueadoEm >= limite)) {
+          db.ref("numerosBloqueados/" + n).remove().catch(e => console.error(e));
+        }
+      }
+      atualizarBloqueados();
+    }).catch(e => console.error(e));
+  }
+
+  /* HORARIOS: desabilita horários passados e seleciona próximo disponível */
+  function getHoraAtual() {
+    const now = new Date();
+    let h = now.getHours();
+    let m = now.getMinutes();
+    return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+  }
+
+  function atualizarHorarios() {
+    const horarios = Array.from(horariosSelect.options);
+    const horaAtual = getHoraAtual();
+    for (let opt of horarios) {
+      if (!opt.value) continue;
+      opt.disabled = false;
+      opt.selected = false;
+      if (opt.value <= horaAtual) opt.disabled = true;
+    }
+    for (let opt of horarios) {
+      if (!opt.disabled && !opt.selected && opt.value) { opt.selected = true; break; }
+    }
+  }
+
+  /* GERA CÓDIGO SIMPLES */
+  function gerarCodigoSimples() {
+    const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    return `RIFA-${letras[Math.floor(Math.random() * letras.length)]}${letras[Math.floor(Math.random() * letras.length)]}${Math.floor(100 + Math.random() * 900)}`;
+  }
+
+  /* gerarPixCodeReal (simplificado) */
+  function gerarPixCodeReal(valorTotal) {
+    // Valor sem pontuação
+    let valorStr = (valorTotal.toFixed(2).replace('.', '')).padStart(10, '0');
+    const chavePix = "";
+    return `00020126580014BR.GOV.BCB.PIX0136${chavePix}0208Pagamento520400005303986540${valorStr}5802BR5925Rifa Online - Reserva6009Sao Paulo61080540900062070503***6304ABCD`;
+  }
+
+  /* COPIAR PIX */
+  btnCopiarPix && btnCopiarPix.addEventListener('click', () => {
+    if (!codigoPixInput || !codigoPixInput.value) return alert("Código PIX vazio!");
+    codigoPixInput.select();
+    codigoPixInput.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    alert("Código PIX copiado!");
+  });
+
+  /* ENVIAR WHATS (abre WhatsApp web) */
+  btnEnviarWhats && btnEnviarWhats.addEventListener('click', () => {
+    const texto = codigoPixInput.value || '';
+    const numero = '5571992290058'; // ajustar
+    if (!texto) return alert('Nenhum código PIX para enviar.');
+    const url = `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
+    window.open(url, '_blank');
+  });
+
+  /* SALVAR RESERVA */
+  document.getElementById('salvar').addEventListener('click', () => {
+    const nome = nomeInput.value.trim();
+    if (!nome) return alert("Digite seu nome!");
+    if (selecionados.length === 0) return alert("Selecione pelo menos um número!");
+    const horario = horariosSelect.value;
+    if (!horario) return alert("Selecione um horário!");
+    let valorUnit = parseFloat(valorInput.value.replace(',', '.'));
+    if (isNaN(valorUnit) || valorUnit <= 0) return alert("Digite um valor válido maior que zero!");
+
+    // checa bloqueios atuais
+    db.ref('numerosBloqueados').once('value').then(snapshot => {
+      const bloqueios = snapshot.val() || {};
+      const conflito = selecionados.find(n => bloqueios[n] === true || (bloqueios[n] && bloqueios[n].bloqueadoEm));
+      if (conflito) {
+        alert(`O número ${conflito} já foi reservado. Lista atualizada.`);
+        atualizarBloqueados();
+        return;
+      }
+const link = "https://mjonline.netlify.app/";
+      const codigoSimples = gerarCodigoSimples();
+      const chave = "ID-" + Date.now();
+      const dataHoje = new Date().toISOString().slice(0,10);
+      const dataHora = new Date().toLocaleString();
+      const dados = { nome, numeros: [...selecionados], dataHora, codigo: codigoSimples, valorUnitario: valorUnit };
+       
+      let promessas = [];
+      promessas.push(db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados));
+      // salva bloqueio com timestamp (para limpeza 24h)
+      selecionados.forEach(n => promessas.push(db.ref(`numerosBloqueados/${n}`).set({ bloqueadoEm: Date.now() })));
+
+      Promise.all(promessas).then(() => {
+        alert("Reserva feita com sucesso!");
+        carregarReservasDoDia(dataHoje);
+        atualizarBloqueados();
+
+        // gerar PIX simples e mostrar container
+        const totalPagar = valorUnit * selecionados.length;
+        const codigoPix = gerarPixCodeReal(totalPagar);
+        codigoPixInput.value = codigoPix;
+        pixContainer.style.display = 'block';
+        qrcodeDiv.innerHTML = '';
+        try { QRCode.toCanvas(qrcodeDiv, codigoPix); } catch(e){ /* QR lib may differ */ }
+
+        // montar mensagem WhatsApp e abrir
+        const telefoneDestino = "5571992290058";
+    // pegar data atual
+const hoje = new Date();
+const dataAtual = hoje.toLocaleDateString('pt-BR'); // DD/MM/AAAA
+
+let v = parseFloat(document.getElementById("valor").value.replace(/\D/g, ""));
+if (isNaN(v) || v <= 0) v = 0;
+
+// total a receber correto (valor × 70)
+const totalReceber = v * 70;
+
+const mensagem = 
+`             🍀 *Rifa Online*
+      
+   ${link};
+      
+   Código: ${codigoSimples} `;
+
+window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
+        // limpar seleção na UI
+        selecionados = [];
+        document.querySelectorAll('.numero.marcado').forEach(b => b.classList.remove('marcado'));
+        nomeInput.value = '';
+        valorInput.value = '';
+        totalPagarSpan.textContent = '0,00';
+        horariosSelect.selectedIndex = -1;
+      }).catch(err => {
+        console.error(err);
+        alert('Erro ao salvar: ' + err.message);
+      });
+    });
+  });
+
+  /* inicializações */
+  atualizarBloqueados();
+  carregarReservasDoDia(dataAtualReservas);
+  limparBloqueiosAntigos();
+  setInterval(limparBloqueiosAntigos, 60000);
+  setInterval(atualizarBloqueados, 15000);
+  valorInput.addEventListener('input', atualizarTotais);
+  atualizarHorarios();
+  setInterval(atualizarHorarios, 60000);
+  
+function atualizarTotais() {
+    let v = parseFloat(document.getElementById("valor").value.replace(",", "."));
+    if (isNaN(v) || v <= 0) v = 0;
+
+    let quantidade = selecionados.length;
+
+    // total a pagar = valor digitado × quantidade de dezenas
+    let pagar = v * quantidade;
+
+    // total a receber = valor digitado × 70 (não multiplica pela quantidade)
+    let receber = v * 70;
+
+    totalPagarSpan.textContent = pagar.toFixed(2).replace(".", ",");
+    document.getElementById("totalReceber").textContent =
+        receber.toFixed(2).replace(".", ",");
+}
+document.getElementById("valor").oninput = atualizarTotais;
+</script>
+</body>
+</html>
