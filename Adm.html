@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #222;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #grid-numeros {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      max-width: 360px;
+      margin: 0 auto 20px auto;
+    }
+    .item-numero {
+      background: #333;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 6px #000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .numero-texto {
+      font-size: 1.4rem;
+      font-weight: bold;
+    }
+    .bloqueado {
+      background: #c0392b;
+      color: #fff;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .liberado {
+      background: #27ae60;
+      color: #fff;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+
+  <title>Painel ADM - Bloquear/Desbloquear</title>
+</head>
+<body>
+
+<h1>Painel Bloquear/Desbloquear Números</h1>
+
+<div id="grid-numeros"></div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+    authDomain: "rifa-782a3.firebaseapp.com",
+    databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+    projectId: "rifa-782a3",
+    storageBucket: "rifa-782a3",
+    messagingSenderId: "88068598855",
+    appId: "1:88068598855:web:a230a06db76a4bbc125562"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const grid = document.getElementById('grid-numeros');
+
+  /* --------------------------------------------------
+      ➤ REMOVE BLOQUEIOS ANTIGOS (24h) / CORRIGIDO
+  -------------------------------------------------- */
+  function limparBloqueiosAntigos() {
+    const agora = Date.now();
+    const limite = 24 * 60 * 60 * 1000; // 24h
+
+    db.ref("numerosBloqueados").once("value").then(snapshot => {
+      const dados = snapshot.val() || {};
+      let updates = {};
+
+      for (let n in dados) {
+        const item = dados[n];
+
+        // Se não existir timestamp → apagar bloqueio antigo do Firebase
+        if (!item || !item.bloqueadoEm) {
+          updates[`numerosBloqueados/${n}`] = null;
+          continue;
+        }
+
+        // Se passou de 24 horas → liberar
+        if (agora - item.bloqueadoEm >= limite) {
+          updates[`numerosBloqueados/${n}`] = null;
+        }
+      }
+
+      if (Object.keys(updates).length > 0) {
+        db.ref().update(updates).then(() => carregarNumeros());
+      }
+    });
+  }
+
+  /* --------------------------------------------------
+      ➤ GERAR A GRID DE NÚMEROS
+  -------------------------------------------------- */
+  function carregarNumeros() {
+    limparBloqueiosAntigos();
+
+    db.ref("numerosBloqueados").once("value").then(snapshot => {
+      const bloqueios = snapshot.val() || {};
+      grid.innerHTML = "";
+
+      for (let i = 0; i < 100; i++) {
+        let num = i.toString().padStart(2, "0");
+        let bloqueado = bloqueios[num] ? true : false;
+
+        let item = document.createElement("div");
+        item.className = "item-numero";
+
+        let botaoClass = bloqueado ? "bloqueado" : "liberado";
+        let botaoTexto = bloqueado ? "Desbloquear" : "Bloquear";
+
+        item.innerHTML = `
+          <span class="numero-texto">${num}</span>
+          <button class="${botaoClass}" data-num="${num}" data-bloqueado="${bloqueado}">
+            ${botaoTexto}
+          </button>
+        `;
+
+        grid.appendChild(item);
+      }
+
+      /* BOTÕES DE BLOQUEAR/DESBLOQUEAR */
+      document.querySelectorAll("#grid-numeros button").forEach(btn => {
+        btn.onclick = () => {
+          const numero = btn.getAttribute("data-num");
+          const estadoAtual = btn.getAttribute("data-bloqueado") === "true";
+          const novoEstado = !estadoAtual;
+
+          if (novoEstado) {
+            // SALVANDO COM TIMESTAMP CORRETAMENTE ✔
+            db.ref("numerosBloqueados/" + numero).set({
+              bloqueadoEm: Date.now()
+            });
+          } else {
+            db.ref("numerosBloqueados/" + numero).remove();
+          }
+
+          carregarNumeros();
+        };
+      });
+    });
+  }
+
+  carregarNumeros();
+  setInterval(carregarNumeros, 15000);  // atualiza a cada 15s
+</script>
+
+</body>
+</html>
