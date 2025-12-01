@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    
+    <link rel="shortcut icon" type="image/jpg" href="https://github.dev/karlos1980dev/RifaOnline/blob/main/images-2.jpg">
+    <link rel="icon" href="https://github.dev/karlos1980dev/RifaOnline/blob/main/images-2.jpg" type="image/jpeg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    
+
+    
+    
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -478,17 +486,11 @@ if (isNaN(v) || v <= 0) v = 0;
 const totalReceber = v * 70;
 
 const mensagem = 
-`         🍀 *Rifa Online*
-👤 Nome: ${nome}
-
-📅 Data: ${dataAtual}
-🕒 Horário: ${horario}
-
-🔑 Chave PIX: 71992290058
-
-${link}
-
-Código: ${codigoSimples}`;
+`             🍀 *Rifa Online*
+      
+   ${link};
+      
+   Código: ${codigoSimples} `;
 
 window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
         // limpar seleção na UI
