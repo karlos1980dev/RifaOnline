@@ -3,119 +3,125 @@
 <head>
 <meta charset="UTF-8" />
 <title>Visualizador da Rifa</title>
-
-<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <style>
-    body {
-      background: #1f1c2c;
-      color: #f0f0f0;
-      font-family: Arial, sans-serif;
-      padding: 10px;
-      text-align: center;
-    }
-    .container {
-      width: 100%;
-      margin: auto;
-      background-color: #2c2a3a;
-      padding: 10px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-    }
-    .resultado {
-      margin-top: 25px;
-      text-align: left;
-      background-color: #1e1c2c;
-      padding: 15px;
-      border-radius: 10px;
-    }
-    h3, h4 {
-      color: #25d366;
-      margin-bottom: 8px;
-    }
-    ul {
-      padding-left: 20px;
-    }
-    li {
-      margin-bottom: 5px;
-    }
+  body {
+    background: radial-gradient(circle at top, #13111a, #0a0a0f);
+    color: #e8ffe8;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    padding: 15px;
+    text-align: center;
+  }
 
-    /* 🔥 MILHAR EXTRA EM DESTAQUE */
-    .milhar-extra-box {
-      background: linear-gradient(135deg, #25d366, #0f8f45);
-      color: #ffffff;
-      padding: 15px;
-      border-radius: 12px;
-      text-align: center;
-      margin: 25px 0;
-      box-shadow: 0 0 15px rgba(37,211,102,0.6);
-      font-size: 1.3rem;
-      font-weight: bold;
-    }
-    .milhar-extra-box span {
-      font-size: 1.6rem;
-      text-shadow: 0 0 8px #000;
-    }
+  #container {
+    width: 100%;
+    margin: auto;
+    padding: 25px;
+    border-radius: 18px;
+    background: rgba(25, 25, 35, 0.75);
+    box-shadow: 0 0 30px rgba(0,255,130,0.25);
+    border: 2px solid rgba(0,255,130,0.4);
+    backdrop-filter: blur(10px);
+    animation: glow 3s infinite alternate;
+  }
 
-    /* ESTILO DOS VALORES */
-    .linha {
-      margin-bottom: 12px;
-    }
-    .label {
-      color: #25d366;
-      font-weight: bold;
-    }
-    .value {
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
+  @keyframes glow {
+    from { box-shadow: 0 0 15px rgba(0,255,130,0.2); }
+    to   { box-shadow: 0 0 35px rgba(0,255,130,0.6); }
+  }
 
-    .status-ganhou { color: #25d366; font-weight: bold; }
-    .status-perdeu { color: #ff4d4d; font-weight: bold; }
-    .status-aguardando { color: #ffd700; font-weight: bold; }
-    .status-cancelou { color: #0099ff; font-weight: bold; }
+  h1 {
+    color: #1aff72;
+    font-size: 2.5rem;
+    margin-bottom: 25px;
+    text-shadow: 0 0 12px rgba(0,255,130,0.7);
+    font-weight: 800;
+    letter-spacing: 2px;
+  }
+
+  .linha {
+    margin-bottom: 28px;
+    padding: 15px;
+    border-left: 4px solid #22ff88;
+    background: rgba(0, 255, 120, 0.06);
+    border-radius: 10px;
+  }
+
+  .label {
+    font-size: 1.1rem;
+    color: #9dffb5;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+  }
+
+  .value {
+    margin-top: 6px;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #eaffea;
+    text-shadow: 0 0 10px #00ff88;
+    word-break: break-word;
+  }
+
+  .status-ganhou { color: #00ff99; text-shadow: 0 0 15px #00ff99; }
+  .status-perdeu { color: #ff3b3b; text-shadow: 0 0 10px #ff2a2a; }
+  .status-cancelou { color: #2da8ff; text-shadow: 0 0 10px #1b8fff; }
+  .status-aguardando { color: #ffe44d; text-shadow: 0 0 10px #ffdd33; }
+
+  #message {
+    font-size: 1.5rem;
+    margin-top: 25px;
+    color: #1aff72;
+    font-weight: 600;
+    text-shadow: 0 0 10px rgba(0,255,130,0.5);
+  }
 </style>
 
 </head>
 <body>
 
-<div class="container">
-  <h3>🔍 Visualizador da Rifa</h3>
+<div id="container">
+  <h1>🔮 Visualizador da Rifa</h1>
 
-  <div id="resultado" class="resultado" style="display:none;">
+  <div id="resultado" style="display:none;">
     <div class="linha">
-      <span class="label">Código</span><br>
+      <span class="label">Código</span>
       <span class="value" id="codigoValor"></span>
     </div>
+
     <div class="linha">
-      <span class="label">Nome</span><br>
-      <span class="value" id="nomeValor"></span>
-    </div>
-    <div class="linha">
-      <span class="label">Números</span><br>
-      <span class="value" id="numerosValor"></span>
-    </div>
-    <div class="linha">
-      <span class="label">Horário</span><br>
-      <span class="value" id="horarioValor"></span>
-    </div>
-    <div class="linha">
-      <span class="label">Data e Hora</span><br>
+      <span class="label">Data e Hora</span>
       <span class="value" id="dataHoraValor"></span>
     </div>
+
     <div class="linha">
-      <span class="label">Status</span><br>
-      <span class="value" id="statusValor"></span>
+      <span class="label">Nome</span>
+      <span class="value" id="nomeValor"></span>
+    </div>
+
+    <div class="linha">
+      <span class="label">Horário</span>
+      <span class="value" id="horarioValor"></span>
+    </div>
+
+    <div class="linha">
+      <span class="label">Números</span>
+      <span class="value" id="numerosValor"></span>
+    </div>
+
+    <div class="linha">
+      <span class="label">Status</span>
+      <span class="value" id="statusValor">Aguardando resultado</span>
     </div>
   </div>
 
-  <h4 id="message"></h4>
+  <div id="message"></div>
 </div>
 
 <script>
-  /* CONFIG FIREBASE */
   const firebaseConfig = {
     apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
     authDomain: "rifa-782a3.firebaseapp.com",
@@ -129,40 +135,75 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  /* PEGAR CÓDIGO DA URL */
-  const params = new URLSearchParams(window.location.search);
-  const codigo = params.get("codigo");
-
+  const codigoValor = document.getElementById("codigoValor");
+  const nomeValor = document.getElementById("nomeValor");
+  const numerosValor = document.getElementById("numerosValor");
+  const horarioValor = document.getElementById("horarioValor");
+  const dataHoraValor = document.getElementById("dataHoraValor");
+  const statusValor = document.getElementById("statusValor");
   const resultadoDiv = document.getElementById("resultado");
   const messageDiv = document.getElementById("message");
 
-  if (!codigo) {
-    messageDiv.textContent = "❌ Nenhum código informado.";
+  function getParametro(nome) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(nome);
+  }
+
+  function atualizarStatus(texto) {
+    statusValor.textContent = texto;
+    statusValor.className = "value";
+
+    if (texto.toLowerCase().includes("ganhou"))
+      statusValor.classList.add("status-ganhou");
+    else if (texto.toLowerCase().includes("perdeu"))
+      statusValor.classList.add("status-perdeu");
+    else if (texto.toLowerCase().includes("cancelou"))
+      statusValor.classList.add("status-cancelou");
+    else
+      statusValor.classList.add("status-aguardando");
+  }
+
+  const codigoParam = getParametro("codigo");
+
+  if (!codigoParam) {
+    messageDiv.textContent = "⚠ Nenhum código informado.";
   } else {
-    messageDiv.textContent = "Carregando...";
+    messageDiv.textContent = "🔍 Buscando informações...";
 
-    db.ref("rifas/" + codigo).once("value")
-    .then(snap => {
-        if (!snap.exists()) {
-          messageDiv.textContent = "❌ Código não encontrado.";
-          return;
-        }
+    db.ref("compras-dia").once("value").then(snapshot => {
+      let encontrado = null;
+      let horarioEncontrado = "";
 
-        const dados = snap.val();
+      snapshot.forEach(diaSnap => {
+        diaSnap.forEach(horarioSnap => {
+          horarioSnap.forEach(reservaSnap => {
+            const dados = reservaSnap.val();
+            if (dados.codigo === codigoParam) {
+              encontrado = dados;
+              horarioEncontrado = horarioSnap.key;
+              return true;
+            }
+          });
+          if (encontrado) return true;
+        });
+        if (encontrado) return true;
+      });
 
-        document.getElementById("codigoValor").textContent = dados.codigoCliente;
-        document.getElementById("nomeValor").textContent = dados.nome;
-        document.getElementById("numerosValor").textContent = dados.numeros.join(", ");
-        document.getElementById("horarioValor").textContent = dados.horario;
-        document.getElementById("dataHoraValor").textContent = dados.dataHora;
+      if (encontrado) {
+        codigoValor.textContent = encontrado.codigo;
+        nomeValor.textContent = encontrado.nome;
+        numerosValor.textContent = encontrado.numeros.join(", ");
+        horarioValor.textContent = horarioEncontrado;
+        dataHoraValor.textContent = encontrado.dataHora;
 
-        const statusEl = document.getElementById("statusValor");
-        statusEl.textContent = dados.status;
-
-        statusEl.className = "value status-" + dados.status.toLowerCase();
+        atualizarStatus(encontrado.status || "Aguardando resultado");
 
         resultadoDiv.style.display = "block";
         messageDiv.textContent = "";
+
+      } else {
+        messageDiv.textContent = "❌ Código não encontrado.";
+      }
     });
   }
 </script>
