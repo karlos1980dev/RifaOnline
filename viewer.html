@@ -87,6 +87,7 @@
   <h1>🔮 Visualizador da Rifa</h1>
 
   <div id="resultado" style="display:none;">
+
     <div class="linha">
       <span class="label">Código</span>
       <span class="value" id="codigoValor"></span>
@@ -116,6 +117,19 @@
       <span class="label">Status : </span>
       <span class="value" id="statusValor">Aguardando resultado</span>
     </div>
+
+    <!-- NOVO: VALOR PAGO -->
+    <div class="linha">
+      <span class="label">Valor Pago :</span>
+      <span class="value" id="valorPagoValor"></span>
+    </div>
+
+    <!-- NOVO: VALOR A RECEBER -->
+    <div class="linha">
+      <span class="label">A Receber :</span>
+      <span class="value" id="aReceberValor"></span>
+    </div>
+
   </div>
 
   <div id="message"></div>
@@ -147,6 +161,9 @@
   const statusValor = document.getElementById("statusValor");
   const resultadoDiv = document.getElementById("resultado");
   const messageDiv = document.getElementById("message");
+
+  const valorPagoValor = document.getElementById("valorPagoValor");
+  const aReceberValor = document.getElementById("aReceberValor");
 
   function getParametro(nome) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -199,6 +216,16 @@
 
         atualizarStatus(encontrado.status || "Aguardando resultado");
 
+        // -------------------------------
+        // VALORES (PAGO + RECEBER)
+        // -------------------------------
+        const valorPago = Number(encontrado.valor || 0);
+        const aReceber = valorPago * 70;
+
+        valorPagoValor.textContent = "R$ " + valorPago.toFixed(2).replace(".", ",");
+        aReceberValor.textContent = "R$ " + aReceber.toFixed(2).replace(".", ",");
+
+        // Exibir
         resultadoDiv.style.display = "block";
         messageDiv.textContent = "";
       } else {
