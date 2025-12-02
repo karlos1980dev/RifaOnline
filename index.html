@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="shortcut icon" type="image/jpg" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images.jpg">
-  <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images.jpg" type="image/jpeg">
+  <link rel="shortcut icon" type="image/jpg" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg">
+  <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg" type="image/jpeg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
@@ -160,8 +160,13 @@
 <img class="imagemIcone"
      src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg"
      style="width:100%; height:50px; margin:0;top:0;border-radius:10px;">
+     <div>
+    <strong>Total a pagar: R$ <span id="totalPagar">0,00</span></strong>
+</div>
 <h1>Rifa Online <strong style="color:red;font-weight:bold;">1.00</strong> pra <strong style="color:red;font-weight:bold;">70.00</strong></h1>
-
+ <div>
+    <strong>Você recebe: R$ <span id="totalReceber">0,00</span></strong>
+  </div>
 <div id="topoWrapper">
   <button id="btnMenu" onclick="toggleMenu()">☰</button>
   <div id="topoInputs">
@@ -178,9 +183,7 @@
   </div>
 </div>
 
-<div>
-    <strong>Total a pagar: R$ <span id="totalPagar">0,00</span></strong>
-</div>
+
 
 <!-- MENU LATERAL -->
 <div id="menu" aria-hidden="true">
@@ -191,11 +194,9 @@
 <!-- Conteúdo principal -->
 <div id="conteudo" style="padding:12px;">
   <div id="numeros"></div>
-  <div>
-    <strong>Você recebe: R$ <span id="totalReceber">0,00</span></strong>
-  </div>
+ 
 </div>
-
+<p style="color:gold; font-weight:bold;marigin:0;">JOGUE COM RESPOSABILIDADE </p>
 <script>
   /* FIREBASE CONFIG */
   const firebaseConfig = {
@@ -401,9 +402,9 @@
         carregarReservasDoDia(dataHoje);
         atualizarBloqueados();
 
-        const telefoneDestino = "5571992290058";
-        const mensagem = `🍀 *Rifa Online*\n\nCódigo do jogo: ${codigoSimples}`;
-        window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
+        const telefoneDestino = "5571992290058"; // Substitua pelo número correto
+const mensagem = `🍀 *Rifa Online*\n\nCódigo do jogo: ${codigoSimples}`;
+window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
 
         selecionados = [];
         document.querySelectorAll('.numero.marcado').forEach(b => b.classList.remove('marcado'));
