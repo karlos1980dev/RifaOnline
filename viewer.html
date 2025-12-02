@@ -17,7 +17,7 @@
 
   #container {
     width: 90%;
-    margin: auto;
+    margin: 10px;
     padding: 25px;
     border-radius: 18px;
     background: rgba(25, 25, 35, 0.75);
@@ -99,7 +99,6 @@
     </div>
 
     <div class="linha">
-   
       <span class="value" id="nomeValor"></span>
     </div>
 
@@ -115,16 +114,14 @@
 
     <div class="linha">
       <span class="label">Status : </span>
-      <span class="value" id="statusValor">Aguardando resultado</span>
+      <span class="value" id="statusValor"></span>
     </div>
 
-    <!-- NOVO: VALOR PAGO -->
     <div class="linha">
       <span class="label">Valor Pago :</span>
       <span class="value" id="valorPagoValor"></span>
     </div>
 
-    <!-- NOVO: VALOR A RECEBER -->
     <div class="linha">
       <span class="label">A Receber :</span>
       <span class="value" id="aReceberValor"></span>
@@ -154,16 +151,15 @@
   }
 
   const codigoValor = document.getElementById("codigoValor");
-  const nomeValor = document.getElementById("nomeValor");
+  
   const numerosValor = document.getElementById("numerosValor");
   const horarioValor = document.getElementById("horarioValor");
   const dataHoraValor = document.getElementById("dataHoraValor");
   const statusValor = document.getElementById("statusValor");
-  const resultadoDiv = document.getElementById("resultado");
-  const messageDiv = document.getElementById("message");
-
   const valorPagoValor = document.getElementById("valorPagoValor");
   const aReceberValor = document.getElementById("aReceberValor");
+  const resultadoDiv = document.getElementById("resultado");
+  const messageDiv = document.getElementById("message");
 
   function getParametro(nome) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -208,23 +204,22 @@
       });
 
       if (encontrado) {
+
         codigoValor.textContent = encontrado.codigo;
+        nomeValor.textContent = encontrado.nome;           // CORRIGIDO
         numerosValor.textContent = encontrado.numeros.join(", ");
         horarioValor.textContent = horarioEncontrado;
         dataHoraValor.textContent = encontrado.dataHora;
 
         atualizarStatus(encontrado.status || "Aguardando resultado");
 
-        // -------------------------------
-        // VALORES (PAGO + RECEBER)
-        // -------------------------------
+        // valores
         const valorPago = Number(encontrado.valor || 0);
         const aReceber = valorPago * 70;
 
         valorPagoValor.textContent = "R$ " + valorPago.toFixed(2).replace(".", ",");
         aReceberValor.textContent = "R$ " + aReceber.toFixed(2).replace(".", ",");
 
-        // Exibir
         resultadoDiv.style.display = "block";
         messageDiv.textContent = "";
       } else {
