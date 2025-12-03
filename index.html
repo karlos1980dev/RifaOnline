@@ -391,7 +391,18 @@
       const chave = "ID-" + Date.now();
       const dataHoje = new Date().toISOString().slice(0,10);
       const dataHora = new Date().toLocaleString();
-      const dados = { numeros: [...selecionados], dataHora, codigo: codigoSimples, valorUnitario: valorUnit };
+   const quantidade = selecionados.length;
+const valorPago = valorUnit * quantidade;
+const aReceber = valorPago * 70;
+
+const dados = {
+    numeros: [...selecionados],
+    dataHora,
+    codigo: codigoSimples,
+    valorUnitario: valorUnit,
+    valorPago: valorPago,
+    aReceber: aReceber
+};
 
       let promessas = [];
       promessas.push(db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados));
@@ -430,13 +441,19 @@ window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem
   function atualizarTotais() {
     let v = parseFloat(document.getElementById("valor").value.replace(",", "."));
     if (isNaN(v) || v <= 0) v = 0;
+
     let quantidade = selecionados.length;
+
+    // TOTAL PAGO = valor × quantidade
     let pagar = v * quantidade;
-    let receber = v * 70;
+
+    // PRÊMIO = total pago × 70
+    let receber = pagar * 70;
+
     totalPagarSpan.textContent = pagar.toFixed(2).replace(".", ",");
     document.getElementById("totalReceber").textContent =
         receber.toFixed(2).replace(".", ",");
-  }
+}
   document.getElementById("valor").oninput = atualizarTotais;
 
 </script>
