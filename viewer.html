@@ -99,10 +99,6 @@
     </div>
 
     <div class="linha">
-      <span class="value" id="nomeValor"></span>
-    </div>
-
-    <div class="linha">
       <span class="label">Horário : </span>
       <span class="value" id="horarioValor"></span>
     </div>
@@ -151,7 +147,6 @@
   }
 
   const codigoValor = document.getElementById("codigoValor");
-  
   const numerosValor = document.getElementById("numerosValor");
   const horarioValor = document.getElementById("horarioValor");
   const dataHoraValor = document.getElementById("dataHoraValor");
@@ -196,6 +191,7 @@
       snapshot.forEach(horarioSnap => {
         horarioSnap.forEach(reservaSnap => {
           const dados = reservaSnap.val();
+
           if (dados.codigo === codigoParam) {
             encontrado = dados;
             horarioEncontrado = horarioSnap.key;
@@ -206,20 +202,30 @@
       if (encontrado) {
 
         codigoValor.textContent = encontrado.codigo;
-        nomeValor.textContent = encontrado.nome;           // CORRIGIDO
-        numerosValor.textContent = encontrado.numeros.join(", ");
+        numerosValor.textContent = Array.isArray(encontrado.numeros)
+            ? encontrado.numeros.join(", ")
+            : encontrado.numeros;
+
         horarioValor.textContent = horarioEncontrado;
         dataHoraValor.textContent = encontrado.dataHora;
 
         atualizarStatus(encontrado.status || "Aguardando resultado");
 
-        // valores
-        const valorPago = Number(encontrado.valor || 0);
-        const aReceber = valorPago * 70;
+        // ======= PEGAR O VALOR REAL DO FIREBASE =======
+        const valorPago = Number(
+          encontrado.valor ||
+          encontrado.valorPago ||
+          encontrado.preco ||
+          encontrado.valorSelecionado ||
+          0
+        );
+
+        const aReceber = valorPago > 0 ? valorPago * 70 : 0;
 
         valorPagoValor.textContent = "R$ " + valorPago.toFixed(2).replace(".", ",");
         aReceberValor.textContent = "R$ " + aReceber.toFixed(2).replace(".", ",");
 
+        // Mostrar
         resultadoDiv.style.display = "block";
         messageDiv.textContent = "";
       } else {
