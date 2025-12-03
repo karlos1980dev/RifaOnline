@@ -10,7 +10,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <style>
-    
       body {
     background: radial-gradient(circle at top, #13111a, #0a0a0f);
     color: #e8ffe8;
@@ -18,48 +17,39 @@
     padding: 15px;
     text-align: center;
   }
-  @keyframes glow {
-    from { box-shadow: 0 0 15px rgba(0,255,130,0.2); }
-    to   { box-shadow: 0 0 35px rgba(0,255,130,0.6); }
-  }
 
-  h1 {
-    color: #1aff72;
-    font-size: 2.5rem;
-    margin-bottom: 25px;
-    text-shadow: 0 0 12px rgba(0,255,130,0.7);
-    font-weight: 800;
-    letter-spacing: 2px;
-  }
-
-
-    #box {
-      background: #000;
-      border: 1px solid #333;
-      padding: 20px;
-      border-radius: 12px;
-      display: none;
-    }
-
-    .linha {
-      margin-bottom: 28px;
+  .status-box {
     padding: 15px;
-    border-left: 4px solid #22ff88;
-    background: rgba(0, 255, 120, 0.06);
     border-radius: 10px;
-    }
+    font-weight: bold;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+  }
 
-    .titulo {
-      width: 90%;
-    margin: auto;
-    padding: 25px;
-    border-radius: 18px;
-    background: rgba(25, 25, 35, 0.75);
-    box-shadow: 0 0 30px rgba(0,255,130,0.25);
-    border: 2px solid rgba(0,255,130,0.4);
-    backdrop-filter: blur(10px);
-    animation: glow 3s infinite alternate;
-    }
+  .status-pendente {
+    background: rgba(255,193,7,0.15);
+    color: #ffc107;
+    border-left: 4px solid #ffc107;
+  }
+
+  .status-confirmado {
+    background: rgba(40,167,69,0.15);
+    color: #28a745;
+    border-left: 4px solid #28a745;
+  }
+
+  .status-cancelado {
+    background: rgba(220,53,69,0.15);
+    color: #dc3545;
+    border-left: 4px solid #dc3545;
+  }
+
+  .status-premiado {
+    background: rgba(0,255,130,0.20);
+    color: #00ff88;
+    border-left: 4px solid #00ff88;
+  }
+
   </style>
 </head>
 <body>
@@ -88,18 +78,17 @@
   const box = document.getElementById("box");
 
   if (!codigo) {
-    box.style.display = "block";
     box.innerHTML = "<span style='color:red'>❌ Código não informado</span>";
-  } else {
-    carregarViewer(codigo.toUpperCase());
+    return;
   }
 
+  carregarViewer(codigo.toUpperCase());
 
-  // -------- FUNÇÃO PRINCIPAL DA VIEWER --------
+  // -------- VIEWER --------
   function carregarViewer(codigoBuscado) {
     const dataHoje = new Date().toISOString().slice(0, 10);
 
-    db.ref(`compras-dia/${dataHoje}`).once("value").then(snap => {
+    db.ref(`compras-dia/${dataHoje}`).on("value", snap => {
       const horarios = snap.val() || {};
       let encontrado = null;
 
@@ -116,32 +105,29 @@
       }
 
       if (!encontrado) {
-        box.style.display = "block";
-        box.innerHTML = `<span style='color:red'>❌ Nenhuma rifa encontrada com o código <b>${codigoBuscado}</b></span>`;
+        box.innerHTML = `<span style="color:red">❌ Nenhuma rifa encontrada com o código <b>${codigoBuscado}</b></span>`;
         return;
       }
 
-      const numeros = Array.isArray(encontrado.numeros) ? encontrado.numeros : [];
-      const qtd = numeros.length;
-
-      // Valores vindos do Firebase
+      const numeros = encontrado.numeros || [];
       const valorPago = Number(encontrado.valorPago || 0);
       const aReceber = Number(encontrado.aReceber || 0);
+      const status = encontrado.status || "pendente"; // 🔥 Lê o status
 
-      box.style.display = "block";
+      // -------- Classe automática do status --------
+      const classeStatus = "status-" + status;
+
       box.innerHTML = `
-        <div class='titulo'>🔮 Visualizador da Rifa</div>
-        
-
         <div class='linha'><b>Código:</b> ${encontrado.codigo}</div>
         <div class='linha'><b>Data/Hora:</b> ${encontrado.dataHora}</div>
-        <div class='linha'><b>Horário:</b> ${encontrado.horario}</div>
-        <div class='linha'><b>Números (${qtd}):</b> ${numeros.join(", ")}</div><br>
+        <div class='linha'><b>Números:</b> ${numeros.join(", ")}</div>
 
-        <div class='linha'><b>Valor Pago:</b> R$ ${valorPago.toFixed(2).replace('.', ',')}</div>
-        <div class='linha'><b>A Receber:</b> R$ ${aReceber.toFixed(2).replace('.', ',')}</div>
+        <div class='linha'><b>Valor Pago:</b> R$ ${valorPago.toFixed(2)}</div>
+        <div class='linha'><b>A Receber:</b> R$ ${aReceber.toFixed(2)}</div>
 
-        <div class='linha'><b>Status:</b> Aguardando resultado</div>
+        <div class='status-box ${classeStatus}'>
+          🟢 Status: <b>${status.toUpperCase()}</b>
+        </div>
       `;
     });
   }
