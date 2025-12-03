@@ -10,12 +10,28 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <style>
-    body {
-      background: #111;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
+    
+      body {
+    background: radial-gradient(circle at top, #13111a, #0a0a0f);
+    color: #e8ffe8;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    padding: 15px;
+    text-align: center;
+  }
+  @keyframes glow {
+    from { box-shadow: 0 0 15px rgba(0,255,130,0.2); }
+    to   { box-shadow: 0 0 35px rgba(0,255,130,0.6); }
+  }
+
+  h1 {
+    color: #1aff72;
+    font-size: 2.5rem;
+    margin-bottom: 25px;
+    text-shadow: 0 0 12px rgba(0,255,130,0.7);
+    font-weight: 800;
+    letter-spacing: 2px;
+  }
+
 
     #box {
       background: #000;
@@ -26,14 +42,23 @@
     }
 
     .linha {
-      margin: 6px 0;
-      font-size: 17px;
+      margin-bottom: 28px;
+    padding: 15px;
+    border-left: 4px solid #22ff88;
+    background: rgba(0, 255, 120, 0.06);
+    border-radius: 10px;
     }
 
     .titulo {
-      font-size: 22px;
-      margin-bottom: 15px;
-      font-weight: bold;
+      width: 90%;
+    margin: auto;
+    padding: 25px;
+    border-radius: 18px;
+    background: rgba(25, 25, 35, 0.75);
+    box-shadow: 0 0 30px rgba(0,255,130,0.25);
+    border: 2px solid rgba(0,255,130,0.4);
+    backdrop-filter: blur(10px);
+    animation: glow 3s infinite alternate;
     }
   </style>
 </head>
@@ -106,6 +131,7 @@
       box.style.display = "block";
       box.innerHTML = `
         <div class='titulo'>🔮 Visualizador da Rifa</div>
+        
 
         <div class='linha'><b>Código:</b> ${encontrado.codigo}</div>
         <div class='linha'><b>Data/Hora:</b> ${encontrado.dataHora}</div>
