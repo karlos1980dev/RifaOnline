@@ -137,14 +137,13 @@
         return;
       }
 
-      // segurança: garantir que números e valorUnitario existam
-      const numeros = Array.isArray(encontrado.numeros) ? encontrado.numeros : (encontrado.numeros ? [encontrado.numeros] : []);
+      const numeros = Array.isArray(encontrado.numeros) ? encontrado.numeros : [];
       const qtd = numeros.length;
       const valorUnit = Number(encontrado.valorUnitario) || 0;
 
-      // CORREÇÃO: total pago e total a receber
-      const totalPagar = valorUnit * qtd;         // exemplo: R$1 * 3 números = R$3
-      const totalReceber = totalPagar * 70;       // exemplo: R$3 * 70 = R$210
+      // ✔️ CÁLCULO CORRETO (igual ao usado na criação)
+      const totalPagar = valorUnit * qtd;     // valor digitado × quantidade
+      const totalReceber = valorUnit * 70;    // fixo por valor
 
       box.innerHTML = `
         <h3>🔍 Resultado da Busca</h3>
