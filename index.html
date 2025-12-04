@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rifa Online</title>
   <link rel="shortcut icon" type="image/jpg" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg">
   <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg" type="image/jpeg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -10,102 +11,146 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
   <style>
+    /* ---------- GERAL ---------- */
+    :root {
+      --bg: #232;
+      --card: #111;
+      --accent: #8098ff;
+      --accent-dark: #6f86e6;
+      --green: #2ecc71;
+      --danger: #e74c3c;
+      --text: #fff;
+    }
+
+    *{box-sizing:border-box}
     body {
         font-family: Arial, sans-serif;
-        background: #232;
-        color:#fff;
+        background: var(--bg);
+        color:var(--text);
         margin:0;
-        padding-top: 70px;
+        padding-top: 80px;
         text-align:center;
     }
 
-    /* TOPO */
-/* TOPO */
-#topoWrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 95%;
-    background:#8098ff;
-    display:flex;
-    align-items:center;
-    padding:8px 10px;
-    gap:10px;
-    z-index:1000;
-    border-bottom:2px solid #000;
-}
-
-/* Botão do menu – largura fixa */
-#btnMenu {
-    background:#000;
-    color:#fff; 
-    font-size:20px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    flex: 0 0 55px; /* FIXO */
-}
-
-/* Grupo dos inputs */
-#topoInputs {
-    display:flex;
-    align-items:center;
-    gap:8px;
-    width:100%;
-}
-
-/* Cada item com a mesma proporção */
-#topoInputs input,
-#topoInputs select,
-#salvar {
-    flex: 1;                /* MESMA LARGURA PARA TODOS */
-    padding:6px;
-    font-size:14px;
-    border-radius:8px;
-    border:none;
-    text-align:center;
-    background:#222;
-    color:#fff;
-}
-
-/* Botão salvar */
-#salvar {
-    background:#2ecc71;
-    cursor:pointer;
-    height:30px;
-    padding:8px;
-    font-size:25px;
-    flex: 1;
-}
-
-@media (max-width: 420px) {
-    #btnMenu {
-        flex: 0 0 45px;
+    img.imagemIcone{
+      width:100%;
+      height:70px;
+      margin:0;
+      top:0;
+      border-radius:10px;
+      object-fit:cover;
     }
-}
-    /* MENU LATERAL */
-    #menu {
-    margin:0;
+
+    h1{
+        font-size:22px;
+        margin:8px 0;
+    }
+
+    /* ---------- TOPO FIXO ---------- */
+    #topoWrapper {
         position: fixed;
-        top: 50px;
-        left: -100%;
-        width: 80%;
-        height: 80%;
-        background:#111;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: linear-gradient(90deg,var(--accent),var(--accent-dark));
+        display:flex;
+        align-items:center;
+        padding:8px 10px;
+        gap:14px;
+        z-index:1000;
+        border-bottom:2px solid rgba(0,0,0,0.3);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    #btnMenu {
+        background:#40f5ff;
         color:#fff;
-        padding:10px;
-        transition:0.3s;
+        font-size:20px;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+        flex: 0 0 55px;
+        height:px;
+    }
+
+    #topoInputs {
+        display:flex;
+        align-items:center;
+        gap:12px;
+        width:100%;
+    }
+
+    #topoInputs input,
+    #topoInputs select,
+    #salvar {
+        flex: 1;
+        padding:6px;
+        font-size:14px;
+        border-radius:8px;
+        border:none;
+        text-align:center;
+        background:#222;
+        color:#fff;
+    }
+
+    #salvar {
+        background: var(--green);
+        cursor:pointer;
+        height:30px;
+        padding:8px;
+        font-size:16px;
+        flex: 1;
+        font-weight:700;
+    }
+
+    #nomeBox {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-left:6px;
+      color:#fff;
+      font-weight:700;
+    }
+
+    #btnEditarNome {
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.2);
+      color:#fff;
+      padding:6px 8px;
+      border-radius:8px;
+      cursor:pointer;
+    }
+
+    @media (max-width: 420px) {
+        #btnMenu { flex: 0 0 45px; }
+        #salvar { font-size:12px; padding:6px; }
+    }
+
+    /* ---------- MENU LATERAL ---------- */
+    #menu {
+        position: fixed;
+        top: 60px;
+        left: -100%;
+        width: 85%;
+        max-width:420px;
+        height: 80%;
+        background:var(--card);
+        color:#fff;
+        padding:14px;
+        transition:0.28s;
         overflow-y:auto;
         z-index:9999;
+        box-shadow: 6px 6px 30px rgba(0,0,0,0.6);
+        border-radius: 8px;
     }
+    #menu.open { left:10px; }
 
-    #menu.open { left:0; }
+    #menu h3 { margin-top:0; }
 
     #menu textarea {
-    margin-top:30px;
         display:block;
         width:100%;
-        height:300px;
+        height:320px;
         margin-top:10px;
         background:#000;
         color:#fff;
@@ -114,13 +159,16 @@
         padding:10px;
         box-sizing:border-box;
         white-space:pre-wrap;
+        resize:vertical;
     }
 
-    /* NÚMEROS */
+    /* ---------- NUMEROS ---------- */
+    #conteudo { display:flex; padding:12px; max-width:1000px; margin: 0 auto; }
+
     #numeros {
       display: grid;
       grid-template-columns: repeat(10, 1fr);
-      gap: 4px;
+      gap: 6px;
       width: 100%;
       padding: 5px;
       box-sizing: border-box;
@@ -134,69 +182,137 @@
       color: #fff;
       border: none;
       font-weight: bold;
-      font-size: clamp(8px, 3.3vw, 18px);
+      font-size: clamp(10px, 2.8vw, 18px);
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor:pointer;
+      user-select:none;
     }
 
+    .numero:active { transform: scale(.98); }
     .marcado { background:#27ae60 !important; }
     .bloqueado { background:#777 !important; color:#ccc; cursor:not-allowed; }
 
-    #totalPagar { color:gold; font-weight:bold; }
+    #rodapeInfo { margin-top:12px; color:gold; font-weight:bold; }
 
-    @media (max-width: 420px) {
-        #topoInputs { gap:5px; }
-        #valor { width:70px; }
-        #horarios { width:90px !important; }
-        #salvar { padding:6px 8px; font-size:12px; }
+    /* ---------- MODAL NOME ---------- */
+    #modalNome {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.75);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 20000;
     }
-    h1{
-        font-size:22px;
+
+    #modalNome.show { display:flex; }
+
+    #modalBox {
+        background: #fff;
+        color: #000;
+        width: 92%;
+        max-width:420px;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     }
+
+    #modalBox input {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        border:1px solid #ddd;
+    }
+
+    #modalBox button {
+        background: #27ae60;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .pequeno { font-size:13px; color:#ccc; margin-top:10px; }
+
   </style>
 </head>
 <body>
-<img class="imagemIcone"
+        <h1>Rifa Online <strong style="color:red;font-weight:bold;">1.00</strong> pra <strong style="color:red;font-weight:bold;">70.00</strong></h1>
+  <img class="imagemIcone"
      src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg"
-     style="width:100%; height:50px; margin:0;top:0;border-radius:10px;">
-     <div>
-    <strong>Total a pagar: R$ <span id="totalPagar">0,00</span></strong>
-</div>
-<h1>Rifa Online <strong style="color:red;font-weight:bold;">1.00</strong> pra <strong style="color:red;font-weight:bold;">70.00</strong></h1>
- <div>
-    <strong>Você recebe: R$ <span id="totalReceber">0,00</span></strong>
+     alt="logo">
+
+  <div id="topoWrapper" role="banner" aria-label="Topo">
+    <button id="btnMenu" aria-label="Abrir menu" title="Abrir menu">☰</button>
+
+    <div id="topoInputs" role="form" aria-label="Formulário topo">
+      <input style="width:90px" type="number" id="valor" placeholder="R$" min="0" step="0.01" aria-label="Valor">
+      <select id="horarios" style="width:120px" aria-label="Horário">
+        <option value="" disabled selected>HORÁRIO</option>
+        <option value="10:00">10:00</option>
+        <option value="12:00">12:00</option>
+        <option value="15:00">15:00</option>
+        <option value="19:00">19:00</option>
+        <option value="21:00">21:00</option>
+      </select>
+      <button id="salvar" title="Salvar reserva">Salvar</button>
+    </div>
+
+    <div id="nomeBox" style="margin-left:10px;">
+      <span id="nomeExibicao" aria-live="polite">Bem-vindo</span>
+      <button id="btnEditarNome" title="Alterar nome">Editar</button>
+    </div>
   </div>
-<div id="topoWrapper">
-  <button id="btnMenu" onclick="toggleMenu()">☰</button>
-  <div id="topoInputs">
-    <input style="width:90px" type="number" id="valor" placeholder="R$" min="0" step="0.01">
-    <select id="horarios" style="width:120px">
-      <option value="" disabled selected>HORÁRIO</option>
-      <option value="10:00">10:00</option>
-      <option value="12:00">12:00</option>
-      <option value="15:00">15:00</option>
-      <option value="19:00">19:00</option>
-      <option value="21:00">21:00</option>
-    </select>
-    <button id="salvar">Salvar</button>
+
+  <!-- MENU LATERAL -->
+  <div id="menu" aria-hidden="true">
+    <h3>Reservas do dia</h3>
+    <textarea id="codigo" readonly>Nenhuma reserva carregada.</textarea>
   </div>
-</div>
 
+  <!-- Conteúdo principal -->
+<div style="
+    display:flex; 
+    justify-content:space-between; 
+    align-items:center; 
+    flex-wrap:wrap;
+    width:95%;
+    box-sizing:border-box;
+    margin-bottom:12px;    ">
 
+    <div style="flex:1; min-width:120px;">
+        <strong>Pagar: R$ <span id="totalPagar">0,00</span></strong>
+    </div>
 
-<!-- MENU LATERAL -->
-<div id="menu" aria-hidden="true">
-  <h3>Reservas do dia</h3>
-  <textarea id="codigo" readonly>Nenhuma reserva carregada.</textarea>
-</div>
+    <div style="flex:1; min-width:120px; text-align:right;">
+        <strong>Recebe: R$ <span id="totalReceber">0,00</span></strong>
+    </div>
+    
+    
+  </div>
+<div id="numeros" aria-label="Números da rifa"></div>
+<p id="rodapeInfo">JOGUE COM RESPONSABILIDADE</p>
+  <!-- MODAL PARA PEDIR O NOME -->
+  <div id="modalNome" role="dialog" aria-modal="true" aria-labelledby="tituloModal">
+    <div id="modalBox">
+        <h2 id="tituloModal">Digite seu nome para continuar</h2>
+        <input type="text" id="inputNome" placeholder="Seu nome">
+        <div style="display:flex; gap:8px; justify-content:center;">
+          <button id="btnContinuar">Continuar</button>
+        </div>
+        <div class="pequeno">O nome será salvo localmente e será enviado com a sua reserva.</div>
+    </div>
+  </div>
 
-<!-- Conteúdo principal -->
-<div id="conteudo" style="padding:12px;">
-  <div id="numeros"></div>
- 
-</div>
-<p style="color:gold; font-weight:bold;marigin:0;">JOGUE COM RESPOSABILIDADE </p>
 <script>
   /* FIREBASE CONFIG */
   const firebaseConfig = {
@@ -214,16 +330,25 @@
   /* ELEMENTOS */
   const numerosDiv = document.getElementById('numeros');
   const valorInput = document.getElementById('valor');
-  const codigoTextarea = document.getElementById('codigo'); // já existe no DOM
+  const codigoTextarea = document.getElementById('codigo');
   const horariosSelect = document.getElementById('horarios');
   const totalPagarSpan = document.getElementById('totalPagar');
+  const totalReceberSpan = document.getElementById('totalReceber');
   const menuEl = document.getElementById('menu');
+  const btnMenu = document.getElementById('btnMenu');
+  const salvarBtn = document.getElementById('salvar');
+  const nomeExibicao = document.getElementById('nomeExibicao');
+  const btnEditarNome = document.getElementById('btnEditarNome');
+
+  const modalNome = document.getElementById('modalNome');
+  const inputNome = document.getElementById('inputNome');
+  const btnContinuar = document.getElementById('btnContinuar');
 
   let selecionados = [];
   let bloqueados = new Set();
   let dataAtualReservas = new Date().toISOString().slice(0,10);
 
-  /* CRIA 00 A 99 */
+  /* ========== CRIA BOTOES 00-99 ========== */
   for (let i = 0; i < 100; i++) {
     let num = i.toString().padStart(2, '0');
     let btn = document.createElement('button');
@@ -233,14 +358,62 @@
     numerosDiv.appendChild(btn);
   }
 
-  /* FUNÇÕES DE UI */
+  /* ========== MODAL NOME ========== */
+  function abrirModalNome() {
+    modalNome.classList.add('show');
+    inputNome.value = localStorage.getItem('nomeJogador') || '';
+    setTimeout(() => inputNome.focus(), 100);
+  }
+  function fecharModalNome() {
+    modalNome.classList.remove('show');
+  }
+
+  function exibirNome() {
+    const n = localStorage.getItem('nomeJogador') || null;
+    if (n) {
+      nomeExibicao.textContent = n;
+    } else {
+      nomeExibicao.textContent = "Bem-vindo";
+    }
+  }
+
+  // Se não tiver nome, abrir modal
+  function garantirNome() {
+    const nomeSalvo = localStorage.getItem('nomeJogador');
+    if (!nomeSalvo || nomeSalvo.trim() === '') {
+      abrirModalNome();
+    } else {
+      exibirNome();
+    }
+  }
+
+  btnContinuar.addEventListener('click', () => {
+    let v = inputNome.value.trim();
+    if (!v) {
+      alert('Digite um nome válido.');
+      inputNome.focus();
+      return;
+    }
+    localStorage.setItem('nomeJogador', v);
+    fecharModalNome();
+    exibirNome();
+  });
+
+  // permitir editar nome
+  btnEditarNome.addEventListener('click', () => {
+    abrirModalNome();
+  });
+
+  /* ========== MENU LATERAL ========== */
+  btnMenu.addEventListener('click', toggleMenu);
+
   function toggleMenu(){
     menuEl.classList.toggle('open');
     menuEl.setAttribute('aria-hidden', menuEl.classList.contains('open') ? 'false' : 'true');
-    // quando abrir, carregar reservas do dia atual (atualiza textarea)
     if (menuEl.classList.contains('open')) carregarReservasDoDia(dataAtualReservas);
   }
 
+  /* ========== TOGGLE NÚMERO ========== */
   function toggleNumero(btn,num){
     if(btn.classList.contains("bloqueado")) return;
 
@@ -254,14 +427,23 @@
     atualizarTotais();
   }
 
-  function atualizarTotalPagar() {
-    let valorUnit = parseFloat(valorInput.value.replace(',', '.'));
-    if (isNaN(valorUnit) || valorUnit <= 0) valorUnit = 0;
-    const total = valorUnit * selecionados.length;
-    totalPagarSpan.textContent = total.toFixed(2).replace('.', ',');
+  /* ========== TOTAIS ========== */
+  function atualizarTotais() {
+    let raw = document.getElementById("valor").value || "0";
+    let v = parseFloat(String(raw).replace(",", "."));
+    if (isNaN(v) || v <= 0) v = 0;
+
+    let quantidade = selecionados.length;
+    let pagar = v * quantidade;
+    let receber = pagar * 70;
+
+    totalPagarSpan.textContent = pagar.toFixed(2).replace(".", ",");
+    totalReceberSpan.textContent = receber.toFixed(2).replace(".", ",");
   }
 
-  /* BLOQUEIOS */
+  valorInput.addEventListener('input', atualizarTotais);
+
+  /* ========== BLOQUEADOS (do Firebase) ========== */
   function atualizarBloqueados() {
     db.ref('numerosBloqueados').once('value').then(snapshot => {
       bloqueados = new Set();
@@ -289,33 +471,32 @@
     atualizarTotais();
   }
 
-  /* CARREGA RESERVAS DO DIA (preenche textarea) */
+  /* ========== CARREGAR RESERVAS DO DIA ========== */
   function atualizarTextareaReservas(dadosPorHorario) {
-    // protege contra null/undefined
+    if (!codigoTextarea) return;
     if (!dadosPorHorario || Object.keys(dadosPorHorario).length === 0) {
-      if (codigoTextarea) codigoTextarea.value = "Nenhuma reserva para hoje.";
+      codigoTextarea.value = "Nenhuma reserva para hoje.";
       return;
     }
 
     let texto = "";
     for (let horario of Object.keys(dadosPorHorario).sort()) {
-      texto += `Horário: ${horario}\n`;
+      texto += `         Horário: ${horario}\n`;
       for (let key in dadosPorHorario[horario]) {
         const d = dadosPorHorario[horario][key];
-        // protege contra dados inesperados
         const numeros = Array.isArray(d.numeros) ? d.numeros.join("-") : (d.numeros || "");
         const dataHora = d.dataHora || "";
-        texto += `${dataHora} -  ${numeros}\n`;
+        const nome = d.nome || "Sem nome";
+        const valor = d.valorUnitario !== undefined ? ("R$ " + Number(d.valorUnitario).toFixed(2).replace(".", ",")) : "";
+        texto += `${nome} -  ${numeros} ${valor ? " - " + valor : ""}\n-------------------------------\n`;
       }
-      texto += "---------------------------------\n";
+ 
     }
-    if (codigoTextarea) codigoTextarea.value = texto;
+    codigoTextarea.value = texto;
   }
 
   function carregarReservasDoDia(data) {
-    // protege se textarea ausente
     if (!codigoTextarea) return;
-
     db.ref(`compras-dia/${data}`).once('value').then(snapshot => {
       const dadosPorHorario = snapshot.val() || {};
       atualizarTextareaReservas(dadosPorHorario);
@@ -325,7 +506,7 @@
     });
   }
 
-  /* LIMPAR BLOQUEIOS ANTIGOS (>24h) */
+  /* ========== LIMPAR BLOQUEIOS ANTIGOS (>24h) ========== */
   function limparBloqueiosAntigos(){
     const agora = Date.now();
     const limite = 24 * 60 * 60 * 1000;
@@ -342,7 +523,7 @@
     }).catch(e => console.error(e));
   }
 
-  /* HORARIOS */
+  /* ========== HORARIOS (desabilita horário já passado) ========== */
   function getHoraAtual() {
     const now = new Date();
     let h = now.getHours();
@@ -364,19 +545,22 @@
     }
   }
 
-  /* GERA CÓDIGO SIMPLES */
+  /* ========== GERAR CÓDIGO SIMPLES ========= */
   function gerarCodigoSimples() {
     const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     return `RIFA-${letras[Math.floor(Math.random() * letras.length)]}${letras[Math.floor(Math.random() * letras.length)]}${Math.floor(100 + Math.random() * 900)}`;
   }
 
-  /* SALVAR RESERVA */
-  document.getElementById('salvar').addEventListener('click', () => {
+  /* ========== SALVAR RESERVA ========== */
+  salvarBtn.addEventListener('click', () => {
     if (selecionados.length === 0) return alert("Selecione pelo menos um número!");
     const horario = horariosSelect.value;
     if (!horario) return alert("Selecione um horário!");
-    let valorUnit = parseFloat(valorInput.value.replace(',', '.'));
+    let raw = (valorInput.value || "0").toString();
+    let valorUnit = parseFloat(raw.replace(',', '.'));
     if (isNaN(valorUnit) || valorUnit <= 0) return alert("Digite um valor válido maior que zero!");
+
+    const nomeJogador = localStorage.getItem('nomeJogador') || "Sem nome";
 
     db.ref('numerosBloqueados').once('value').then(snapshot => {
       const bloqueios = snapshot.val() || {};
@@ -391,18 +575,21 @@
       const chave = "ID-" + Date.now();
       const dataHoje = new Date().toISOString().slice(0,10);
       const dataHora = new Date().toLocaleString();
-   const quantidade = selecionados.length;
-const valorPago = valorUnit * quantidade;
-const aReceber = valorPago * 70;
+      const quantidade = selecionados.length;
+      const valorPago = Number((valorUnit * quantidade).toFixed(2));
+      const aReceber = Number((valorPago * 70).toFixed(2));
 
-const dados = {
-    numeros: [...selecionados],
-    dataHora,
-    codigo: codigoSimples,
-    valorUnitario: valorUnit,
-    valorPago: valorPago,
-    aReceber: aReceber
-};
+      const dados = {
+          nome: nomeJogador,
+          numeros: [...selecionados],
+          dataHora,
+          codigo: codigoSimples,
+          horarioEscolhido: horario,
+          valorUnitario: valorUnit,
+          quantidade: quantidade,
+          valorPago: valorPago,
+          aReceber: aReceber
+      };
 
       let promessas = [];
       promessas.push(db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados));
@@ -413,13 +600,16 @@ const dados = {
         carregarReservasDoDia(dataHoje);
         atualizarBloqueados();
 
+        // abrir WhatsApp com código do jogo
         const telefoneDestino = "5571992290058"; // Substitua pelo número correto
-const mensagem = `🍀 *Rifa Online*\n\nCódigo do jogo: ${codigoSimples}`;
-window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
+        const mensagem = `🍀 *Rifa Online*\n\nCódigo do jogo: ${codigoSimples}\nNome: ${nomeJogador}\nNúmeros: ${[...selecionados].join(', ')}\nValor pago: R$ ${valorPago.toFixed(2).replace('.',',')}`;
+        window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
 
+        // limpar seleção
         selecionados = [];
         document.querySelectorAll('.numero.marcado').forEach(b => b.classList.remove('marcado'));
         totalPagarSpan.textContent = '0,00';
+        totalReceberSpan.textContent = '0,00';
         horariosSelect.selectedIndex = -1;
       }).catch(err=>{
         console.error(err);
@@ -428,33 +618,23 @@ window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem
     });
   });
 
-  /* inicializações */
+  /* ========== INICIALIZAÇÕES ========= */
+  garantirNome();
   atualizarBloqueados();
   carregarReservasDoDia(dataAtualReservas);
   limparBloqueiosAntigos();
-  setInterval(limparBloqueiosAntigos, 60000);
-  setInterval(atualizarBloqueados, 15000);
-  valorInput.addEventListener('input', atualizarTotais);
+  setInterval(limparBloqueiosAntigos, 60 * 1000);
+  setInterval(atualizarBloqueados, 15 * 1000);
   atualizarHorarios();
-  setInterval(atualizarHorarios, 60000);
+  setInterval(atualizarHorarios, 60 * 1000);
 
-  function atualizarTotais() {
-    let v = parseFloat(document.getElementById("valor").value.replace(",", "."));
-    if (isNaN(v) || v <= 0) v = 0;
+  // exibe nome ao carregar
+  exibirNome();
 
-    let quantidade = selecionados.length;
-
-    // TOTAL PAGO = valor × quantidade
-    let pagar = v * quantidade;
-
-    // PRÊMIO = total pago × 70
-    let receber = pagar * 70;
-
-    totalPagarSpan.textContent = pagar.toFixed(2).replace(".", ",");
-    document.getElementById("totalReceber").textContent =
-        receber.toFixed(2).replace(".", ",");
-}
-  document.getElementById("valor").oninput = atualizarTotais;
+  // fechar modal ao apertar Enter no input
+  inputNome.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') btnContinuar.click();
+  });
 
 </script>
 </body>
