@@ -98,6 +98,7 @@
   }
 
   // ---------- BUSCAR PELO CÓDIGO ----------
+  
   function buscarPorCodigo(codigoManual = null) {
     const codigoDigitado = codigoManual 
          ? codigoManual.toUpperCase()
@@ -136,17 +137,22 @@
         return;
       }
 
-      const qtd = encontrado.numeros.length;
-      const totalReceber = qtd > 0 ? (700 / qtd) : 0;
-      const totalPagar = encontrado.valorUnitario * qtd;
+      // segurança: garantir que números e valorUnitario existam
+      const numeros = Array.isArray(encontrado.numeros) ? encontrado.numeros : (encontrado.numeros ? [encontrado.numeros] : []);
+      const qtd = numeros.length;
+      const valorUnit = Number(encontrado.valorUnitario) || 0;
+
+      // CORREÇÃO: total pago e total a receber
+      const totalPagar = valorUnit * qtd;         // exemplo: R$1 * 3 números = R$3
+      const totalReceber = totalPagar * 70;       // exemplo: R$3 * 70 = R$210
 
       box.innerHTML = `
         <h3>🔍 Resultado da Busca</h3>
 
-        <strong>Nome:</strong> ${encontrado.nome}<br>
+        <strong>Nome:</strong> ${encontrado.nome || '—'}<br>
         <strong>Horário:</strong> ${encontrado.horario}<br>
-        <strong>Data/Hora:</strong> ${encontrado.dataHora}<br>
-        <strong>Números:</strong> ${encontrado.numeros.join(", ")}<br><br>
+        <strong>Data/Hora:</strong> ${encontrado.dataHora || '—'}<br>
+        <strong>Números:</strong> ${numeros.join(", ")}<br><br>
 
         <strong>Total pago:</strong> R$ ${totalPagar.toFixed(2).replace(".", ",")}<br>
         <strong>Concorre a:</strong> R$ ${totalReceber.toFixed(2).replace(".", ",")}<br><br>
@@ -157,15 +163,10 @@
             📤 Copiar link da VIEWER
         </button>
       `;
+    }).catch(err=>{
+      console.error(err);
+      box.innerHTML = `<span style="color:red;">Erro ao buscar: ${err.message || err}</span>`;
     });
-  }
-
-  // ---------- BUSCAR AUTOMÁTICO SE TIVER ?codigo= ----------
-  const params = new URLSearchParams(window.location.search);
-  if (params.has("codigo")) {
-    const codigo = params.get("codigo");
-    document.getElementById("codigoBusca").value = codigo;
-    buscarPorCodigo(codigo);
   }
 </script>
 
