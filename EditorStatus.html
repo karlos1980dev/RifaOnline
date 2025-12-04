@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Editor de Status</title>
+
+<style>
+    body {
+        background: #0a0a0f;
+        color: #e0ffe0;
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+        padding: 20px;
+        text-align: center;
+    }
+
+    h1 {
+        color: #00ff88;
+        margin-bottom: 20px;
+        text-shadow: 0 0 10px #00ff88;
+    }
+
+    #reservasContainer {
+        background: rgba(0, 255, 120, 0.05);
+        padding: 15px;
+        border-radius: 12px;
+        max-width: 850px;
+        margin: 0 auto;
+        box-shadow: 0 0 20px rgba(0,255,130,0.25);
+        border: 1px solid rgba(0,255,130,0.3);
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    h2 {
+        color: #1aff72;
+        margin-top: 25px;
+        text-shadow: 0 0 6px #1aff72;
+        font-size: 1.4rem;
+    }
+
+    .reserva-item {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        border-left: 4px solid #00ff88;
+        backdrop-filter: blur(5px);
+    }
+
+    .reserva-dados {
+        flex-grow: 1;
+        min-width: 220px;
+        text-align: left;
+    }
+
+    .reserva-label {
+        font-weight: bold;
+        color: #00ff88;
+    }
+
+    select.status-select {
+        background: #000;
+        border: 1px solid #00ff88;
+        color: #00ff88;
+        padding: 8px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: bold;
+    }
+
+    button.salvar-status-btn {
+        background: #00ff88;
+        padding: 10px 16px;
+        border: none;
+        color: #000;
+        font-size: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    button.salvar-status-btn:hover {
+        background: #22ff88;
+    }
+</style>
+</head>
+<body>
+
+<h1>Editor de Status</h1>
+
+<div id="reservasContainer">Carregando reservas...</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+/* FIREBASE */
+const firebaseConfig = {
+    apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+    authDomain: "rifa-782a3.firebaseapp.com",
+    databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+    projectId: "rifa-782a3",
+    storageBucket: "rifa-782a3.firebasestorage.app",
+    messagingSenderId: "88068598855",
+    appId: "1:88068598855:web:a230a06db76a4bbc125562"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* PEGAR DATA */
+function getDataHoje() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+/* CARREGAR EDITOR */
+function carregarEditor() {
+    const dataHoje = getDataHoje();
+    const container = document.getElementById("reservasContainer");
+
+    db.ref(`compras-dia/${dataHoje}`)
+      .once("value")
+      .then(snapshot => {
+
+        const dados = snapshot.val() || {};
+
+        if (Object.keys(dados).length === 0) {
+            container.innerHTML = "Nenhuma reserva encontrada hoje.";
+            return;
+        }
+
+        container.innerHTML = "";
+
+        for (const horario of Object.keys(dados).sort()) {
+
+            const titulo = document.createElement("h2");
+            titulo.textContent = `Horário: ${horario}`;
+            container.appendChild(titulo);
+
+            const reservas = dados[horario];
+
+            for (const codigoReserva in reservas) {
+                const reserva = reservas[codigoReserva];
+
+                const item = document.createElement("div");
+                item.className = "reserva-item";
+
+                const info = document.createElement("div");
+                info.className = "reserva-dados";
+                info.innerHTML = `
+                    <span class="reserva-label">Nome:</span> ${reserva.nome}<br>
+                    <span class="reserva-label">Código:</span> ${reserva.codigo}<br>
+                    <span class="reserva-label">Números:</span> ${reserva.numeros?.join(", ")}
+                `;
+
+                const select = document.createElement("select");
+                select.className = "status-select";
+
+                const opcoes = ["Aguardando resultado", "Ganhou", "Perdeu", "Cancelou"];
+
+                opcoes.forEach(op => {
+                    const opt = document.createElement("option");
+                    opt.value = op;
+                    opt.textContent = op;
+
+                    if (reserva.status === op) opt.selected = true;
+
+                    select.appendChild(opt);
+                });
+
+                const btn = document.createElement("button");
+                btn.className = "salvar-status-btn";
+                btn.textContent = "Salvar";
+
+                btn.onclick = () => {
+                    db.ref(`compras-dia/${dataHoje}/${horario}/${codigoReserva}/status`)
+                      .set(select.value)
+                      .then(() => {
+                          alert(`Status atualizado para: ${select.value}`);
+                      });
+                };
+
+                item.appendChild(info);
+                item.appendChild(select);
+                item.appendChild(btn);
+                container.appendChild(item);
+            }
+        }
+      });
+}
+
+/* INICIAR */
+carregarEditor();
+</script>
+
+</body>
+</html>
