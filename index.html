@@ -33,6 +33,7 @@
     }
 
     img.imagemIcone{
+    display:none;
       width:100%;
       height:70px;
       margin:0;
@@ -246,6 +247,9 @@
   </style>
 </head>
 <body>
+    <img class="imagemIcone"
+     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg?raw=true"
+     alt="logo">
         <h1>Rifa Online <strong style="color:red;font-weight:bold;">1.00</strong> pra <strong style="color:red;font-weight:bold;">70.00</strong></h1>
   
 
@@ -603,7 +607,7 @@
 
         // abrir WhatsApp com código do jogo
         const telefoneDestino = "5571992290058"; // Substitua pelo número correto
-        const mensagem = `🍀 *Rifa Online*\n\nCódigo do jogo: ${codigoSimples}\nNome: ${nomeJogador}\nNúmeros: ${[...selecionados].join(', ')}\nValor pago: R$ ${valorPago.toFixed(2).replace('.',',')}\n\nSo Tem Validade Apos o Pagamento ate 10 Minutos Antes da Extracao`;
+        const mensagem = `🍀 *Rifa Online*\n\nCódigo do jogo: ${codigoSimples}\nNome: ${nomeJogador}\nNúmeros: ${[...selecionados].join(', ')}\nValor pago: R$ ${valorPago.toFixed(2).replace('.',',')}\n   *BOA SORTE !!*`;
         window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
 
         // limpar seleção
