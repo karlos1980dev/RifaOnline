@@ -247,9 +247,7 @@
 </head>
 <body>
         <h1>Rifa Online <strong style="color:red;font-weight:bold;">1.00</strong> pra <strong style="color:red;font-weight:bold;">70.00</strong></h1>
-  <img class="imagemIcone"
-     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg"
-     alt="logo">
+  
 
   <div id="topoWrapper" role="banner" aria-label="Topo">
     <button id="btnMenu" aria-label="Abrir menu" title="Abrir menu">☰</button>
@@ -429,18 +427,21 @@
 
   /* ========== TOTAIS ========== */
   function atualizarTotais() {
-    let raw = document.getElementById("valor").value || "0";
-    let v = parseFloat(String(raw).replace(",", "."));
-    if (isNaN(v) || v <= 0) v = 0;
+  let raw = document.getElementById("valor").value || "0";
+  let v = parseFloat(String(raw).replace(",", "."));
+  if (isNaN(v) || v <= 0) v = 0;
 
-    let quantidade = selecionados.length;
-    let pagar = v * quantidade;
-    let receber = pagar * 70;
+  let quantidade = selecionados.length;
 
-    totalPagarSpan.textContent = pagar.toFixed(2).replace(".", ",");
-    totalReceberSpan.textContent = receber.toFixed(2).replace(".", ",");
-  }
+  // TOTAL A PAGAR = valor digitado × quantidade
+  let pagar = v * quantidade;
 
+  // TOTAL A RECEBER = valor digitado × 70  (fixo por valor unitário)
+  let receber = v * 70;
+
+  totalPagarSpan.textContent = pagar.toFixed(2).replace(".", ",");
+  totalReceberSpan.textContent = receber.toFixed(2).replace(".", ",");
+}
   valorInput.addEventListener('input', atualizarTotais);
 
   /* ========== BLOQUEADOS (do Firebase) ========== */
@@ -602,7 +603,7 @@
 
         // abrir WhatsApp com código do jogo
         const telefoneDestino = "5571992290058"; // Substitua pelo número correto
-        const mensagem = `🍀 *Rifa Online*\n\nCódigo do jogo: ${codigoSimples}\nNome: ${nomeJogador}\nNúmeros: ${[...selecionados].join(', ')}\nValor pago: R$ ${valorPago.toFixed(2).replace('.',',')}`;
+        const mensagem = `🍀 *Rifa Online*\n\nCódigo do jogo: ${codigoSimples}\nNome: ${nomeJogador}\nNúmeros: ${[...selecionados].join(', ')}\nValor pago: R$ ${valorPago.toFixed(2).replace('.',',')}\n\nSo Tem Validade Apos o Pagamento ate 10 Minutos Antes da Extracao`;
         window.open(`https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`, '_blank');
 
         // limpar seleção
