@@ -376,7 +376,7 @@ let selecionados = [];
 let bloqueados = new Set();
 let dataAtualReservas = new Date().toISOString().slice(0,10);
 
-/* ⏱️ Agora salva o horário REAL da jogada */
+/* Usado para liberar seleção local após 30 minutos (quando usuário marca) */
 let horarioDaJogada = null;
 
 /* ========================= CRIA 00-99 ========================= */
@@ -428,15 +428,18 @@ function toggleMenu(){
 }
 
 /* ========================= SELEÇÃO DE NÚMEROS ========================= */
-function toggleNumero(btn,num){
+function toggleNumero(btn, num){
   if(btn.classList.contains("bloqueado")) return;
 
   if(btn.classList.contains("marcado")){
     btn.classList.remove("marcado");
-    selecionados = selecionados.filter(n=>n!==num);
+    selecionados = selecionados.filter(n => n !== num);
   } else {
     btn.classList.add("marcado");
     selecionados.push(num);
+
+    // se for a primeira marcação desta sessão, grava horárioDaJogada para liberar após 30min
+    if (!horarioDaJogada) horarioDaJogada = Date.now();
   }
   atualizarTotais();
 }
@@ -453,12 +456,14 @@ function atualizarTotais() {
 }
 valorInput.addEventListener('input', atualizarTotais);
 
-/* ========================= BLOQUEADOS ========================= */
-/* ========================= BLOQUEADOS ========================= */
+/* ========================= BLOQUEADOS (Firebase -> UI) ========================= */
 function atualizarBloqueados() {
   db.ref('numerosBloqueados').once('value').then(snapshot => {
-    bloqueados = new Set(Object.keys(snapshot.val() || {}));
+    const dados = snapshot.val() || {};
+    bloqueados = new Set(Object.keys(dados));
     atualizarBotoes();
+  }).catch(err => {
+    console.error("Erro ao buscar bloqueados:", err);
   });
 }
 
@@ -479,7 +484,8 @@ function atualizarBotoes() {
 
   atualizarTotais();
 }
-/* ========================= RESERVAS DO DIA ========================= */
+
+/* ========================= RESERVAS DO DIA (display) ========================= */
 function atualizarTextareaReservas(dadosPorHorario) {
   if (!dadosPorHorario || Object.keys(dadosPorHorario).length === 0) {
     codigoTextarea.value = "Nenhuma reserva para hoje.";
@@ -493,7 +499,7 @@ function atualizarTextareaReservas(dadosPorHorario) {
       const d = dadosPorHorario[horario][key];
       const numeros = Array.isArray(d.numeros) ? d.numeros.join("-") : "";
       const nome = d.nome || "Sem nome";
-      const valor = d.valorUnitario ? "R$ " + d.valorUnitario.toFixed(2).replace(".",",") : "";
+      const valor = d.valorUnitario ? "R$ " + Number(d.valorUnitario).toFixed(2).replace(".",",") : "";
       texto += `${nome} - ${numeros} ${valor}\n-------------------------\n`;
     }
   }
@@ -502,32 +508,137 @@ function atualizarTextareaReservas(dadosPorHorario) {
 function carregarReservasDoDia(data) {
   db.ref(`compras-dia/${data}`).once('value').then(snapshot => {
     atualizarTextareaReservas(snapshot.val() || {});
+  }).catch(err => {
+    console.error("Erro ao carregar reservas do dia:", err);
+    codigoTextarea.value = "Erro ao carregar reservas.";
   });
 }
 
-/* ========================= HORÁRIOS ========================= */
+/* ========================= HORÁRIOS DISPONÍVEIS (marca próximo e bloqueia passado visualmente) ========================= */
 function getHoraAtual() {
   const now = new Date();
   return `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 }
-function atualizarHorarios() {
-  // NÃO BLOQUEIA MAIS HORÁRIOS AUTOMATICAMENTE
-  // Somente controla a aparência, sem desabilitar
-  const horaAtual = getHoraAtual();
+
+function atualizarHorariosDisponiveis() {
+  const agora = new Date();
+  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+
+  let encontrouProximo = false;
 
   [...horariosSelect.options].forEach(opt => {
-    if (!opt.value) return;
-    opt.selected = false;
+    if (!opt.value) return; // ignorar placeholder
+
+    const [h, m] = opt.value.split(":").map(Number);
+    const minutosOpt = h * 60 + m;
+
+    if (minutosOpt <= minutosAgora) {
+      // horário passado → bloqueia (apenas visual)
+      opt.disabled = true;
+      opt.style.color = "#777";
+      opt.style.background = "transparent";
+    } else {
+      // horário futuro → disponível
+      opt.disabled = false;
+      opt.style.color = "#fff";
+      opt.style.background = "transparent";
+
+      // marca o próximo horário disponível automaticamente
+      if (!encontrouProximo) {
+        opt.selected = true;
+        encontrouProximo = true;
+      } else {
+        opt.selected = false;
+      }
+    }
   });
 
-  // Deixa sempre disponível
-  if (!horariosSelect.value) {
-    horariosSelect.selectedIndex = 1;
+  // se não encontrou nenhum futuro, volta placeholder
+  if (!encontrouProximo) {
+    horariosSelect.selectedIndex = 0;
   }
 }
 
+/* ========================= LIBERAR APÓS 30 MIN (local) ========================= */
+function liberarApos30Min() {
+  if (!horarioDaJogada) return;
 
-/* ========================= SALVAR ========================= */
+  const agora = Date.now();
+  const limite = horarioDaJogada + (30 * 60 * 1000); // 30 minutos
+
+  if (agora >= limite) {
+    // limpar marcações locais
+    document.querySelectorAll(".numero.marcado").forEach(btn =>
+      btn.classList.remove("marcado")
+    );
+
+    selecionados = [];
+    atualizarTotais();
+
+    horarioDaJogada = null;
+    console.log("✔ Números liberados (local) após 30 minutos");
+  }
+}
+
+/* ========================= LIBERAR APÓS 30 MIN (Firebase + UI) ========================= */
+function liberarApos30MinFirebase() {
+  const agora = Date.now();
+  const limite = 30 * 60 * 1000;
+
+  db.ref("numerosBloqueados").once("value").then(snapshot => {
+    const dados = snapshot.val() || {};
+    let remover = [];
+
+    for (let num in dados) {
+      const info = dados[num];
+      if (!info || !info.bloqueadoEm) continue;
+
+      if (agora - info.bloqueadoEm >= limite) {
+        remover.push(num);
+      }
+    }
+
+    if (remover.length === 0) return;
+
+    // remover do Firebase (cria array de promessas)
+    let promessas = remover.map(num => db.ref("numerosBloqueados/" + num).remove());
+
+    Promise.all(promessas).then(() => {
+      // Atualiza UI: desbloqueia botões
+      remover.forEach(num => {
+        let btn = [...document.querySelectorAll(".numero")].find(b => b.textContent === num);
+        if (btn) {
+          btn.classList.remove("bloqueado");
+          btn.classList.remove("marcado");
+          btn.disabled = false;
+        }
+        selecionados = selecionados.filter(x => x !== num);
+      });
+
+      atualizarTotais();
+      // atualiza cache local de bloqueados
+      atualizarBloqueados();
+      console.log("✔ Liberados no Firebase e UI (após 30min):", remover);
+    }).catch(err => {
+      console.error("Erro ao remover bloqueados expirados:", err);
+    });
+  }).catch(err => {
+    console.error("Erro ao ler numerosBloqueados:", err);
+  });
+}
+
+/* ========================= GERAR CÓDIGO SIMPLES ========================= */
+function gerarCodigoSimples() {
+  const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  return (
+    "RIFA-" +
+    letras[Math.floor(Math.random() * letras.length)] +
+    letras[Math.floor(Math.random() * letras.length)] +
+    Math.floor(100 + Math.random() * 900)
+  );
+}
+
+/* ========================= SALVAR + ENVIAR WHATSAPP ========================= */
 salvarBtn.addEventListener('click', () => {
   if (selecionados.length === 0) return alert("Selecione pelo menos um número!");
   const horario = horariosSelect.value;
@@ -541,7 +652,7 @@ salvarBtn.addEventListener('click', () => {
   // horário real da jogada
   const tempoAgora = Date.now();
 
-  // Verificar conflito
+  // Verificar conflito (último snapshot)
   db.ref('numerosBloqueados').once('value').then(snap => {
     const dados = snap.val() || {};
     const conflito = selecionados.find(n => dados[n]);
@@ -571,11 +682,11 @@ salvarBtn.addEventListener('click', () => {
       aReceber
     };
 
+    // Promessas para salvar a compra e bloquear números
     let promises = [
       db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dadosFinal)
     ];
 
-    // 🔥 agora salva o horário real por número
     selecionados.forEach(n => {
       promises.push(
         db.ref("numerosBloqueados/" + n).set({
@@ -584,121 +695,58 @@ salvarBtn.addEventListener('click', () => {
       );
     });
 
+    // Executa todas as gravações
     Promise.all(promises).then(() => {
-      alert("Reserva feita!");
-      carregarReservasDoDia(dataHoje);
+      alert("Reserva salva!");
       atualizarBloqueados();
+      carregarReservasDoDia(dataHoje);
 
-      // limpar seleção
+      // --- ENVIO PARA WHATSAPP ---
+      const telefoneDestino = "5571992290058"; // ajuste se necessário
+
+      const mensagem =
+`🍀 *Rifa Online*
+Código do jogo: ${codigoSimples}
+Nome: ${nome}
+Números: ${selecionados.join(', ')}
+Horário: ${horario}
+Valor pago: R$ ${valorPago.toFixed(2).replace('.', ',')}
+*BOA SORTE !!*`;
+
+      // Abre o WhatsApp em nova aba/janela
+      window.open(
+        `https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`,
+        "_blank"
+      );
+      // -----------------------------
+
+      // LIMPAR TELA + reset horarioDaJogada
       selecionados = [];
       document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
       atualizarTotais();
       horariosSelect.selectedIndex = 0;
+      horarioDaJogada = null;
+    }).catch(err => {
+      console.error("Erro ao salvar reserva:", err);
+      alert("Erro ao salvar. Tente novamente.");
     });
+  }).catch(err => {
+    console.error("Erro ao verificar bloqueios:", err);
+    alert("Erro de verificação. Tente novamente.");
   });
 });
+
 /* ========================= INICIALIZAÇÕES ========================= */
 garantirNome();
 atualizarBloqueados();
 carregarReservasDoDia(dataAtualReservas);
-atualizarHorarios();
+atualizarHorariosDisponiveis();
 exibirNome();
 
-/* AUTO-VERIFICAÇÃO */
-
-
-/* GERAR CÓDIGO SIMPLES */
-function gerarCodigoSimples() {
-  const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  return (
-    "RIFA-" +
-    letras[Math.floor(Math.random() * letras.length)] +
-    letras[Math.floor(Math.random() * letras.length)] +
-    Math.floor(100 + Math.random() * 900)
-  );
-}
-
-/* ========================= DESMARCAR APÓS 30 MIN ========================= */            
-/* Agora realmente desmarca DO FIREBASE e atualiza a tela */
-
-function liberarApos30MinFirebase() {
-    const agora = Date.now();
-    const limite = 30 * 60 * 1000;
-
-    db.ref("numerosBloqueados").once("value").then(snapshot => {
-        const dados = snapshot.val() || {};
-        let remover = [];
-
-        for (let num in dados) {
-            const info = dados[num];
-            if (!info || !info.bloqueadoEm) continue;
-
-            if (agora - info.bloqueadoEm >= limite) {
-                remover.push(num);
-            }
-        }
-
-        if (remover.length === 0) return;
-
-        remover.forEach(num => {
-            db.ref("numerosBloqueados/" + num).remove();
-        });
-
-        remover.forEach(num => {
-            let btn = [...document.querySelectorAll(".numero")]
-                      .find(b => b.textContent === num);
-
-            if (btn) {
-                btn.classList.remove("bloqueado");
-                btn.classList.remove("marcado");
-                btn.disabled = false;
-            }
-
-            selecionados = selecionados.filter(x => x !== num);
-        });
-
-        atualizarTotais();
-
-        // ⭐⭐ AQUI ESTÁ O QUE FALTAVA ⭐⭐
-        atualizarBloqueados();
-    });
-}
-function atualizarHorariosDisponiveis() {
-  const agora = new Date();
-  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-  
-  let encontrouProximo = false;
-
-  [...horariosSelect.options].forEach(opt => {
-    if (!opt.value) return; // ignora "Selecione"
-
-    const [h, m] = opt.value.split(":").map(Number);
-    const minutosOpt = h * 60 + m;
-
-    // Bloqueia horários antigos
-    if (minutosOpt <= minutosAgora) {
-      opt.disabled = true;
-      opt.style.color = "#777";
-    } else {
-      opt.disabled = false;
-      opt.style.color = "#fff";
-
-      // Marca automaticamente o PRÓXIMO horário disponível
-      if (!encontrouProximo) {
-        opt.selected = true;
-        encontrouProximo = true;
-      }
-    }
-  });
-
-  // Se nenhum horário futuro existir → desmarca tudo
-  if (!encontrouProximo) {
-    horariosSelect.selectedIndex = 0;
-  }
-}
-atualizarHorariosDisponiveis();
-setInterval(atualizarHorariosDisponiveis, 60000);
-setInterval(liberarApos30MinFirebase, 20000);
+/* AUTO-VERIFICAÇÕES AGENDADAS */
+setInterval(liberarApos30Min, 30000);            // libera local a cada 30s (se passou 30min)
+setInterval(liberarApos30MinFirebase, 20000);    // verifica e remove expirados no Firebase a cada 20s
+setInterval(atualizarHorariosDisponiveis, 60000);// atualiza horários a cada minuto
 </script>
 </body>
 </html>
