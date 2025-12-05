@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Rifa Online</title>
   <link rel="shortcut icon" type="image/jpg" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg">
-  <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg" type="image/jpeg">
+  <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg" type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
@@ -272,7 +272,7 @@
 </head>
 <body>
     <img class="imagemIcone"
-     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg?raw=true"
+     href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg"
      alt="logo">
         <h1>Rifa Online <strong style="color:red;font-weight:bold;">1.00</strong> pra <strong style="color:red;font-weight:bold;">70.00</strong></h1>
   
@@ -454,28 +454,31 @@ function atualizarTotais() {
 valorInput.addEventListener('input', atualizarTotais);
 
 /* ========================= BLOQUEADOS ========================= */
+/* ========================= BLOQUEADOS ========================= */
 function atualizarBloqueados() {
   db.ref('numerosBloqueados').once('value').then(snapshot => {
     bloqueados = new Set(Object.keys(snapshot.val() || {}));
     atualizarBotoes();
   });
 }
+
 function atualizarBotoes() {
   document.querySelectorAll('.numero').forEach(btn => {
     const n = btn.textContent;
+
     if (bloqueados.has(n)) {
       btn.classList.add('bloqueado');
       btn.disabled = true;
       btn.classList.remove('marcado');
-      selecionados = selecionados.filter(x=>x!==n);
+      selecionados = selecionados.filter(x => x !== n);
     } else {
       btn.classList.remove('bloqueado');
       btn.disabled = false;
     }
   });
+
   atualizarTotais();
 }
-
 /* ========================= RESERVAS DO DIA ========================= */
 function atualizarTextareaReservas(dadosPorHorario) {
   if (!dadosPorHorario || Object.keys(dadosPorHorario).length === 0) {
@@ -508,44 +511,21 @@ function getHoraAtual() {
   return `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 }
 function atualizarHorarios() {
+  // NÃO BLOQUEIA MAIS HORÁRIOS AUTOMATICAMENTE
+  // Somente controla a aparência, sem desabilitar
   const horaAtual = getHoraAtual();
 
   [...horariosSelect.options].forEach(opt => {
     if (!opt.value) return;
-    opt.disabled = opt.value <= horaAtual;
     opt.selected = false;
   });
 
-  for (let opt of horariosSelect.options) {
-    if (!opt.disabled && opt.value) {
-      opt.selected = true;
-      break;
-    }
+  // Deixa sempre disponível
+  if (!horariosSelect.value) {
+    horariosSelect.selectedIndex = 1;
   }
 }
 
-/* ========================= DESMARCAR APÓS 30 MIN ========================= */
-/* Agora funciona de verdade e no horário real */
-function liberarApos30Min() {
-  if (!horarioDaJogada) return;
-
-  const agora = Date.now();
-  const limite = horarioDaJogada + (30 * 60 * 1000); // 30 minutos
-
-  if (agora >= limite) {
-
-    document.querySelectorAll(".numero.marcado").forEach(btn =>
-      btn.classList.remove("marcado")
-    );
-
-    selecionados = [];
-    atualizarTotais();
-
-    horarioDaJogada = null;
-
-    console.log("✔ Números liberados após 30 minutos");
-  }
-}
 
 /* ========================= SALVAR ========================= */
 salvarBtn.addEventListener('click', () => {
@@ -558,9 +538,10 @@ salvarBtn.addEventListener('click', () => {
 
   const nome = localStorage.getItem("nomeJogador") || "Sem nome";
 
-  /* ⏱️ Agora salva o horário REAL da jogada */
-  horarioDaJogada = Date.now();
+  // horário real da jogada
+  const tempoAgora = Date.now();
 
+  // Verificar conflito
   db.ref('numerosBloqueados').once('value').then(snap => {
     const dados = snap.val() || {};
     const conflito = selecionados.find(n => dados[n]);
@@ -594,8 +575,13 @@ salvarBtn.addEventListener('click', () => {
       db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dadosFinal)
     ];
 
+    // 🔥 agora salva o horário real por número
     selecionados.forEach(n => {
-      promises.push(db.ref(`numerosBloqueados/${n}`).set({ bloqueadoEm: Date.now() }));
+      promises.push(
+        db.ref("numerosBloqueados/" + n).set({
+          bloqueadoEm: tempoAgora
+        })
+      );
     });
 
     Promise.all(promises).then(() => {
@@ -603,10 +589,7 @@ salvarBtn.addEventListener('click', () => {
       carregarReservasDoDia(dataHoje);
       atualizarBloqueados();
 
-      const tel = "5571992290058";
-      const mensagem = `🍀 *Rifa Online*\n\nCódigo: ${codigoSimples}\nNome: ${nome}\nNúmeros: ${selecionados.join(", ")}\nValor pago: R$ ${valorPago.toFixed(2).replace('.',',')}\n*BOA SORTE !!*`;
-      window.open(`https://wa.me/${tel}?text=${encodeURIComponent(mensagem)}`);
-
+      // limpar seleção
       selecionados = [];
       document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
       atualizarTotais();
@@ -614,7 +597,6 @@ salvarBtn.addEventListener('click', () => {
     });
   });
 });
-
 /* ========================= INICIALIZAÇÕES ========================= */
 garantirNome();
 atualizarBloqueados();
@@ -623,7 +605,7 @@ atualizarHorarios();
 exibirNome();
 
 /* AUTO-VERIFICAÇÃO */
-setInterval(liberarApos30Min, 30000);
+
 
 /* GERAR CÓDIGO SIMPLES */
 function gerarCodigoSimples() {
@@ -635,6 +617,54 @@ function gerarCodigoSimples() {
     Math.floor(100 + Math.random() * 900)
   );
 }
+
+/* ========================= DESMARCAR APÓS 30 MIN ========================= */            
+/* Agora realmente desmarca DO FIREBASE e atualiza a tela */
+
+function liberarApos30MinFirebase() {
+    const agora = Date.now();
+    const limite = 30 * 60 * 1000;
+
+    db.ref("numerosBloqueados").once("value").then(snapshot => {
+        const dados = snapshot.val() || {};
+        let remover = [];
+
+        for (let num in dados) {
+            const info = dados[num];
+            if (!info || !info.bloqueadoEm) continue;
+
+            if (agora - info.bloqueadoEm >= limite) {
+                remover.push(num);
+            }
+        }
+
+        if (remover.length === 0) return;
+
+        remover.forEach(num => {
+            db.ref("numerosBloqueados/" + num).remove();
+        });
+
+        remover.forEach(num => {
+            let btn = [...document.querySelectorAll(".numero")]
+                      .find(b => b.textContent === num);
+
+            if (btn) {
+                btn.classList.remove("bloqueado");
+                btn.classList.remove("marcado");
+                btn.disabled = false;
+            }
+
+            selecionados = selecionados.filter(x => x !== num);
+        });
+
+        atualizarTotais();
+
+        // ⭐⭐ AQUI ESTÁ O QUE FALTAVA ⭐⭐
+        atualizarBloqueados();
+    });
+}
+
+setInterval(liberarApos30MinFirebase, 20000);
 </script>
 </body>
 </html>
