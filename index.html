@@ -131,7 +131,8 @@
     #menu {
         position: fixed;
         top: 60px;
-        left: -100%;
+        margin:0px;
+        left: -150%;
         width: 85%;
         max-width:420px;
         height: 80%;
@@ -161,6 +162,14 @@
         box-sizing:border-box;
         white-space:pre-wrap;
         resize:vertical;
+        width: 100%;
+        height: 250px;
+        background: #000;
+        color: #0f0; /* VERDE */
+        border: 1px solid #0f0;
+        padding: 10px;
+        font-size: 16px;
+        resize: none;
     }
 
     /* ---------- NUMEROS ---------- */
@@ -243,7 +252,22 @@
     }
 
     .pequeno { font-size:13px; color:#ccc; margin-top:10px; }
-
+.visualizador {
+  width: 100%;
+  height: 250px;
+  background: #111;
+  color: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: monospace;
+  border: 1px solid #444;
+}
+.visualizador .verde {
+  color: #00ff00;
+  font-weight: bold;
+}
   </style>
 </head>
 <body>
@@ -276,9 +300,11 @@
   </div>
 
   <!-- MENU LATERAL -->
+  
   <div id="menu" aria-hidden="true">
     <h3>Reservas do dia</h3>
-    <textarea id="codigo" readonly>Nenhuma reserva carregada.</textarea>
+    <textarea  contenteditable="false" class="visualizador" id="codigo" readonly>Nenhuma reserva carregada.</textarea>
+    
   </div>
 
   <!-- Conteúdo principal -->
@@ -452,13 +478,13 @@ function atualizarBotoes() {
 /* ========================= RESERVAS DO DIA ========================= */
 function atualizarTextareaReservas(dadosPorHorario) {
   if (!dadosPorHorario || Object.keys(dadosPorHorario).length === 0) {
-    codigoTextarea.value = "Nenhuma reserva para hoje.";
+    codigoTextarea.innerHTML  = "Nenhuma reserva para hoje.";
     return;
   }
 
   let texto = "";
   for (let horario of Object.keys(dadosPorHorario).sort()) {
-    texto += ` Horário: ${horario}\n`;
+    texto += `     \n[ HORARIO ] => ${horario}\n\n`;
     for (let key in dadosPorHorario[horario]) {
       const d = dadosPorHorario[horario][key];
       const numeros = Array.isArray(d.numeros) ? d.numeros.join("-") : "";
