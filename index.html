@@ -663,7 +663,41 @@ function liberarApos30MinFirebase() {
         atualizarBloqueados();
     });
 }
+function atualizarHorariosDisponiveis() {
+  const agora = new Date();
+  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+  
+  let encontrouProximo = false;
 
+  [...horariosSelect.options].forEach(opt => {
+    if (!opt.value) return; // ignora "Selecione"
+
+    const [h, m] = opt.value.split(":").map(Number);
+    const minutosOpt = h * 60 + m;
+
+    // Bloqueia horários antigos
+    if (minutosOpt <= minutosAgora) {
+      opt.disabled = true;
+      opt.style.color = "#777";
+    } else {
+      opt.disabled = false;
+      opt.style.color = "#fff";
+
+      // Marca automaticamente o PRÓXIMO horário disponível
+      if (!encontrouProximo) {
+        opt.selected = true;
+        encontrouProximo = true;
+      }
+    }
+  });
+
+  // Se nenhum horário futuro existir → desmarca tudo
+  if (!encontrouProximo) {
+    horariosSelect.selectedIndex = 0;
+  }
+}
+atualizarHorariosDisponiveis();
+setInterval(atualizarHorariosDisponiveis, 60000);
 setInterval(liberarApos30MinFirebase, 20000);
 </script>
 </body>
