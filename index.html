@@ -376,7 +376,8 @@ let selecionados = [];
 let bloqueados = new Set();
 let dataAtualReservas = new Date().toISOString().slice(0,10);
 
-let horarioDaJogada = null;   // <<<< AGORA FUNCIONA
+/* ⏱️ Agora salva o horário REAL da jogada */
+let horarioDaJogada = null;
 
 /* ========================= CRIA 00-99 ========================= */
 for (let i = 0; i < 100; i++) {
@@ -478,19 +479,19 @@ function atualizarBotoes() {
 /* ========================= RESERVAS DO DIA ========================= */
 function atualizarTextareaReservas(dadosPorHorario) {
   if (!dadosPorHorario || Object.keys(dadosPorHorario).length === 0) {
-    codigoTextarea.innerHTML  = "Nenhuma reserva para hoje.";
+    codigoTextarea.value = "Nenhuma reserva para hoje.";
     return;
   }
 
   let texto = "";
   for (let horario of Object.keys(dadosPorHorario).sort()) {
-    texto += `     \n[ HORARIO ] => ${horario}\n\n`;
+    texto += `\n[ HORARIO ] => ${horario}\n\n`;
     for (let key in dadosPorHorario[horario]) {
       const d = dadosPorHorario[horario][key];
       const numeros = Array.isArray(d.numeros) ? d.numeros.join("-") : "";
       const nome = d.nome || "Sem nome";
       const valor = d.valorUnitario ? "R$ " + d.valorUnitario.toFixed(2).replace(".",",") : "";
-      texto += `${nome} - ${numeros} ${valor}\n-----------------------------\n`;
+      texto += `${nome} - ${numeros} ${valor}\n-------------------------\n`;
     }
   }
   codigoTextarea.value = texto;
@@ -524,16 +525,15 @@ function atualizarHorarios() {
 }
 
 /* ========================= DESMARCAR APÓS 30 MIN ========================= */
+/* Agora funciona de verdade e no horário real */
 function liberarApos30Min() {
   if (!horarioDaJogada) return;
 
-  const agora = new Date();
-  const [h, m] = horarioDaJogada.split(":").map(Number);
-
-  const limite = new Date();
-  limite.setHours(h, m + 30, 0, 0);
+  const agora = Date.now();
+  const limite = horarioDaJogada + (30 * 60 * 1000); // 30 minutos
 
   if (agora >= limite) {
+
     document.querySelectorAll(".numero.marcado").forEach(btn =>
       btn.classList.remove("marcado")
     );
@@ -558,7 +558,8 @@ salvarBtn.addEventListener('click', () => {
 
   const nome = localStorage.getItem("nomeJogador") || "Sem nome";
 
-  horarioDaJogada = horario;  // <<< SALVA O HORARIO DA APOSTA
+  /* ⏱️ Agora salva o horário REAL da jogada */
+  horarioDaJogada = Date.now();
 
   db.ref('numerosBloqueados').once('value').then(snap => {
     const dados = snap.val() || {};
