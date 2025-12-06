@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Rifa Online</title>
-  <link rel="shortcut icon" type="image/jpg" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg">
-  <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg" type="image/jpg">
+  <link rel="shortcut icon" type="image/jpg" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg?token=GHSAT0AAAAAADPEG7V3FP4JVPVCU4HJVILI2JUDKKA">
+  <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg?token=GHSAT0AAAAAADPEG7V3FP4JVPVCU4HJVILI2JUDKKA" type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
@@ -271,8 +271,7 @@
   </style>
 </head>
 <body>
-    <img class="imagemIcone"
-     href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/main/images-2.jpg"
+    <img class="imagemIcone"     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg?token=GHSAT0AAAAAADPEG7V3FP4JVPVCU4HJVILI2JUDKKA"
      alt="logo">
         <h1>Rifa Online <strong style="color:red;font-weight:bold;">1.00</strong> pra <strong style="color:red;font-weight:bold;">70.00</strong></h1>
   
@@ -308,14 +307,7 @@
   </div>
 
   <!-- Conteúdo principal -->
-<div style="
-    display:flex; 
-    justify-content:space-between; 
-    align-items:center; 
-    flex-wrap:wrap;
-    width:95%;
-    box-sizing:border-box;
-    margin-bottom:12px;    ">
+<div style="display:flex;justify-content:space-between;align-items:center; flex-wrap:wrap; width:95%;box-sizing:border-box;margin-bottom:12px;    ">
 
     <div style="flex:1; min-width:120px;">
         <strong>Pagar: R$ <span id="totalPagar">0,00</span></strong>
@@ -429,8 +421,30 @@ function toggleMenu(){
 
 /* ========================= SELEÇÃO DE NÚMEROS ========================= */
 function toggleNumero(btn, num){
+
+  // ⛔ Bloqueia clique se horário já passou
+  const horarioSelecionado = horariosSelect.value;
+  const agora = new Date();
+  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+
+  if (!horarioSelecionado) {
+    alert("Selecione um horário antes de marcar!");
+    return;
+  }
+
+  const [h, m] = horarioSelecionado.split(":").map(Number);
+  const minutosHorario = h * 60 + m;
+
+  if (minutosHorario <= minutosAgora) {
+    alert("Este horário já passou. Escolha outro horário.");
+    horariosSelect.selectedIndex = 0;
+    return;
+  }
+
+  // Se número está bloqueado, impede
   if(btn.classList.contains("bloqueado")) return;
 
+  // Alterna marcação normalmente
   if(btn.classList.contains("marcado")){
     btn.classList.remove("marcado");
     selecionados = selecionados.filter(n => n !== num);
@@ -438,12 +452,11 @@ function toggleNumero(btn, num){
     btn.classList.add("marcado");
     selecionados.push(num);
 
-    // se for a primeira marcação desta sessão, grava horárioDaJogada para liberar após 30min
     if (!horarioDaJogada) horarioDaJogada = Date.now();
   }
+
   atualizarTotais();
 }
-
 /* ========================= TOTAIS ========================= */
 function atualizarTotais() {
   let raw = valorInput.value || "0";
