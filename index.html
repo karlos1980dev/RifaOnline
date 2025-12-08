@@ -145,33 +145,31 @@
         box-shadow: 6px 6px 30px rgba(0,0,0,0.6);
         border-radius: 8px;
     }
-    #menu.open { left:10px; }
+    #menu.open { left:0; }
 
     #menu h3 { margin-top:0; }
 
-    #menu textarea {
-        display:block;
-        width:100%;
-        height:320px;
-        margin-top:10px;
-        background:#000;
-        color:#fff;
-        border:none;
-        border-radius:10px;
-        padding:10px;
-        box-sizing:border-box;
-        white-space:pre-wrap;
-        resize:vertical;
-        width: 100%;
-        height: 250px;
-        background: #000;
-        color: #0f0; /* VERDE */
-        border: 1px solid #0f0;
-        padding: 10px;
-        font-size: 16px;
-        resize: none;
-    }
+#menu textarea {
+    display: block;
+    width: calc(100% - 0px);  /* largura total, sem deslocar */
+    max-width: 100%;
+    height: 350px;
 
+    background: #000;
+    color: #0f0;
+    border: 1px solid #0f0;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 16px;
+    resize: none;
+    box-sizing: border-box;
+    overflow-y: auto;
+
+    /* 🟢 DEIXA COLADO NA ESQUERDA */
+    margin-left: 0;
+    transform: translateX(0);    /* zera o deslocamento */
+    filter: none;                /* remove a sombra que jogava para o lado */
+}
     /* ---------- NUMEROS ---------- */
     #conteudo { display:flex; padding:12px; max-width:1000px; margin: 0 auto; }
 
@@ -271,8 +269,7 @@
   </style>
 </head>
 <body>
-    <img class="imagemIcone"     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg?token=GHSAT0AAAAAADPEG7V3FP4JVPVCU4HJVILI2JUDKKA"
-     alt="logo">
+    <img class="imagemIcone"     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg">
         <h1>Rifa Online <strong style="color:red;font-weight:bold;">1.00</strong> pra <strong style="color:red;font-weight:bold;">70.00</strong></h1>
   
 
@@ -760,6 +757,20 @@ exibirNome();
 setInterval(liberarApos30Min, 30000);            // libera local a cada 30s (se passou 30min)
 setInterval(liberarApos30MinFirebase, 20000);    // verifica e remove expirados no Firebase a cada 20s
 setInterval(atualizarHorariosDisponiveis, 60000);// atualiza horários a cada minuto
+/* ========================= LIMPAR TEXTAREA APÓS 00:00 ========================= */
+function limparTextareaMeiaNoite() {
+  const agora = new Date();
+  const horas = agora.getHours();
+  const minutos = agora.getMinutes();
+
+  // Quando for exatamente 00:00
+  if (horas === 0 && minutos === 0) {
+    codigoTextarea.value = "Nenhuma reserva carregada.";
+  }
+}
+
+// verifica a cada 20 segundos
+setInterval(limparTextareaMeiaNoite, 20000);
 </script>
 </body>
-</html>
+</html>   
