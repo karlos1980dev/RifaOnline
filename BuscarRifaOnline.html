@@ -90,15 +90,18 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // ---------- GERAR LINK DA VIEWER ----------
-  function copiarLinkViewer(codigo) {
+  // ---------- COPIAR LINK + EXTRAÇÃO ----------
+  function copiarLinkViewer(codigo, horario) {
     const link = `https://mjonline.netlify.app/viewer.html?codigo=${codigo}`;
-    navigator.clipboard.writeText(link);
-    alert("🔗 Link da viewer copiado:\n\n" + link);
+    const textoFinal = `${link}\n🕒 Extração: ${horario}`;
+
+    navigator.clipboard.writeText(textoFinal)
+    .then(() => {
+      alert("🔗 Link + Extração copiados!\n\n" + textoFinal);
+    });
   }
 
   // ---------- BUSCAR PELO CÓDIGO ----------
-  
   function buscarPorCodigo(codigoManual = null) {
     const codigoDigitado = codigoManual 
          ? codigoManual.toUpperCase()
@@ -141,9 +144,8 @@
       const qtd = numeros.length;
       const valorUnit = Number(encontrado.valorUnitario) || 0;
 
-      // ✔️ CÁLCULO CORRETO (igual ao usado na criação)
-      const totalPagar = valorUnit * qtd;     // valor digitado × quantidade
-      const totalReceber = valorUnit * 70;    // fixo por valor
+      const totalPagar = valorUnit * qtd;
+      const totalReceber = valorUnit * 70;
 
       box.innerHTML = `
         <h3>🔍 Resultado da Busca</h3>
@@ -158,7 +160,7 @@
 
         <strong>Código da Reserva:</strong> ${encontrado.codigo}<br><br>
 
-        <button class="viewer-btn" onclick="copiarLinkViewer('${encontrado.codigo}')">
+        <button class="viewer-btn" onclick="copiarLinkViewer('${encontrado.codigo}', '${encontrado.horario}')">
             📤 Copiar link da VIEWER
         </button>
       `;
