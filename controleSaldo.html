@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Registros</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{margin:0;font-family:Arial;background:#0b0f1a;color:#fff;}
+.box{
+  width:95%;max-width:480px;margin:30px auto;
+  background:#141a2b;padding:20px;border-radius:14px;
+}
+h2{text-align:center;color:#00ffcc;}
+input,select{
+  width:100%;padding:10px;margin-bottom:12px;
+  border:none;border-radius:10px;
+  background:#0a0f1e;color:#fff;
+}
+.item{
+  background:#0a0f1e;border-left:4px solid #00ffcc;
+  padding:12px;border-radius:10px;margin-bottom:12px;
+}
+.valor{color:#00ffcc;font-weight:bold;}
+.data{font-size:12px;color:#aaa;}
+.botoes{display:flex;gap:6px;margin-top:8px;}
+button{
+  flex:1;padding:8px;border:none;border-radius:8px;
+  cursor:pointer;font-size:13px;
+}
+.editar{background:#ffc107;color:#000;}
+.apagar{background:#dc3545;color:#fff;}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>📋 Registros</h2>
+  <input id="busca" placeholder="Buscar por nome..." oninput="filtrar()">
+  <div id="lista"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyDlWGPUuGyugzvvQt_Wd5GI3IBFH90hUgQ",
+  authDomain:"multijogo.firebaseapp.com",
+  databaseURL:"https://multijogo-default-rtdb.firebaseio.com",
+  projectId:"multijogo"
+});
+
+const db = firebase.database();
+let dados = {};
+
+db.ref("registros").on("value", snap=>{
+  dados = snap.val() || {};
+  render();
+});
+
+function render(filtro=""){
+  lista.innerHTML="";
+  Object.keys(dados).forEach(id=>{
+    const d=dados[id];
+    if(!d.nome.toLowerCase().includes(filtro.toLowerCase())) return;
+
+    lista.innerHTML+=`
+      <div class="item">
+        <strong>${d.nome}</strong><br>
+        Valor: <span class="valor">R$ ${d.valorFinal.toFixed(2)}</span><br>
+        <span class="data">${new Date(d.data).toLocaleString("pt-BR")}</span>
+
+        <select onchange="status('${id}',this.value)">
+          <option ${d.status=="Pendente"?"selected":""}>Pendente</option>
+          <option ${d.status=="Pago"?"selected":""}>Pago</option>
+          <option ${d.status=="Cancelado"?"selected":""}>Cancelado</option>
+        </select>
+
+        <div class="botoes">
+          <button class="editar" onclick="editar('${id}',${d.valorOriginal})">Editar</button>
+          <button class="apagar" onclick="apagar('${id}')">Apagar</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function filtrar(){ render(busca.value); }
+
+function editar(id,v){
+  const n=prompt("Novo valor:",v);
+  if(n===null) return;
+  const val=parseFloat(n);
+  if(isNaN(val)) return alert("Inválido");
+  db.ref("registros/"+id).update({
+    valorOriginal:val,
+    valorFinal:val*1.2
+  });
+}
+
+function status(id,s){
+  db.ref("registros/"+id).update({status:s});
+}
+
+function apagar(id){
+  if(confirm("Apagar registro?")){
+    db.ref("registros/"+id).remove();
+  }
+}
+
+const lista=document.getElementById("lista");
+const busca=document.getElementById("busca");
+</script>
+
+</body>
+</html>
