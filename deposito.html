@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Deposite e ganhe </title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{margin:0;font-family:Arial;background:#0b0f1a;color:#fff;}
+.menu-btn{
+  position:fixed;top:15px;left:15px;
+  font-size:26px;cursor:pointer;color:#00ffcc;z-index:2000;
+}
+.menu{
+  position:fixed;left:-280px;top:0;width:260px;height:100%;
+  background:#141a2b;padding:15px;transition:.3s;z-index:1500;
+}
+.menu.active{left:0;}
+.menu h3{text-align:center;color:#00ffcc;}
+.menu textarea{
+  width:100%;height:90%;background:#0a0f1e;
+  color:#00ff99;border:none;border-radius:10px;padding:10px;
+}
+
+.box{
+  width:85%;max-width:320px;margin:80px auto;
+  background:#141a2b;padding:20px;border-radius:14px;
+}
+h2{text-align:center;color:#00ffcc;}
+input,button,textarea{
+  width:95%;padding:12px;margin:10px 0;
+  border:none;border-radius:10px;
+}
+input{background:#0a0f1e;color:#fff;}
+button{
+  background:linear-gradient(135deg,#00ffcc,#7c4dff);
+  font-weight:bold;cursor:pointer;
+}
+
+.modal{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.85);
+  justify-content:center;align-items:center;z-index:3000;
+}
+.modal-content{
+  background:#141a2b;
+  padding:20px;
+  border-radius:14px;
+  width:90%;
+  max-width:320px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  
+}
+.modal textarea{
+  width:85%;
+  height:45px;
+  text-align:center;
+  font-size:16px;
+  letter-spacing:1px;
+  background:#02040a;
+  color:#00ff99;
+  border:1px solid #00ffcc;
+  border-radius:10px;
+  padding:10px;
+}
+.msg{margin-top:10px;color:#00ff99;display:none;}
+.close{
+  position:absolute;
+  top:10px;
+  right:15px;
+  font-size:20px;
+  color:#fff;
+  cursor:pointer;
+}
+.close:hover{
+  color:#ff4d4d;
+}
+.modal-content{
+  position:relative;
+}
+.link-site{
+  display:block;
+  margin-top:15px;
+  text-align:center;
+  color:#00ffcc;
+  text-decoration:none;
+  font-weight:bold;
+}
+.link-site:hover{
+  text-decoration:underline;
+}
+.valor-modal{
+  width:100%;
+  margin-bottom:12px;
+  padding:12px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#00ffcc22,#7c4dff22);
+  color:#00ffcc;
+  font-weight:bold;
+  text-align:center;
+  font-size:15px;
+  line-height:1.4;
+}
+.cronometro{
+  margin-bottom:15px;
+  padding:12px;
+  border-radius:12px;
+  text-align:center;
+  font-weight:bold;
+  background:#0a0f1e;
+  color:#00ffcc;
+  font-size:14px;
+}
+.cronometro.paused{
+  color:#ff4d4d;
+}
+</style>
+</head>
+
+<body>
+
+<div class="menu-btn" onclick="toggleMenu()">☰</div>
+
+<div class="menu" id="menu">
+  <h3>📄 Registros</h3>
+  <textarea id="historico" readonly></textarea>
+</div>
+
+<div class="box">
+    <div id="cronometro" class="cronometro"></div>
+  <h2>📥 ANTECIPE E GANHE 20% </h2>
+  <input id="nome" placeholder="Nome">
+  <input id="valor" type="number" placeholder="Valor">
+  <button onclick="abrirPix()">Salvar</button>
+
+<a href="https://mjonline.netlify.app/" target="_blank" class="link-site">
+  🔗 Acessar site oficial
+</a>
+</div>
+
+<div class="modal" id="modalPix">
+  <div class="modal-content">
+  <span class="close" onclick="fecharModal()">✕</span>
+
+  <div class="valor-modal" id="valorModal"></div>
+
+  <h3>PIX Copia e Cola</h3>
+  <textarea id="pix" readonly>71992290058</textarea>
+  <button onclick="copiarPix()">Copiar PIX</button>
+  <div class="msg" id="msgSucesso">
+    PIX copiado com sucesso! Cadastro registrado.
+  </div>
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyDlWGPUuGyugzvvQt_Wd5GI3IBFH90hUgQ",
+  authDomain:"multijogo.firebaseapp.com",
+  databaseURL:"https://multijogo-default-rtdb.firebaseio.com",
+  projectId:"multijogo"
+});
+
+const db = firebase.database();
+let temp = null;
+
+function toggleMenu(){
+  document.getElementById("menu").classList.toggle("active");
+}
+
+
+function abrirPix(){
+  const nome = nomeInput.value.trim();
+  const valor = parseFloat(valorInput.value);
+  if(!nome || isNaN(valor)) return alert("Preencha corretamente");
+
+  const valorFinal = valor * 1.2;
+
+  temp = {
+    nome,
+    valorOriginal: valor,
+    valorFinal: valorFinal,
+    status: "Pendente",
+    data: Date.now()
+  };
+
+  document.getElementById("valorModal").innerText =
+  `💵 Você vai pagar R$ ${valor.toFixed(2)}\n 💰Seu Saldo Será R$ ${(valor * 1.2).toFixed(2)}`;
+
+  msgSucesso.style.display="none";
+  modalPix.style.display="flex";
+}
+
+function copiarPix(){
+  pix.select();
+  document.execCommand("copy");
+
+  if(temp){
+    db.ref("registros").push(temp);
+    temp = null;
+  }
+
+  msgSucesso.style.display="block";
+  nomeInput.value="";
+  valorInput.value="";
+}
+
+db.ref("registros").on("value", snap=>{
+  let txt="";
+  snap.forEach(c=>{
+    const d=c.val();
+    txt+=
+`Nome: ${d.nome}
+Valor: R$ ${d.valorFinal.toFixed(2)}
+Status: ${d.status}
+Data: ${new Date(d.data).toLocaleString("pt-BR")}
+------------------------
+`;
+  });
+  historico.value=txt;
+});
+
+const nomeInput = document.getElementById("nome");
+const valorInput = document.getElementById("valor");
+const modalPix = document.getElementById("modalPix");
+const pix = document.getElementById("pix");
+const msgSucesso = document.getElementById("msgSucesso");
+const historico = document.getElementById("historico");
+function fecharModal(){
+  modalPix.style.display = "none";
+}
+const periodos = [
+  {inicio:"07:00", fim:"10:00"},
+  {inicio:"10:20", fim:"12:00"},
+  {inicio:"12:20", fim:"15:00"},
+  {inicio:"15:20", fim:"19:00"},
+  {inicio:"19:20", fim:"21:00"}
+];
+
+function strToDate(hora){
+  const [h,m] = hora.split(":");
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+
+function atualizarCronometro(){
+  const agora = new Date();
+  let ativo = false;
+  let alvo = null;
+
+  for(let p of periodos){
+    const ini = strToDate(p.inicio);
+    const fim = strToDate(p.fim);
+
+    if(agora >= ini && agora < fim){
+      ativo = true;
+      alvo = fim;
+      break;
+    }
+    if(agora < ini){
+      alvo = ini;
+      break;
+    }
+  }
+
+  if(!alvo){
+    alvo = strToDate("07:00");
+    alvo.setDate(alvo.getDate()+1);
+  }
+
+  const diff = alvo - agora;
+  const h = String(Math.floor(diff/3600000)).padStart(2,"0");
+  const m = String(Math.floor(diff%3600000/60000)).padStart(2,"0");
+  const s = String(Math.floor(diff%60000/1000)).padStart(2,"0");
+
+  const el = document.getElementById("cronometro");
+  el.className = "cronometro" + (ativo ? "" : " paused");
+  el.innerHTML = ativo
+    ? `⏱ Promoção <b>ATIVA</b><br>⏰ Encerra em: ${h}:${m}:${s}`
+    : `⏸ Proxima <b>Extracao</b><br>⏰ Retorna em: ${h}:${m}:${s}`;
+}
+
+setInterval(atualizarCronometro, 1000);
+atualizarCronometro();
+</script>
+
+</body>
+</html>
