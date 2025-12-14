@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rifa da Sorte 1.00 ganhar 70.00</title>
+  <title>Rifa da Sorte 1 pra 70</title>
   <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg" type="image/jpg">
 <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg" type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -270,8 +270,16 @@
 </head>
 <body>
     <img class="imagemIcone"     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg">
-        <h1>Rifa da Sorte <strong style="color:red;font-weihgt:bold;font-size:30px;">1.00</strong> pra <strong style="color:red;font-weihgt:bold;font-size:30px;">70.00</strong></h1>
-  
+        <h1>
+  Rifa da Sorte </br>
+  <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin:0 20px;">
+    1.00
+  </strong> 
+  X 
+  <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin-left:20px;">
+    70.00
+  </strong>
+</h1>
 
   <div id="topoWrapper" role="banner" aria-label="Topo">
     <button id="btnMenu" aria-label="Abrir menu" title="Abrir menu">☰</button>
@@ -318,6 +326,7 @@
   </div>
 <div id="numeros" aria-label="Números da rifa"></div>
 <p id="rodapeInfo">JOGUE COM RESPONSABILIDADE</p>
+
   <!-- MODAL PARA PEDIR O NOME -->
   <div id="modalNome" role="dialog" aria-modal="true" aria-labelledby="tituloModal">
     <div id="modalBox">
@@ -503,18 +512,41 @@ function atualizarTextareaReservas(dadosPorHorario) {
   }
 
   let texto = "";
+
   for (let horario of Object.keys(dadosPorHorario).sort()) {
     texto += `\n[ HORARIO ] => ${horario}\n\n`;
+
     for (let key in dadosPorHorario[horario]) {
       const d = dadosPorHorario[horario][key];
+
       const numeros = Array.isArray(d.numeros) ? d.numeros.join("-") : "";
       const nome = d.nome || "Sem nome";
-      const valor = d.valorUnitario ? "R$ " + Number(d.valorUnitario).toFixed(2).replace(".",",") : "";
-      texto += `${nome} - ${numeros} ${valor}\n-------------------------\n`;
+      const valor = d.valorUnitario
+        ? "R$ " + Number(d.valorUnitario).toFixed(2).replace(".", ",")
+        : "";
+
+      // STATUS
+      let statusTexto = "⏳ AGUARDANDO";
+      if (d.status === "pagou") statusTexto = "✅ PAGOU";
+      if (d.status === "cancelou") statusTexto = "❌ CANCELOU";
+
+      // RESULTADO
+      let resultadoTexto = "⏳ AGUARDANDO";
+      if (d.resultado === "ganhou") resultadoTexto = "🟢 GANHOU";
+      if (d.resultado === "perdeu") resultadoTexto = "🔴 PERDEU";
+
+      texto +=
+`${nome} - ${numeros} ${valor}
+STATUS: ${statusTexto}
+RESULTADO: ${resultadoTexto}
+-------------------------\n`;
     }
   }
+
   codigoTextarea.value = texto;
 }
+
+
 function carregarReservasDoDia(data) {
   db.ref(`compras-dia/${data}`).once('value').then(snapshot => {
     atualizarTextareaReservas(snapshot.val() || {});
@@ -680,17 +712,19 @@ salvarBtn.addEventListener('click', () => {
     const valorPago = Number((v * selecionados.length).toFixed(2));
     const aReceber = Number((valorPago * 70).toFixed(2));
 
-    const dadosFinal = {
-      nome,
-      numeros: [...selecionados],
-      dataHora,
-      codigo: codigoSimples,
-      horarioEscolhido: horario,
-      valorUnitario: v,
-      quantidade: selecionados.length,
-      valorPago,
-      aReceber
-    };
+  const dadosFinal = {
+  nome,
+  numeros: [...selecionados],
+  dataHora,
+  codigo: codigoSimples,
+  horarioEscolhido: horario,
+  valorUnitario: v,
+  quantidade: selecionados.length,
+  valorPago,
+  aReceber,
+  status: "aguardando",
+  resultado: "aguardando"
+};
 
     // Promessas para salvar a compra e bloquear números
     let promises = [
