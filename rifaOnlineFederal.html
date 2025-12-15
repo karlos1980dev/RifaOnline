@@ -504,8 +504,30 @@ function toggleMenu(){
   if (menuEl.classList.contains('open')) carregarReservasDoDia(dataAtualReservas);
 }
 /* ========================= SELEÇÃO DE NÚMEROS ========================= */
+
+function toggleNumero(btn, num){
 function toggleNumero(btn, num){
 
+  // 🔒 Se o jogo já foi salvo, trava tudo
+  if (jogoTravado) {
+    alert("Este jogo já foi salvo. Aguarde o próximo sorteio.");
+    return;
+  }
+
+  // ⛔ Se número está bloqueado no Firebase
+  if (btn.classList.contains("bloqueado")) return;
+
+  // 🔁 Permite marcar e desmarcar ANTES de salvar
+  if (btn.classList.contains("marcado")) {
+    btn.classList.remove("marcado");
+    selecionados = selecionados.filter(n => n !== num);
+  } else {
+    btn.classList.add("marcado");
+    selecionados.push(num);
+  }
+
+  atualizarTotais();
+}
   // ⛔ Bloqueia clique se horário já passou
   const horarioSelecionado = horariosSelect.value;
   const agora = new Date();
@@ -772,7 +794,7 @@ salvarBtn.addEventListener('click', () => {
     Promise.all(promises).then(() => {
   alert("Reserva salva!");
   abrirModalPix();
-
+let jogoTravado = false;
   atualizarBloqueados();
   carregarReservasDoDia(dataHoje);
 
@@ -893,7 +915,7 @@ function cabecalhoDataJogo() {
 
 function desmarcarBotoesQuaSabMeiaNoite() {
   const agora = new Date();
-  const dia = agora.getDay(); // 0=dom, 3=qua, 6=sab
+  const dia = agora.getDay(); // 3=quarta | 6=sábado
   const horas = agora.getHours();
   const minutos = agora.getMinutes();
 
@@ -906,18 +928,19 @@ function desmarcarBotoesQuaSabMeiaNoite() {
     minutos === 0 &&
     ultimaExecucao !== hoje
   ) {
-    console.log("🔄 Desmarcando botões (quarta/sábado 00:00)");
+    console.log("🔄 Novo jogo liberado");
 
-    // Remove apenas a marcação visual
+    // 🔓 libera novo jogo
+    jogoTravado = false;
+
+    // limpa marcações
     document.querySelectorAll(".numero.marcado").forEach(btn => {
       btn.classList.remove("marcado");
     });
 
-    // Limpa seleção local
     selecionados = [];
     atualizarTotais();
 
-    // Garante execução única no dia
     localStorage.setItem("ultimaDesmarcacao", hoje);
   }
 }
