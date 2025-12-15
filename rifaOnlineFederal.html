@@ -343,7 +343,7 @@
   <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin:0 30px;">
     1.00
   </strong> 
-  X 
+  GANHAR
   <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin-left:20px;">
     80.00
   </strong>
@@ -425,23 +425,11 @@ db.ref("controle/limparTextarea").on("value", snapshot => {
 
   if (!dados || dados.limpar !== true) return;
 
-  console.log("🧹 Limpando textarea pelo painel...");
+  console.log("🧹 Limpando SOMENTE o textarea pelo painel");
 
-  // Limpa textarea
   codigoTextarea.value = "Nenhuma reserva carregada.";
 
-  // Limpa seleções
-  selecionados = [];
-  document.querySelectorAll(".numero").forEach(btn => {
-    btn.classList.remove("marcado");
-  });
-
-  atualizarTotais();
-
-  // Reset horário
-  horariosSelect.selectedIndex = 0;
-
-  // Evita loop infinito
+  // evita loop
   db.ref("controle/limparTextarea/limpar").set(false);
 });
 /* ========================= ELEMENTOS ========================= */
@@ -709,51 +697,6 @@ function liberarApos30Min() {
 }
 
 /* ========================= LIBERAR APÓS 30 MIN (Firebase + UI) ========================= */
-function liberarApos30MinFirebase() {
-  const agora = Date.now();
-  const limite = 30 * 60 * 1000;
-
-  db.ref("numerosBloqueados").once("value").then(snapshot => {
-    const dados = snapshot.val() || {};
-    let remover = [];
-
-    for (let num in dados) {
-      const info = dados[num];
-      if (!info || !info.bloqueadoEm) continue;
-
-      if (agora - info.bloqueadoEm >= limite) {
-        remover.push(num);
-      }
-    }
-
-    if (remover.length === 0) return;
-
-    // remover do Firebase (cria array de promessas)
-    let promessas = remover.map(num => db.ref("numerosBloqueados/" + num).remove());
-
-    Promise.all(promessas).then(() => {
-      // Atualiza UI: desbloqueia botões
-      remover.forEach(num => {
-        let btn = [...document.querySelectorAll(".numero")].find(b => b.textContent === num);
-        if (btn) {
-          btn.classList.remove("bloqueado");
-          btn.classList.remove("marcado");
-          btn.disabled = false;
-        }
-        selecionados = selecionados.filter(x => x !== num);
-      });
-
-      atualizarTotais();
-      // atualiza cache local de bloqueados
-      atualizarBloqueados();
-      console.log("✔ Liberados no Firebase e UI (após 30min):", remover);
-    }).catch(err => {
-      console.error("Erro ao remover bloqueados expirados:", err);
-    });
-  }).catch(err => {
-    console.error("Erro ao ler numerosBloqueados:", err);
-  });
-}
 
 /* ========================= GERAR CÓDIGO SIMPLES ========================= */
 function gerarCodigoSimples() {
@@ -837,7 +780,7 @@ salvarBtn.addEventListener('click', () => {
   document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
   atualizarTotais();
   horariosSelect.selectedIndex = 0;
-  horarioDaJogada = null;
+  
 }).catch(err => {
       console.error("Erro ao salvar reserva:", err);
       alert("Erro ao salvar. Tente novamente.");
@@ -855,24 +798,39 @@ carregarReservasDoDia(dataAtualReservas);
 atualizarHorariosDisponiveis();
 exibirNome();
 
-/* AUTO-VERIFICAÇÕES AGENDADAS */
+/* AUTO-VERIFICAÇÕES AGENDADAS 
 setInterval(liberarApos30Min, 30000);            // libera local a cada 30s (se passou 30min)
-setInterval(liberarApos30MinFirebase, 20000);    // verifica e remove expirados no Firebase a cada 20s
+setInterval(liberarApos30MinFirebase, 20000);    // verifica e remove expirados no //Firebase a cada 20s*/
 setInterval(atualizarHorariosDisponiveis, 60000);// atualiza horários a cada minuto
 /* ========================= LIMPAR TEXTAREA APÓS 00:00 ========================= */
-function limparTextareaMeiaNoite() {
+function limparTextareaSomenteQuaSab() {
   const agora = new Date();
-  const dia = agora.getDay();   // 0=dom, 3=qua, 6=sab
+  const dia = agora.getDay(); // 0=dom, 3=qua, 6=sab
   const horas = agora.getHours();
   const minutos = agora.getMinutes();
 
-  // Somente quarta (3) ou sábado (6) às 00:00
-  if ((dia === 3 || dia === 6) && horas === 0 && minutos === 0) {
+  const hoje = agora.toISOString().slice(0, 10);
+  const ultimaLimpeza = localStorage.getItem("ultimaLimpezaTextarea");
+
+  // SOMENTE quarta ou sábado às 00:00 (uma vez por dia)
+  if (
+    (dia === 3 || dia === 6) &&
+    horas === 0 &&
+    minutos === 0 &&
+    ultimaLimpeza !== hoje
+  ) {
+    console.log("🧹 Limpando textarea (quarta/sábado 00:00)");
+
     codigoTextarea.value = "Nenhuma reserva carregada.";
+
+    // marca que já limpou hoje
+    localStorage.setItem("ultimaLimpezaTextarea", hoje);
   }
 }
-// verifica a cada 20 segundos
-setInterval(limparTextareaMeiaNoite, 60000); // verifica a cada 1 minuto
+
+// verifica a cada 1 minuto
+setInterval(limparTextareaSomenteQuaSab, 60000);
+
 function proximaDataDeJogo() {
   const hoje = new Date();
   const diaHoje = hoje.getDay(); // 0=dom ... 3=qua ... 6=sab
@@ -932,6 +890,38 @@ function cabecalhoDataJogo() {
     `=====================================\n\n`
   );
 }
+
+function desmarcarBotoesQuaSabMeiaNoite() {
+  const agora = new Date();
+  const dia = agora.getDay(); // 0=dom, 3=qua, 6=sab
+  const horas = agora.getHours();
+  const minutos = agora.getMinutes();
+
+  const hoje = agora.toISOString().slice(0, 10);
+  const ultimaExecucao = localStorage.getItem("ultimaDesmarcacao");
+
+  if (
+    (dia === 3 || dia === 6) &&
+    horas === 0 &&
+    minutos === 0 &&
+    ultimaExecucao !== hoje
+  ) {
+    console.log("🔄 Desmarcando botões (quarta/sábado 00:00)");
+
+    // Remove apenas a marcação visual
+    document.querySelectorAll(".numero.marcado").forEach(btn => {
+      btn.classList.remove("marcado");
+    });
+
+    // Limpa seleção local
+    selecionados = [];
+    atualizarTotais();
+
+    // Garante execução única no dia
+    localStorage.setItem("ultimaDesmarcacao", hoje);
+  }
+}
+setInterval(desmarcarBotoesQuaSabMeiaNoite, 60000);
 atualizarDataJogo();
 setInterval(atualizarDataJogo, 60000); // atualiza a cada 1 minuto
 </script>
