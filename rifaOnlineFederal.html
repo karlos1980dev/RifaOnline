@@ -524,15 +524,21 @@ function toggleNumero(btn, num) {
   }
 
   const agora = new Date();
+const diaSemana = agora.getDay(); // 0=Dom ... 3=Qua ... 6=Sab
+
+// ⚠️ Bloqueia horário SOMENTE quarta (3) e sábado (6)
+if (diaSemana === 3 || diaSemana === 6) {
+
   const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
   const [h, m] = horarioSelecionado.split(":").map(Number);
   const minutosHorario = h * 60 + m;
 
   if (minutosHorario <= minutosAgora) {
-    alert("Este horário já passou. Escolha outro horário.");
+    alert("Este jogo já foi encerrado para hoje. Aguarde o próximo sorteio.");
     horariosSelect.selectedIndex = 0;
     return;
   }
+}
 
   // 🔁 Alterna marcação
   if (btn.classList.contains("marcado")) {
