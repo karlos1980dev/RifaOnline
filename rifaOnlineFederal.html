@@ -200,7 +200,7 @@
 
     .numero:active { transform: scale(.98); }
     .marcado { background:#27ae60 !important; }
-    .bloqueado { background:#777 !important; color:#ccc; cursor:not-allowed; }
+    .bloqueado { background:#777 !important; color:#777; cursor:not-allowed; }
 
     #rodapeInfo { margin-top:12px; color:gold; font-weight:bold; }
 
@@ -390,7 +390,7 @@
   
    <p id="dataJogo" style="color:gold;font-weight:bold;"></p>
 <div id="numeros" aria-label="Números da rifa"></div>
-<p id="rodapeInfo">JOGUE COM RESPONSABILIDADE</p>
+<p id="rodapeInfo">SORTE E SUA A GARANTIA E NOSSA </br>JOGUE COM RESPONSABILIDADE</p>
 
   <!-- MODAL PARA PEDIR O NOME -->
   <div id="modalNome" role="dialog" aria-modal="true" aria-labelledby="tituloModal">
@@ -452,9 +452,9 @@ const btnContinuar = document.getElementById('btnContinuar');
 let selecionados = [];
 let bloqueados = new Set();
 let dataAtualReservas = new Date().toISOString().slice(0,10);
-
-/* Usado para liberar seleção local após 30 minutos (quando usuário marca) */
+let jogoTravado = false;
 let horarioDaJogada = null;
+
 
 /* ========================= CRIA 00-99 ========================= */
 for (let i = 0; i < 100; i++) {
@@ -505,8 +505,7 @@ function toggleMenu(){
 }
 /* ========================= SELEÇÃO DE NÚMEROS ========================= */
 
-function toggleNumero(btn, num){
-function toggleNumero(btn, num){
+function toggleNumero(btn, num) {
 
   // 🔒 Se o jogo já foi salvo, trava tudo
   if (jogoTravado) {
@@ -514,30 +513,18 @@ function toggleNumero(btn, num){
     return;
   }
 
-  // ⛔ Se número está bloqueado no Firebase
+  // ⛔ Número bloqueado no Firebase
   if (btn.classList.contains("bloqueado")) return;
 
-  // 🔁 Permite marcar e desmarcar ANTES de salvar
-  if (btn.classList.contains("marcado")) {
-    btn.classList.remove("marcado");
-    selecionados = selecionados.filter(n => n !== num);
-  } else {
-    btn.classList.add("marcado");
-    selecionados.push(num);
-  }
-
-  atualizarTotais();
-}
-  // ⛔ Bloqueia clique se horário já passou
+  // ⛔ Verifica horário
   const horarioSelecionado = horariosSelect.value;
-  const agora = new Date();
-  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-
   if (!horarioSelecionado) {
     alert("Selecione um horário antes de marcar!");
     return;
   }
 
+  const agora = new Date();
+  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
   const [h, m] = horarioSelecionado.split(":").map(Number);
   const minutosHorario = h * 60 + m;
 
@@ -547,18 +534,17 @@ function toggleNumero(btn, num){
     return;
   }
 
-  // Se número está bloqueado, impede
-  if(btn.classList.contains("bloqueado")) return;
-
-  // Alterna marcação normalmente
-  if(btn.classList.contains("marcado")){
+  // 🔁 Alterna marcação
+  if (btn.classList.contains("marcado")) {
     btn.classList.remove("marcado");
     selecionados = selecionados.filter(n => n !== num);
   } else {
     btn.classList.add("marcado");
     selecionados.push(num);
 
-    if (!horarioDaJogada) horarioDaJogada = Date.now();
+    if (!horarioDaJogada) {
+      horarioDaJogada = Date.now();
+    }
   }
 
   atualizarTotais();
@@ -696,30 +682,6 @@ function atualizarHorariosDisponiveis() {
     horariosSelect.selectedIndex = 0;
   }
 }
-
-/* ========================= LIBERAR APÓS 30 MIN (local) ========================= */
-function liberarApos30Min() {
-  if (!horarioDaJogada) return;
-
-  const agora = Date.now();
-  const limite = horarioDaJogada + (30 * 60 * 1000); // 30 minutos
-
-  if (agora >= limite) {
-    // limpar marcações locais
-    document.querySelectorAll(".numero.marcado").forEach(btn =>
-      btn.classList.remove("marcado")
-    );
-
-    selecionados = [];
-    atualizarTotais();
-
-    horarioDaJogada = null;
-    console.log("✔ Números liberados (local) após 30 minutos");
-  }
-}
-
-/* ========================= LIBERAR APÓS 30 MIN (Firebase + UI) ========================= */
-
 /* ========================= GERAR CÓDIGO SIMPLES ========================= */
 function gerarCodigoSimples() {
   const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -794,7 +756,7 @@ salvarBtn.addEventListener('click', () => {
     Promise.all(promises).then(() => {
   alert("Reserva salva!");
   abrirModalPix();
-let jogoTravado = false;
+jogoTravado = true;
   atualizarBloqueados();
   carregarReservasDoDia(dataHoje);
 
@@ -820,9 +782,7 @@ carregarReservasDoDia(dataAtualReservas);
 atualizarHorariosDisponiveis();
 exibirNome();
 
-/* AUTO-VERIFICAÇÕES AGENDADAS 
-setInterval(liberarApos30Min, 30000);            // libera local a cada 30s (se passou 30min)
-setInterval(liberarApos30MinFirebase, 20000);    // verifica e remove expirados no //Firebase a cada 20s*/
+
 setInterval(atualizarHorariosDisponiveis, 60000);// atualiza horários a cada minuto
 /* ========================= LIMPAR TEXTAREA APÓS 00:00 ========================= */
 function limparTextareaSomenteQuaSab() {
