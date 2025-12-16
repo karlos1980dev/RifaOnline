@@ -272,6 +272,7 @@
 <body>
      
     <!-- MODAL PIX -->
+<!-- MODAL PIX -->
 <div id="modalPix" style="
   position:fixed;
   inset:0;
@@ -289,49 +290,43 @@
     padding:20px;
     border-radius:14px;
     text-align:center;
-    box-shadow:0 10px 30px rgba(0,0,0,.4);
   ">
-    <h2 style="margin-top:0">💰 Pagamento via PIX</h2>
+    <h2>💰 Pagamento via PIX</h2>
 
-    <p>Copie a chave PIX abaixo para efetuar o pagamento:</p>
+    <p>Copie a chave PIX abaixo:</p>
 
-    <div style="
+    <div id="pixChave" style="
       background:#f1f1f1;
       padding:12px;
       border-radius:8px;
       font-weight:bold;
       word-break:break-all;
-      margin-bottom:10px;
-    " id="pixChave">
+    ">
       71992290058
     </div>
 
     <button onclick="copiarPix()" style="
+      margin-top:10px;
       background:#27ae60;
       color:#fff;
-      padding:10px 16px;
+      padding:10px;
+      width:100%;
       border:none;
       border-radius:8px;
       font-size:16px;
-      cursor:pointer;
-      width:100%;
-      font-weight:bold;
     ">
-      📋 Copiar chave PIX
+      📋 Copiar PIX
     </button>
 
-    <p id="pixMsg" style="color:green;display:none;margin-top:8px;">
-      ✔ Chave PIX copiada!
-    </p>
+    <p id="pixMsg" style="color:green;display:none;">✔ PIX copiado!</p>
 
     <button onclick="fecharModalPix()" style="
-      margin-top:12px;
+      margin-top:10px;
       background:#ccc;
-      border:none;
-      padding:8px 14px;
-      border-radius:8px;
-      cursor:pointer;
+      padding:8px;
       width:100%;
+      border:none;
+      border-radius:8px;
     ">
       Fechar
     </button>
@@ -417,21 +412,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-/* =========================
-   LIMPAR TEXTAREA PELO PAINEL (FIREBASE)
-========================= */
-db.ref("controle/limparTextarea").on("value", snapshot => {
-  const dados = snapshot.val();
 
-  if (!dados || dados.limpar !== true) return;
-
-  console.log("🧹 Limpando SOMENTE o textarea pelo painel");
-
-  codigoTextarea.value = "Nenhuma reserva carregada.";
-
-  // evita loop
-  db.ref("controle/limparTextarea/limpar").set(false);
-});
 /* ========================= ELEMENTOS ========================= */
 const numerosDiv = document.getElementById('numeros');
 const valorInput = document.getElementById('valor');
@@ -452,9 +433,21 @@ const btnContinuar = document.getElementById('btnContinuar');
 let selecionados = [];
 let bloqueados = new Set();
 let dataAtualReservas = new Date().toISOString().slice(0,10);
-let jogoTravado = false;
-let horarioDaJogada = null;
 
+/* ========================= REGRAS DE DIA/HORA ========================= */
+function podeMarcarAgora() {
+  const agora = new Date();
+  const dia = agora.getDay(); // 0=dom
+  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+
+  if (dia === 0) return false; // domingo fechado
+
+  if (dia === 3 || dia === 6) {
+    return minutosAgora < (20 * 60); // quarta e sábado até 20:00
+  }
+
+  return true; // demais dias 24h
+}
 
 /* ========================= CRIA 00-99 ========================= */
 for (let i = 0; i < 100; i++) {
@@ -472,386 +465,176 @@ function abrirModalNome() {
   inputNome.value = localStorage.getItem('nomeJogador') || '';
   setTimeout(() => inputNome.focus(), 100);
 }
-function fecharModalNome() {
-  modalNome.classList.remove('show');
-}
+function fecharModalNome() { modalNome.classList.remove('show'); }
 function exibirNome() {
-  const n = localStorage.getItem('nomeJogador') || null;
-  nomeExibicao.textContent = n ? n : "Bem-vindo";
+  const n = localStorage.getItem('nomeJogador');
+  nomeExibicao.textContent = n ? n : 'Bem-vindo';
 }
 function garantirNome() {
-  const nomeSalvo = localStorage.getItem('nomeJogador');
-  if (!nomeSalvo || nomeSalvo.trim() === '') abrirModalNome();
-  else exibirNome();
+  const nome = localStorage.getItem('nomeJogador');
+  if (!nome) abrirModalNome(); else exibirNome();
 }
-btnContinuar.addEventListener('click', () => {
-  let v = inputNome.value.trim();
-  if (!v) {
-    alert('Digite um nome válido.');
-    inputNome.focus();
-    return;
-  }
+btnContinuar.onclick = () => {
+  const v = inputNome.value.trim();
+  if (!v) return alert('Digite um nome válido');
   localStorage.setItem('nomeJogador', v);
   fecharModalNome();
   exibirNome();
-});
-btnEditarNome.addEventListener('click', abrirModalNome);
+};
+btnEditarNome.onclick = abrirModalNome;
 
 /* ========================= MENU ========================= */
-btnMenu.addEventListener('click', toggleMenu);
-function toggleMenu(){
+btnMenu.onclick = () => {
   menuEl.classList.toggle('open');
   if (menuEl.classList.contains('open')) carregarReservasDoDia(dataAtualReservas);
-}
-/* ========================= SELEÇÃO DE NÚMEROS ========================= */
+};
 
+/* ========================= SELEÇÃO ========================= */
 function toggleNumero(btn, num) {
+  if (btn.classList.contains('bloqueado')) return;
 
-  // 🔒 Se o jogo já foi salvo, trava tudo
-  if (jogoTravado) {
-    alert("Este jogo já foi salvo. Aguarde o próximo sorteio.");
-    return;
-  }
+  if (!horariosSelect.value) return alert('Selecione um horário');
+  if (!podeMarcarAgora()) return alert('Marcações encerradas por hoje');
 
-  // ⛔ Número bloqueado no Firebase
-  if (btn.classList.contains("bloqueado")) return;
-
-  // ⛔ Verifica horário
-  const horarioSelecionado = horariosSelect.value;
-  if (!horarioSelecionado) {
-    alert("Selecione um horário antes de marcar!");
-    return;
-  }
-
-  const agora = new Date();
-const diaSemana = agora.getDay(); // 0=Dom ... 3=Qua ... 6=Sab
-
-// ⚠️ Bloqueia horário SOMENTE quarta (3) e sábado (6)
-if (diaSemana === 3 || diaSemana === 6) {
-
-  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-  const [h, m] = horarioSelecionado.split(":").map(Number);
-  const minutosHorario = h * 60 + m;
-
-  if (minutosHorario <= minutosAgora) {
-    alert("Este jogo já foi encerrado para hoje. Aguarde o próximo sorteio.");
-    horariosSelect.selectedIndex = 0;
-    return;
-  }
-}
-
-  // 🔁 Alterna marcação
-  if (btn.classList.contains("marcado")) {
-    btn.classList.remove("marcado");
+  if (btn.classList.contains('marcado')) {
+    btn.classList.remove('marcado');
     selecionados = selecionados.filter(n => n !== num);
   } else {
-    btn.classList.add("marcado");
+    btn.classList.add('marcado');
     selecionados.push(num);
-
-    if (!horarioDaJogada) {
-      horarioDaJogada = Date.now();
-    }
   }
 
   atualizarTotais();
 }
+
 /* ========================= TOTAIS ========================= */
 function atualizarTotais() {
-  const v = 1.00; // 🔒 VALOR FIXO
-
-  let qtd = selecionados.length;
-  totalPagarSpan.textContent = (v * qtd).toFixed(2).replace(".", ",");
-  totalReceberSpan.textContent = (v * 80).toFixed(2).replace(".", ",");
+  const v = 1.00;
+  const qtd = selecionados.length;
+  totalPagarSpan.textContent = (v * qtd).toFixed(2).replace('.', ',');
+  totalReceberSpan.textContent = (v * 80).toFixed(2).replace('.', ',');
 }
-valorInput.addEventListener('input', atualizarTotais);
 
-/* ========================= BLOQUEADOS (Firebase -> UI) ========================= */
+/* ========================= BLOQUEADOS ========================= */
 function atualizarBloqueados() {
-  db.ref('numerosBloqueados').once('value').then(snapshot => {
-    const dados = snapshot.val() || {};
-    bloqueados = new Set(Object.keys(dados));
-    atualizarBotoes();
-  }).catch(err => {
-    console.error("Erro ao buscar bloqueados:", err);
+  db.ref('numerosBloqueados').once('value').then(snap => {
+    bloqueados = new Set(Object.keys(snap.val() || {}));
+    document.querySelectorAll('.numero').forEach(btn => {
+      const n = btn.textContent;
+      if (bloqueados.has(n)) {
+        btn.classList.add('bloqueado');
+        btn.disabled = true;
+        btn.classList.remove('marcado');
+        selecionados = selecionados.filter(x => x !== n);
+      } else {
+        btn.classList.remove('bloqueado');
+        btn.disabled = false;
+      }
+    });
+    atualizarTotais();
   });
 }
 
-function atualizarBotoes() {
-  document.querySelectorAll('.numero').forEach(btn => {
-    const n = btn.textContent;
-
-    if (bloqueados.has(n)) {
-      btn.classList.add('bloqueado');
-      btn.disabled = true;
-      btn.classList.remove('marcado');
-      selecionados = selecionados.filter(x => x !== n);
-    } else {
-      btn.classList.remove('bloqueado');
-      btn.disabled = false;
-    }
-  });
-
-  atualizarTotais();
-}
-
-/* ========================= RESERVAS DO DIA (display) ========================= */
-function atualizarTextareaReservas(dadosPorHorario) {
-
+/* ========================= TEXTAREA (NUNCA LIMPA AUTOMÁTICO) ========================= */
+function atualizarTextareaReservas(dados) {
   let texto = cabecalhoDataJogo();
 
-  if (!dadosPorHorario || Object.keys(dadosPorHorario).length === 0) {
-    codigoTextarea.value = texto + "Nenhuma reserva para este jogo.";
+  if (!dados || Object.keys(dados).length === 0) {
+    codigoTextarea.value = texto + 'Nenhuma reserva para este jogo.';
     return;
   }
 
-  for (let horario of Object.keys(dadosPorHorario).sort()) {
+  for (const horario of Object.keys(dados).sort()) {
     texto += `\n[ HORARIO ] => ${horario}\n\n`;
 
-    for (let key in dadosPorHorario[horario]) {
-      const d = dadosPorHorario[horario][key];
+    for (const k in dados[horario]) {
+      const d = dados[horario][k];
+      const qtd = d.numeros.length;
+      const valor = (qtd * 1).toFixed(2).replace('.', ',');
 
-      const numeros = Array.isArray(d.numeros) ? d.numeros.join("-") : "";
-      const nome = d.nome || "Sem nome";
-      const valor = d.valorUnitario
-        ? "R$ " + Number(d.valorUnitario).toFixed(2).replace(".", ",")
-        : "";
-
-      let statusTexto = "⏳ AGUARDANDO";
-      if (d.status === "pagou") statusTexto = "✅ PAGOU";
-      if (d.status === "cancelou") statusTexto = "❌ CANCELOU";
-
-      let resultadoTexto = "⏳ AGUARDANDO";
-      if (d.resultado === "ganhou") resultadoTexto = "🟢 GANHOU";
-      if (d.resultado === "perdeu") resultadoTexto = "🔴 PERDEU";
-
-      texto +=
-`${nome} - ${numeros} ${valor}
-STATUS: ${statusTexto}
-RESULTADO: ${resultadoTexto}
+      texto += 
+`Nome: ${d.nome}
+Números: ${d.numeros.join('-')}
+Quantidade: ${qtd}
+Valor a pagar: R$ ${valor}
 -------------------------\n`;
     }
   }
 
   codigoTextarea.value = texto;
 }
-
 function carregarReservasDoDia(data) {
-  db.ref(`compras-dia/${data}`).once('value').then(snapshot => {
-    atualizarTextareaReservas(snapshot.val() || {});
-  }).catch(err => {
-    console.error("Erro ao carregar reservas do dia:", err);
-    codigoTextarea.value = "Erro ao carregar reservas.";
+  db.ref(`compras-dia/${data}`).once('value').then(snap => {
+    atualizarTextareaReservas(snap.val());
   });
 }
 
-/* ========================= HORÁRIOS DISPONÍVEIS (marca próximo e bloqueia passado visualmente) ========================= */
-function getHoraAtual() {
-  const now = new Date();
-  return `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-}
+/* ========================= SALVAR ========================= */
+salvarBtn.onclick = () => {
+  if (selecionados.length === 0) return alert('Selecione números');
+  if (!podeMarcarAgora()) return alert('Prazo encerrado');
 
-function atualizarHorariosDisponiveis() {
-  const agora = new Date();
-  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-
-  let encontrouProximo = false;
-
-  [...horariosSelect.options].forEach(opt => {
-    if (!opt.value) return; // ignorar placeholder
-
-    const [h, m] = opt.value.split(":").map(Number);
-    const minutosOpt = h * 60 + m;
-
-    if (minutosOpt <= minutosAgora) {
-      // horário passado → bloqueia (apenas visual)
-      opt.disabled = true;
-      opt.style.color = "#777";
-      opt.style.background = "transparent";
-    } else {
-      // horário futuro → disponível
-      opt.disabled = false;
-      opt.style.color = "#fff";
-      opt.style.background = "transparent";
-
-      // marca o próximo horário disponível automaticamente
-      if (!encontrouProximo) {
-        opt.selected = true;
-        encontrouProximo = true;
-      } else {
-        opt.selected = false;
-      }
-    }
-  });
-
-  // se não encontrou nenhum futuro, volta placeholder
-  if (!encontrouProximo) {
-    horariosSelect.selectedIndex = 0;
-  }
-}
-/* ========================= GERAR CÓDIGO SIMPLES ========================= */
-function gerarCodigoSimples() {
-  const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  return (
-    "RIFA-" +
-    letras[Math.floor(Math.random() * letras.length)] +
-    letras[Math.floor(Math.random() * letras.length)] +
-    Math.floor(100 + Math.random() * 900)
-  );
-}
-
-/* ========================= SALVAR + ENVIAR WHATSAPP ========================= */
-salvarBtn.addEventListener('click', () => {
-  if (selecionados.length === 0) return alert("Selecione pelo menos um número!");
+  const nome = localStorage.getItem('nomeJogador') || 'Sem nome';
   const horario = horariosSelect.value;
-  if (!horario) return alert("Selecione um horário!");
+  const dataHoje = new Date().toISOString().slice(0,10);
+  const chave = 'ID-' + Date.now();
 
-  let v = parseFloat((valorInput.value || "0").replace(",", "."));
-  if (isNaN(v) || v <= 0) return alert("Digite um valor maior que zero!");
+  const dados = {
+    nome,
+    numeros: [...selecionados],
+    horario,
+    dataHora: new Date().toLocaleString()
+  };
 
-  const nome = localStorage.getItem("nomeJogador") || "Sem nome";
-
-  // horário real da jogada
-  const tempoAgora = Date.now();
-
-  // Verificar conflito (último snapshot)
-  db.ref('numerosBloqueados').once('value').then(snap => {
-    const dados = snap.val() || {};
-    const conflito = selecionados.find(n => dados[n]);
-
-    if (conflito) {
-      alert(`O número ${conflito} já está reservado.`);
-      atualizarBloqueados();
-      return;
-    }
-
-    const chave = "ID-" + Date.now();
-    const codigoSimples = gerarCodigoSimples();
-    const dataHoje = new Date().toISOString().slice(0,10);
-    const dataHora = new Date().toLocaleString();
-    const valorPago = Number((v * selecionados.length).toFixed(2));
-    const aReceber = Number((valorPago * 80).toFixed(2));
-
-  const dadosFinal = {
-  nome,
-  numeros: [...selecionados],
-  dataHora,
-  codigo: codigoSimples,
-  horarioEscolhido: horario,
-  valorUnitario: v,
-  quantidade: selecionados.length,
-  valorPago,
-  aReceber,
-  status: "aguardando",
-  resultado: "aguardando"
-};
-
-    // Promessas para salvar a compra e bloquear números
-    let promises = [
-      db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dadosFinal)
-    ];
-
-    selecionados.forEach(n => {
-      promises.push(
-        db.ref("numerosBloqueados/" + n).set({
-          bloqueadoEm: tempoAgora
-        })
+  db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados)
+    .then(() => {
+      const updates = selecionados.map(n =>
+        db.ref('numerosBloqueados/' + n).set(true)
       );
+      return Promise.all(updates);
+    })
+    .then(() => {
+      // ✅ AQUI ABRE O MODAL PIX
+      abrirModalPix();
+
+      selecionados = [];
+      document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
+      atualizarTotais();
+      atualizarBloqueados();
+      carregarReservasDoDia(dataHoje);
     });
-
-    // Executa todas as gravações
-    Promise.all(promises).then(() => {
-  alert("Reserva salva!");
-  abrirModalPix();
-jogoTravado = true;
-  atualizarBloqueados();
-  carregarReservasDoDia(dataHoje);
-
-  selecionados = [];
-  document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
-  atualizarTotais();
-  horariosSelect.selectedIndex = 0;
-  
-}).catch(err => {
-      console.error("Erro ao salvar reserva:", err);
-      alert("Erro ao salvar. Tente novamente.");
-    });
-  }).catch(err => {
-    console.error("Erro ao verificar bloqueios:", err);
-    alert("Erro de verificação. Tente novamente.");
-  });
-});
-
-/* ========================= INICIALIZAÇÕES ========================= */
-garantirNome();
-atualizarBloqueados();
-carregarReservasDoDia(dataAtualReservas);
-atualizarHorariosDisponiveis();
-exibirNome();
-
-
-setInterval(atualizarHorariosDisponiveis, 60000);// atualiza horários a cada minuto
-/* ========================= LIMPAR TEXTAREA APÓS 00:00 ========================= */
+};
+/* ========================= LIMPAR SOMENTE QUA/SAB 00:00 ========================= */
 function limparTextareaSomenteQuaSab() {
   const agora = new Date();
-  const dia = agora.getDay(); // 0=dom, 3=qua, 6=sab
-  const horas = agora.getHours();
-  const minutos = agora.getMinutes();
+  const dia = agora.getDay();
+  const h = agora.getHours();
+  const m = agora.getMinutes();
+  const hoje = agora.toISOString().slice(0,10);
 
-  const hoje = agora.toISOString().slice(0, 10);
-  const ultimaLimpeza = localStorage.getItem("ultimaLimpezaTextarea");
-
-  // SOMENTE quarta ou sábado às 00:00 (uma vez por dia)
-  if (
-    (dia === 3 || dia === 6) &&
-    horas === 0 &&
-    minutos === 0 &&
-    ultimaLimpeza !== hoje
-  ) {
-    console.log("🧹 Limpando textarea (quarta/sábado 00:00)");
-
-    codigoTextarea.value = "Nenhuma reserva carregada.";
-
-    // marca que já limpou hoje
-    localStorage.setItem("ultimaLimpezaTextarea", hoje);
+  if ((dia === 3 || dia === 6) && h === 0 && m === 0) {
+    if (localStorage.getItem('ultimaLimpeza') !== hoje) {
+      codigoTextarea.value = 'Nenhuma reserva carregada.';
+      localStorage.setItem('ultimaLimpeza', hoje);
+    }
   }
 }
-
-// verifica a cada 1 minuto
 setInterval(limparTextareaSomenteQuaSab, 60000);
 
+/* ========================= DATA DO JOGO ========================= */
 function proximaDataDeJogo() {
   const hoje = new Date();
-  const diaHoje = hoje.getDay(); // 0=dom ... 3=qua ... 6=sab
-
-  let diasAdicionar = 0;
-  let diaJogo = "";
-
-  if (diaHoje <= 3) {
-    // Ainda pode ir para quarta
-    diasAdicionar = 3 - diaHoje;
-    diaJogo = "Quarta-feira";
-  } else if (diaHoje > 3 && diaHoje <= 6) {
-    // Vai para sábado
-    diasAdicionar = 6 - diaHoje;
-    diaJogo = "Sábado";
-  }
-
-  const dataJogo = new Date(hoje);
-  dataJogo.setDate(hoje.getDate() + diasAdicionar);
-
-  return {
-    diaSemana: diaJogo,
-    data: dataJogo
-  };
+  const d = hoje.getDay();
+  let alvo = d <= 3 ? 3 : 6;
+  let add = alvo - d;
+  if (add < 0) add += 7;
+  const data = new Date(hoje);
+  data.setDate(hoje.getDate() + add);
+  return data;
 }
-function formatarDataBR(data) {
-  return data.toLocaleDateString("pt-BR");
-}
-function atualizarDataJogo() {
-  const info = proximaDataDeJogo();
-  const el = document.getElementById("dataJogo");
-
-  el.innerHTML = `📅 Próximo jogo: <strong>${info.diaSemana}</strong> - ${formatarDataBR(info.data)}`;
+function cabecalhoDataJogo() {
+  const d = proximaDataDeJogo();
+  return `📅 DATA DO JOGO: ${d.toLocaleDateString('pt-BR')}\n==========================\n\n`;
 }
 function abrirModalPix() {
   document.getElementById("modalPix").style.display = "flex";
@@ -864,55 +647,41 @@ function fecharModalPix() {
 
 function copiarPix() {
   const chave = document.getElementById("pixChave").innerText;
-
   navigator.clipboard.writeText(chave).then(() => {
     document.getElementById("pixMsg").style.display = "block";
-  }).catch(() => {
-    alert("Não foi possível copiar a chave PIX.");
   });
 }
-function cabecalhoDataJogo() {
-  const info = proximaDataDeJogo();
-  return (
-    `📅 DATA DO JOGO: ${info.diaSemana} - ${formatarDataBR(info.data)}\n` +
-    `==========================\n\n`
-  );
-}
+/* ========================= INIT ========================= */
+garantirNome();
+exibirNome();
+atualizarBloqueados();
+carregarReservasDoDia(dataAtualReservas);
 
-function desmarcarBotoesQuaSabMeiaNoite() {
+function limparJogoQuaSab20h() {
   const agora = new Date();
   const dia = agora.getDay(); // 3=quarta | 6=sábado
-  const horas = agora.getHours();
-  const minutos = agora.getMinutes();
+  const h = agora.getHours();
+  const hoje = agora.toISOString().slice(0,10);
 
-  const hoje = agora.toISOString().slice(0, 10);
-  const ultimaExecucao = localStorage.getItem("ultimaDesmarcacao");
+  if ((dia === 3 || dia === 6) && h === 20) {
+    if (localStorage.getItem('ultimoReset') !== hoje) {
 
-  if (
-    (dia === 3 || dia === 6) &&
-    horas === 0 &&
-    minutos === 0 &&
-    ultimaExecucao !== hoje
-  ) {
-    console.log("🔄 Novo jogo liberado");
+      // 🔥 LIMPA BLOQUEIOS
+      db.ref('numerosBloqueados').remove();
 
-    // 🔓 libera novo jogo
-    jogoTravado = false;
+      // 🔥 LIMPA RESERVAS DO DIA
+      db.ref('compras-dia/' + hoje).remove();
 
-    // limpa marcações
-    document.querySelectorAll(".numero.marcado").forEach(btn => {
-      btn.classList.remove("marcado");
-    });
+      // 🔥 LIMPA TEXTO VISUAL
+      codigoTextarea.value = 'Nenhuma reserva carregada.';
 
-    selecionados = [];
-    atualizarTotais();
+      localStorage.setItem('ultimoReset', hoje);
 
-    localStorage.setItem("ultimaDesmarcacao", hoje);
+      console.log('✅ Jogo resetado (quarta/sábado 20h)');
+    }
   }
 }
-setInterval(desmarcarBotoesQuaSabMeiaNoite, 60000);
-atualizarDataJogo();
-setInterval(atualizarDataJogo, 60000); // atualiza a cada 1 minuto
+setInterval(limparJogoQuaSab20h, 60000); // verifica a cada 1 min
 </script>
 </body>
 </html>   
