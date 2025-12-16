@@ -252,21 +252,27 @@
     .pequeno { font-size:13px; color:#ccc; margin-top:10px; }
 .visualizador {
   width: 100%;
-  height: 250px;
+  height: 350px;
   background: #111;
   color: #fff;
   padding: 10px;
-  border-radius: 6px;
+  border-radius: 10px;
   overflow-y: auto;
   white-space: pre-wrap;
   font-family: monospace;
   border: 1px solid #444;
 }
-.visualizador .verde {
-  color: #00ff00;
-  font-weight: bold;
+.verde { color:#00ff00; font-weight:bold; }
+.amarelo { color:gold; font-weight:bold; }
+.vermelho { color:#ff4d4d; font-weight:bold; }
+/* FORÇA ALINHAMENTO À ESQUERDA NO MENU */
+#menu,
+#menu * {
+  text-align: left;
 }
-
+#nomeExibicao {
+  color: #2ecc71; /* verde */
+}
   </style>
 </head>
 <body>
@@ -365,7 +371,7 @@
   
   <div id="menu" aria-hidden="true">
     <h3>Reservas do dia</h3>
-    <textarea  contenteditable="false" class="visualizador" id="codigo" readonly>Nenhuma reserva carregada.</textarea>
+    <div class="visualizador" id="codigo">Nenhuma reserva carregada</div>
     
   </div>
 
@@ -416,7 +422,7 @@ const db = firebase.database();
 /* ========================= ELEMENTOS ========================= */
 const numerosDiv = document.getElementById('numeros');
 const valorInput = document.getElementById('valor');
-const codigoTextarea = document.getElementById('codigo');
+const codigo = document.getElementById('codigo');
 const horariosSelect = document.getElementById('horarios');
 const totalPagarSpan = document.getElementById('totalPagar');
 const totalReceberSpan = document.getElementById('totalReceber');
@@ -536,33 +542,50 @@ function atualizarBloqueados() {
 }
 
 /* ========================= TEXTAREA (NUNCA LIMPA AUTOMÁTICO) ========================= */
+
 function atualizarTextareaReservas(dados) {
-  let texto = cabecalhoDataJogo();
+  let html = cabecalhoDataJogo().replace(/\n/g, '<br>');
 
   if (!dados || Object.keys(dados).length === 0) {
-    codigoTextarea.value = texto + 'Nenhuma reserva para este jogo.';
+    codigo.innerHTML = html + 'Nenhuma reserva para este jogo.';
     return;
   }
 
   for (const horario of Object.keys(dados).sort()) {
-    texto += `\n[ HORARIO ] => ${horario}\n\n`;
+    html += `<br><strong>[ HORARIO ] => ${horario}</strong><br><br>`;
 
     for (const k in dados[horario]) {
       const d = dados[horario][k];
+
       const qtd = d.numeros.length;
       const valor = (qtd * 1).toFixed(2).replace('.', ',');
 
-      texto += 
-`Nome: ${d.nome}
-Números: ${d.numeros.join('-')}
+      const status = d.status || 'AGUARDANDO';
+      const resultado = d.resultado || 'AGUARDANDO';
+
+      const corStatus =
+  status.includes('PAGO') ? 'verde' :
+  status.includes('CANCELADO') ? 'vermelho' : 'amarelo';
+
+const corResultado =
+  resultado.includes('GANHOU') ? 'verde' :
+  resultado.includes('PERDEU') ? 'vermelho' : 'amarelo';
+
+      html += `
+Nome: <span class="verde">${d.nome}</span><br>
+Números: ${d.numeros.join('-')}<br>
 Quantidade: ${qtd}
 Valor a pagar: R$ ${valor}
--------------------------\n`;
+Status: <span class="${corStatus}">${status}</span>
+Resultado: <span class="${corResultado}">${resultado}</span>
+-------------------------<br>
+`;
     }
   }
 
-  codigoTextarea.value = texto;
+  codigo.innerHTML = html;
 }
+
 function carregarReservasDoDia(data) {
   db.ref(`compras-dia/${data}`).once('value').then(snap => {
     atualizarTextareaReservas(snap.val());
@@ -580,12 +603,13 @@ salvarBtn.onclick = () => {
   const chave = 'ID-' + Date.now();
 
   const dados = {
-    nome,
-    numeros: [...selecionados],
-    horario,
-    dataHora: new Date().toLocaleString()
-  };
-
+  nome,
+  numeros: [...selecionados],
+  horario,
+  status: '⏳ AGUARDANDO',
+  resultado: '⏳ AGUARDANDO',
+  dataHora: new Date().toLocaleString()
+};
   db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados)
     .then(() => {
       const updates = selecionados.map(n =>
@@ -612,12 +636,12 @@ function limparTextareaSomenteQuaSab() {
   const m = agora.getMinutes();
   const hoje = agora.toISOString().slice(0,10);
 
-  if ((dia === 3 || dia === 6) && h === 0 && m === 0) {
-    if (localStorage.getItem('ultimaLimpeza') !== hoje) {
-      codigoTextarea.value = 'Nenhuma reserva carregada.';
-      localStorage.setItem('ultimaLimpeza', hoje);
-    }
+ if ((dia === 3 || dia === 6) && h === 0 && m === 0) {
+  if (localStorage.getItem('ultimaLimpeza') !== hoje) {
+    codigo.innerHTML = 'Nenhuma reserva carregada.';
+    localStorage.setItem('ultimaLimpeza', hoje);
   }
+}
 }
 setInterval(limparTextareaSomenteQuaSab, 60000);
 
@@ -673,7 +697,7 @@ function limparJogoQuaSab20h() {
       db.ref('compras-dia/' + hoje).remove();
 
       // 🔥 LIMPA TEXTO VISUAL
-      codigoTextarea.value = 'Nenhuma reserva carregada.';
+      codigo.innerHTML = 'Nenhuma reserva carregada.';
 
       localStorage.setItem('ultimoReset', hoje);
 
@@ -684,4 +708,4 @@ function limparJogoQuaSab20h() {
 setInterval(limparJogoQuaSab20h, 60000); // verifica a cada 1 min
 </script>
 </body>
-</html>   
+</html>    
