@@ -274,9 +274,11 @@
   color: #2ecc71; /* verde */
 }
 .numero.extra {
-  background: linear-gradient(135deg, gold, orange);
+  background: linear-gradient(135deg, #FFD700, #FFA500);
   color: #000;
   font-weight: bold;
+  border: 2px solid #fff3b0;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.9);
 }
   </style>
 </head>
@@ -505,6 +507,7 @@ btnMenu.onclick = () => {
 /* ========================= SELEÇÃO ========================= */
 function toggleNumero(btn, num) {
   if (btn.classList.contains('bloqueado')) return;
+  if (btn.classList.contains('extra')) return; // 🔒 BLOQUEIA EXTRA
   if (!podeMarcarAgora()) return alert('Marcações encerradas por hoje');
 
   if (btn.classList.contains('marcado')) {
@@ -517,6 +520,7 @@ function toggleNumero(btn, num) {
 
   atualizarTotais();
 }
+
 /* ========================= TOTAIS ========================= */
 function atualizarTotais() {
   const v = 1.00;
