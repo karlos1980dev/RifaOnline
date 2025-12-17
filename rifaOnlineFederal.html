@@ -273,6 +273,11 @@
 #nomeExibicao {
   color: #2ecc71; /* verde */
 }
+.numero.extra {
+  background: linear-gradient(135deg, gold, orange);
+  color: #000;
+  font-weight: bold;
+}
   </style>
 </head>
 <body>
@@ -523,29 +528,60 @@ function atualizarTotais() {
 /* ========================= BLOQUEADOS ========================= */
 function atualizarBloqueados() {
   db.ref('numerosBloqueados').once('value').then(snap => {
-    bloqueados = new Set(Object.keys(snap.val() || {}));
+    const dados = snap.val() || {};
+    bloqueados = new Set(Object.keys(dados));
 
     document.querySelectorAll('.numero').forEach(btn => {
       const n = btn.textContent;
+      const info = dados[n];
 
-      // bloqueado no Firebase
-      if (bloqueados.has(n)) {
+      btn.classList.remove('extra');
+
+      if (info) {
         btn.classList.add('bloqueado');
-        btn.classList.remove('marcado');
         btn.disabled = true;
+
+        if (info.extra) {
+          btn.classList.add('extra'); // 🎁
+        }
+
+        btn.classList.remove('marcado');
+        selecionados = selecionados.filter(x => x !== n);
       } else {
         btn.classList.remove('bloqueado');
         btn.disabled = false;
-
-        // 🔒 reaplica seleção local
-        if (selecionados.includes(n)) {
-          btn.classList.add('marcado');
-        }
       }
     });
+
+    atualizarTotais();
   });
 }
+
 /* ========================= TEXTAREA (NUNCA LIMPA AUTOMÁTICO) ========================= */
+function gerarDezenasExtras(qtd, jaSelecionados, jaBloqueados) {
+  const extrasQtd = Math.floor(qtd / 10);
+  if (extrasQtd === 0) return [];
+
+  let extras = [];
+  let tentativas = 0;
+
+  while (extras.length < extrasQtd && tentativas < 500) {
+    const n = Math.floor(Math.random() * 100)
+      .toString()
+      .padStart(2, '0');
+
+    if (
+      !jaSelecionados.includes(n) &&
+      !jaBloqueados.has(n) &&
+      !extras.includes(n)
+    ) {
+      extras.push(n);
+    }
+    tentativas++;
+  }
+
+  return extras;
+}
 
 function atualizarTextareaReservas(dados) {
   let html = cabecalhoDataJogo().replace(/\n/g, '<br>');
@@ -575,9 +611,14 @@ const corResultado =
   resultado.includes('GANHOU') ? 'verde' :
   resultado.includes('PERDEU') ? 'vermelho' : 'amarelo';
 
-      html += `
+      let extrasTxt = '';
+if (d.dezenasExtras && d.dezenasExtras.length) {
+  extrasTxt = `<br><strong>🎁 Dzn extra:</strong> ${d.dezenasExtras.join('-')}`;
+}
+
+html += `
 Nome: <span class="verde">${d.nome}</span><br>
-Números: ${d.numeros.join('-')} <br>
+Números: ${d.numeros.join('-')} ${extrasTxt}<br>
 Quantidade: ${qtd}
 Valor a pagar: R$ ${valor}
 Status: <span class="${corStatus}">${status}</span>
@@ -606,27 +647,44 @@ salvarBtn.onclick = () => {
   const dataHoje = new Date().toISOString().slice(0,10);
   const chave = 'ID-' + Date.now();
 
+  // 🎁 GERA DEZENAS EXTRAS
+  const dezenasExtras = gerarDezenasExtras(
+    selecionados.length,
+    selecionados,
+    bloqueados
+  );
+
+  // 🔢 TODOS OS NÚMEROS QUE SERÃO BLOQUEADOS
+  const todosNumeros = [...selecionados, ...dezenasExtras];
+
   const dados = {
-  nome,
-  numeros: [...selecionados],
-  horario,
-  status: '⏳ AGUARDANDO',
-  resultado: '⏳ AGUARDANDO',
-  dataHora: new Date().toLocaleString()
-};
+    nome,
+    numeros: [...selecionados],
+    dezenasExtras,
+    horario,
+    status: '⏳ AGUARDANDO',
+    resultado: '⏳ AGUARDANDO',
+    dataHora: new Date().toLocaleString()
+  };
+
   db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados)
     .then(() => {
-      const updates = selecionados.map(n =>
-        db.ref('numerosBloqueados/' + n).set(true)
-      );
-      return Promise.all(updates);
+      // 🔒 BLOQUEIA PAGOS + EXTRAS
+      const updates = {};
+      todosNumeros.forEach(n => {
+        updates['numerosBloqueados/' + n] = {
+          bloqueadoEm: Date.now(),
+          extra: dezenasExtras.includes(n)
+        };
+      });
+      return db.ref().update(updates);
     })
     .then(() => {
-      // ✅ AQUI ABRE O MODAL PIX
       abrirModalPix();
 
       selecionados = [];
       document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
+
       atualizarTotais();
       atualizarBloqueados();
       carregarReservasDoDia(dataHoje);
