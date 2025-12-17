@@ -298,7 +298,7 @@
     text-align:center;
   ">
     <h2>💰 Pagamento via PIX</h2>
-
+<p><strong>Valor a pagar: R$ <span id="valorPix">0,00</span></strong></p>
     <p>Copie a chave PIX abaixo:</p>
 
     <div id="pixChave" style="
@@ -389,7 +389,9 @@
     
   </div>
   
-   <p id="dataJogo" style="color:gold;font-weight:bold;"></p>
+      <p id="dataJogo" style="color:gold;font-weight:bold;"></p>
+      
+      
 <div id="numeros" aria-label="Números da rifa"></div>
 <p id="rodapeInfo">SORTE E SUA A GARANTIA E NOSSA </br>JOGUE COM RESPONSABILIDADE</p>
 
@@ -498,8 +500,6 @@ btnMenu.onclick = () => {
 /* ========================= SELEÇÃO ========================= */
 function toggleNumero(btn, num) {
   if (btn.classList.contains('bloqueado')) return;
-
-  if (!horariosSelect.value) return alert('Selecione um horário');
   if (!podeMarcarAgora()) return alert('Marcações encerradas por hoje');
 
   if (btn.classList.contains('marcado')) {
@@ -512,7 +512,6 @@ function toggleNumero(btn, num) {
 
   atualizarTotais();
 }
-
 /* ========================= TOTAIS ========================= */
 function atualizarTotais() {
   const v = 1.00;
@@ -525,22 +524,27 @@ function atualizarTotais() {
 function atualizarBloqueados() {
   db.ref('numerosBloqueados').once('value').then(snap => {
     bloqueados = new Set(Object.keys(snap.val() || {}));
+
     document.querySelectorAll('.numero').forEach(btn => {
       const n = btn.textContent;
+
+      // bloqueado no Firebase
       if (bloqueados.has(n)) {
         btn.classList.add('bloqueado');
-        btn.disabled = true;
         btn.classList.remove('marcado');
-        selecionados = selecionados.filter(x => x !== n);
+        btn.disabled = true;
       } else {
         btn.classList.remove('bloqueado');
         btn.disabled = false;
+
+        // 🔒 reaplica seleção local
+        if (selecionados.includes(n)) {
+          btn.classList.add('marcado');
+        }
       }
     });
-    atualizarTotais();
   });
 }
-
 /* ========================= TEXTAREA (NUNCA LIMPA AUTOMÁTICO) ========================= */
 
 function atualizarTextareaReservas(dados) {
@@ -573,7 +577,7 @@ const corResultado =
 
       html += `
 Nome: <span class="verde">${d.nome}</span><br>
-Números: ${d.numeros.join('-')}<br>
+Números: ${d.numeros.join('-')} <br>
 Quantidade: ${qtd}
 Valor a pagar: R$ ${valor}
 Status: <span class="${corStatus}">${status}</span>
@@ -660,8 +664,12 @@ function cabecalhoDataJogo() {
   const d = proximaDataDeJogo();
   return `📅 DATA DO JOGO: ${d.toLocaleDateString('pt-BR')}\n==========================\n\n`;
 }
+        
+        
 function abrirModalPix() {
-  document.getElementById("modalPix").style.display = "flex";
+ document.getElementById('valorPix').textContent = totalPagarSpan.textContent;
+
+ document.getElementById("modalPix").style.display = "flex";
   document.getElementById("pixMsg").style.display = "none";
 }
 
@@ -675,37 +683,29 @@ function copiarPix() {
     document.getElementById("pixMsg").style.display = "block";
   });
 }
-/* ========================= INIT ========================= */
+
+/* ========================= CORREÇÃO DA DATA DO JOGO ========================= */
+function formatarDataBR(data) {
+  return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function atualizarDataJogo() {
+  const dataJogo = proximaDataDeJogo();
+  const diaSemana = dataJogo.toLocaleDateString('pt-BR', { weekday: 'long' });
+  const el = document.getElementById("dataJogo");
+  
+  el.innerHTML = `📅 Próximo jogo: <strong>${diaSemana}</strong> - ${formatarDataBR(dataJogo)}`;
+}
+
+/* ========================= INIT ATUALIZADO ========================= */
 garantirNome();
 exibirNome();
 atualizarBloqueados();
 carregarReservasDoDia(dataAtualReservas);
+atualizarDataJogo(); // Agora chamamos a função para mostrar a data
 
-function limparJogoQuaSab20h() {
-  const agora = new Date();
-  const dia = agora.getDay(); // 3=quarta | 6=sábado
-  const h = agora.getHours();
-  const hoje = agora.toISOString().slice(0,10);
-
-  if ((dia === 3 || dia === 6) && h === 20) {
-    if (localStorage.getItem('ultimoReset') !== hoje) {
-
-      // 🔥 LIMPA BLOQUEIOS
-      db.ref('numerosBloqueados').remove();
-
-      // 🔥 LIMPA RESERVAS DO DIA
-      db.ref('compras-dia/' + hoje).remove();
-
-      // 🔥 LIMPA TEXTO VISUAL
-      codigo.innerHTML = 'Nenhuma reserva carregada.';
-
-      localStorage.setItem('ultimoReset', hoje);
-
-      console.log('✅ Jogo resetado (quarta/sábado 20h)');
-    }
-  }
-}
-setInterval(limparJogoQuaSab20h, 60000); // verifica a cada 1 min
 </script>
 </body>
 </html>    
+
+  
