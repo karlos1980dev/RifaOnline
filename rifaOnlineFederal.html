@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rifa da Sorte 1 pra 80</title>
+  <title>Rifa da Sorte Entre Amigos 1 pra 80</title>
   <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
 <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -379,10 +379,80 @@
       <button id="btnEditarNome" title="Alterar nome">Editar</button>
     </div>
   </div>
+<div id="modalPixAdmin" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  ">
+    <h2>🔐 Definir PIX</h2>
 
+    <input id="inputPixAdmin" type="text" placeholder="Digite a chave PIX"
+      style="
+        width:100%;
+        padding:12px;
+        font-size:16px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        margin-bottom:10px;
+      "
+    >
+
+    <button onclick="salvarPixAdmin()" style="
+      width:100%;
+      padding:10px;
+      background:#27ae60;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      font-weight:bold;
+    ">
+      💾 Salvar PIX
+    </button>
+
+    <button onclick="fecharPixAdmin()" style="
+      width:100%;
+      margin-top:8px;
+      padding:8px;
+      background:#ccc;
+      border:none;
+      border-radius:8px;
+    ">
+      Cancelar
+    </button>
+  </div>
+</div>
   <!-- MENU LATERAL -->
   
   <div id="menu" aria-hidden="true">
+      <button id="btnPixAdmin" style="
+  width:100%;
+  text-align:center;
+  padding:10px;
+  margin-bottom:10px;
+  background:#27ae60;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+">
+💳 RECEBER O PREMIO 
+</button>
     <h3>Reservas do dia</h3>
     <div class="visualizador" id="codigo">Nenhuma reserva carregada</div>
     
@@ -858,6 +928,45 @@ function salvarHistoricoAutomatico() {
   });
 
   console.log('📦 Histórico salvo:', id);
+}
+function podeAbrirPixAdmin() {
+  const agora = new Date();
+  const dia = agora.getDay(); // 3 = quarta | 6 = sábado
+  const minutos = agora.getHours() * 60 + agora.getMinutes();
+
+  // só quarta e sábado
+  if (dia !== 3 && dia !== 6) return false;
+
+  // só após 20:00
+  return minutos >= (20 * 60);
+}
+const btnPixAdmin = document.getElementById('btnPixAdmin');
+const modalPixAdmin = document.getElementById('modalPixAdmin');
+const inputPixAdmin = document.getElementById('inputPixAdmin');
+
+btnPixAdmin.onclick = () => {
+  if (!podeAbrirPixAdmin()) {
+    alert('🔒 PIX do Ganhador será liberado às 20:30');
+    return;
+  }
+  inputPixAdmin.value = '';
+  modalPixAdmin.style.display = 'flex';
+};
+
+function salvarPixAdmin() {
+  const pix = inputPixAdmin.value.trim();
+  if (!pix) {
+    alert('Digite um PIX válido');
+    return;
+  }
+
+  db.ref('admin/config/pix').set({
+    chave: pix,
+    atualizadoEm: Date.now()
+  }).then(() => {
+    alert('✅ PIX salvo (somente no painel)');
+    fecharPixAdmin();
+  });
 }
 /* ========================= INIT ATUALIZADO ========================= */
 garantirNome();
