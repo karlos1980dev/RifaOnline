@@ -280,6 +280,12 @@
   border: 2px solid #fff3b0;
   box-shadow: 0 0 8px rgba(255, 215, 0, 0.9);
 }
+.numero.bloqueado.extra {
+  background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+  color: #000 !important;
+  border: 2px solid #fff3b0;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.95);
+}
   </style>
 </head>
 <body>
@@ -694,23 +700,46 @@ salvarBtn.onclick = () => {
       carregarReservasDoDia(dataHoje);
     });
 };
-/* ========================= LIMPAR SOMENTE QUA/SAB 00:00 ========================= */
-function limparTextareaSomenteQuaSab() {
+function limparJogoQuaSab20h() {
   const agora = new Date();
   const dia = agora.getDay();
+  const h = agora.getHours();
+  const hoje = agora.toISOString().slice(0,10);
+
+  if ((dia === 3 || dia === 6) && h === 20) {
+    if (localStorage.getItem('ultimoReset') !== hoje) {
+
+      jogoEncerrado = true; // 🔒 trava atualização visual
+      db.ref('numerosBloqueados').remove();
+
+      localStorage.setItem('ultimoReset', hoje);
+      console.log('⏰ Marcações encerradas (20:00)');
+    }
+  }
+}
+setInterval(limparJogoQuaSab20h, 60000);
+
+/* ========================= LIMPAR SOMENTE QUA/SAB 00:00 ========================= */
+function limparSomenteQuaSab00() {
+  const agora = new Date();
+  const dia = agora.getDay(); // 3 ou 6
   const h = agora.getHours();
   const m = agora.getMinutes();
   const hoje = agora.toISOString().slice(0,10);
 
- if ((dia === 3 || dia === 6) && h === 0 && m === 0) {
-  if (localStorage.getItem('ultimaLimpeza') !== hoje) {
-    codigo.innerHTML = 'Nenhuma reserva carregada.';
-    localStorage.setItem('ultimaLimpeza', hoje);
+  if ((dia === 3 || dia === 6) && h === 0 && m === 0) {
+    if (localStorage.getItem('ultimaLimpeza') !== hoje) {
+
+      codigo.innerHTML = 'Nenhuma reserva carregada.';
+      db.ref('compras-dia/' + hoje).remove();
+      db.ref('numerosBloqueados').remove();
+
+      localStorage.setItem('ultimaLimpeza', hoje);
+      console.log('🧹 Limpeza feita 00:00');
+    }
   }
 }
-}
-setInterval(limparTextareaSomenteQuaSab, 60000);
-
+setInterval(limparSomenteQuaSab00, 60000);
 /* ========================= DATA DO JOGO ========================= */
 function proximaDataDeJogo() {
   const hoje = new Date();
@@ -765,9 +794,6 @@ exibirNome();
 atualizarBloqueados();
 carregarReservasDoDia(dataAtualReservas);
 atualizarDataJogo(); // Agora chamamos a função para mostrar a data
-
 </script>
 </body>
-</html>    
-
-  
+</html> 
