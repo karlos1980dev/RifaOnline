@@ -592,42 +592,89 @@ function gerarDezenasExtras(qtd, jaSelecionados, jaBloqueados) {
 
   return extras;
 }
+function textoNumerosBloqueados(callback) {
+  db.ref('numerosBloqueados').once('value').then(snap => {
+    const dados = snap.val() || {};
+    const porNome = {};
 
+    // Agrupa por nome
+    Object.keys(dados).forEach(num => {
+      const item = dados[num];
+      const nome = item.nome?.trim();
+      if (!nome) return;
+
+      const status = item.status || '⏳ AGUARDANDO';
+
+      if (!porNome[nome]) {
+        porNome[nome] = {
+          status,
+          numeros: []
+        };
+      }
+
+      porNome[nome].numeros.push(num);
+    });
+
+    let texto = '';
+
+    Object.keys(porNome).forEach(nome => {
+      const dadosNome = porNome[nome];
+      const numeros = dadosNome.numeros.sort().join('-');
+
+      let classeStatus =
+        dadosNome.status.includes('PAGO') ? 'verde' :
+        dadosNome.status.includes('CANCEL') ? 'vermelho' :
+        'amarelo';
+
+      texto += `Nome:<span class="verde"> ${nome}</span>\n`;
+      texto +=  `Numero: ${numeros}\n`;
+      texto += `Status :<span class="${classeStatus}">${dadosNome.status}</span>\n`;
+      texto += '---------------------\n\n';
+    });
+
+    callback(texto);
+  });
+}
 function atualizarTextareaReservas(dados) {
-  let html = cabecalhoDataJogo().replace(/\n/g, '<br>');
 
-if (!dados || Object.keys(dados).length === 0) {
-  if (!jogoEncerrado) {
-    codigo.innerHTML = html + 'Nenhuma reserva para este jogo.';
-  }
-  return;
-}
-  for (const horario of Object.keys(dados).sort()) {
-    html += `<br><strong>[ HORARIO ] => ${horario}</strong><br><br>`;
+  textoNumerosBloqueados(textoBloq => {
 
-    for (const k in dados[horario]) {
-      const d = dados[horario][k];
+    let html = textoBloq.replace(/\n/g,'<br>');
+    html += cabecalhoDataJogo().replace(/\n/g,'<br>');
 
-      const qtd = d.numeros.length;
-      const valor = (qtd * 1).toFixed(2).replace('.', ',');
+    if (!dados || Object.keys(dados).length === 0) {
+      if (!jogoEncerrado) {
+        codigo.innerHTML = html + 'Nenhuma reserva para este jogo.';
+      }
+      return;
+    }
 
-      const status = d.status || 'AGUARDANDO';
-      const resultado = d.resultado || 'AGUARDANDO';
+    for (const horario of Object.keys(dados).sort()) {
+      html += `<br><strong>[ HORARIO ] => ${horario}</strong><br>`;
 
-      const corStatus =
-  status.includes('PAGO') ? 'verde' :
-  status.includes('CANCELADO') ? 'vermelho' : 'amarelo';
+      for (const k in dados[horario]) {
+        const d = dados[horario][k];
 
-const corResultado =
-  resultado.includes('GANHOU') ? 'verde' :
-  resultado.includes('PERDEU') ? 'vermelho' : 'amarelo';
+        const qtd = d.numeros.length;
+        const valor = (qtd * 1).toFixed(2).replace('.', ',');
 
-      let extrasTxt = '';
-if (d.dezenasExtras && d.dezenasExtras.length) {
-  extrasTxt = `<br><strong>🎁 Dzn extra:</strong> ${d.dezenasExtras.join('-')}`;
-}
+        const status = d.status || 'AGUARDANDO';
+        const resultado = d.resultado || 'AGUARDANDO';
 
-html += `
+        const corStatus =
+          status.includes('PAGO') ? 'verde' :
+          status.includes('CANCELADO') ? 'vermelho' : 'amarelo';
+
+        const corResultado =
+          resultado.includes('GANHOU') ? 'verde' :
+          resultado.includes('PERDEU') ? 'vermelho' : 'amarelo';
+
+        let extrasTxt = '';
+        if (d.dezenasExtras && d.dezenasExtras.length) {
+          extrasTxt = `<br><strong>🎁 Dzn extra:</strong> ${d.dezenasExtras.join('-')}`;
+        }
+
+        html += `                   
 Nome: <span class="verde">${d.nome}</span><br>
 Números: ${d.numeros.join('-')} ${extrasTxt}<br>
 Quantidade: ${qtd}
@@ -636,12 +683,12 @@ Status: <span class="${corStatus}">${status}</span>
 Resultado: <span class="${corResultado}">${resultado}</span>
 -------------------------<br>
 `;
+      }
     }
-  }
 
-  codigo.innerHTML = html;
+    codigo.innerHTML = html;
+  });
 }
-
 function carregarReservasDoDia(data) {
   db.ref(`compras-dia/${data}`).once('value').then(snap => {
     atualizarTextareaReservas(snap.val());
