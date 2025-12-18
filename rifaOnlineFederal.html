@@ -703,56 +703,42 @@ salvarBtn.onclick = () => {
 };
 function controlarCicloRifa() {
   const agora = new Date();
-  const dia = agora.getDay(); // 4 = quinta | 0 = domingo
+  const dia = agora.getDay(); // 3 = quarta | 6 = sábado
   const h = agora.getHours();
   const m = agora.getMinutes();
 
-  const liberado = podeMarcarAgora();
+  /* 🧹 + 📦 HISTÓRICO AUTOMÁTICO
+     QUARTA E SÁBADO ÀS 23:30 */
+  if ((dia === 3 || dia === 6) && h === 23 && m === 30) {
 
-  /* 🔒 BLOQUEIA OU LIBERA BOTÕES */
-  document.querySelectorAll('.numero').forEach(btn => {
-    const n = btn.textContent;
+    if (!localStorage.getItem('reset-2330')) {
 
-    if (!liberado && !bloqueados.has(n)) {
-      btn.classList.add('bloqueado');
-      btn.disabled = true;
-      btn.classList.remove('marcado');
-    }
+      /* 📦 salva histórico antes */
+      salvarHistoricoAutomatico();
 
-    if (liberado && btn.classList.contains('bloqueado') && !bloqueados.has(n)) {
-      btn.classList.remove('bloqueado');
-      btn.disabled = false;
-    }
-  });
-
-  if (!liberado) {
-    selecionados = [];
-    atualizarTotais();
-  }
-
-  /* 🧹 LIMPA SOMENTE QUANDO LIBERA */
-  if ((dia === 4 || dia === 0) && h === 0 && m === 0) {
-
-    if (!localStorage.getItem('ciclo-liberado')) {
-
-      // 🔥 limpa firebase
-      db.ref('compras-dia').remove();
-      db.ref('numerosBloqueados').remove();
-
-      // 🔥 limpa textarea
+      /* 🧹 limpa textarea */
       codigo.innerHTML = 'Nenhuma reserva carregada.';
 
-      localStorage.setItem('ciclo-liberado', 'ok');
-      console.log('🧹 Limpeza + liberação executadas');
+      /* 🔓 libera botões */
+      document.querySelectorAll('.numero').forEach(btn => {
+        btn.classList.remove('bloqueado', 'marcado', 'extra');
+        btn.disabled = false;
+      });
+
+      selecionados = [];
+      bloqueados.clear();
+      atualizarTotais();
+
+      localStorage.setItem('reset-2330', 'ok');
+      console.log('🧹 Reset completo com histórico salvo');
     }
   }
 
-  // reseta controle depois da meia-noite
-  if (h !== 0) {
-    localStorage.removeItem('ciclo-liberado');
+  /* 🔁 libera próxima execução */
+  if (h !== 23 || m !== 30) {
+    localStorage.removeItem('reset-2330');
   }
 }
-
 setInterval(controlarCicloRifa, 30000);
 
 function proximaDataDeJogo() {
@@ -801,7 +787,31 @@ function atualizarDataJogo() {
   
   el.innerHTML = `📅 Próximo jogo: <strong>${diaSemana}</strong> - ${formatarDataBR(dataJogo)}`;
 }
+function salvarHistoricoAutomatico() {
+  const agora = new Date();
 
+  const dataStr = agora.toLocaleDateString('pt-BR');
+  const horaStr = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+  const dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  const diaSemana = dias[agora.getDay()];
+
+  const id = agora.toISOString().slice(0,10) + '_' + horaStr.replace(':','-');
+
+  const texto = codigo.innerText.trim();
+
+  if (!texto) return; // não salva vazio
+
+  db.ref('historico/' + id).set({
+    data: dataStr,
+    dia: diaSemana,
+    hora: horaStr,
+    conteudo: texto,
+    timestamp: Date.now()
+  });
+
+  console.log('📦 Histórico salvo:', id);
+}
 /* ========================= INIT ATUALIZADO ========================= */
 garantirNome();
 controlarCicloRifa();
