@@ -66,7 +66,12 @@
 <body>
 
 <h1>Painel Bloquear/Desbloquear Números</h1>
-
+<input
+  type="text"
+  id="nomeBloqueio"
+  placeholder="Nome para o bloqueio"
+  style="width:100%;max-width:360px;padding:10px;border-radius:8px;border:none;margin-bottom:15px;"
+>
 <div id="grid-numeros"></div>
 
 <script>
@@ -115,22 +120,29 @@
       /* BOTÕES DE BLOQUEAR/DESBLOQUEAR */
       document.querySelectorAll("#grid-numeros button").forEach(btn => {
         btn.onclick = () => {
-          const numero = btn.getAttribute("data-num");
-          const estadoAtual = btn.getAttribute("data-bloqueado") === "true";
-          const novoEstado = !estadoAtual;
+  const numero = btn.getAttribute("data-num");
+  const estadoAtual = btn.getAttribute("data-bloqueado") === "true";
+  const novoEstado = !estadoAtual;
 
-          if (novoEstado) {
-            // Bloqueio manual
-            db.ref("numerosBloqueados/" + numero).set({
-              bloqueadoEm: Date.now()
-            });
-          } else {
-            // Desbloqueio manual
-            db.ref("numerosBloqueados/" + numero).remove();
-          }
+  const nome = document.getElementById("nomeBloqueio").value.trim();
 
-          carregarNumeros();
-        };
+  if (novoEstado) {
+    if (!nome) {
+      alert("Informe o nome para bloquear a dezena");
+      return;
+    }
+
+    db.ref("numerosBloqueados/" + numero).set({
+      nome: nome,
+      bloqueadoEm: Date.now()
+    });
+
+  } else {
+    db.ref("numerosBloqueados/" + numero).remove();
+  }
+
+  carregarNumeros();
+};
       });
     });
   }
