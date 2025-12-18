@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rifa da Sorte 1.00 pra 80.00</title>
+  <title>Rifa da Sorte 1 pra 80</title>
   <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
 <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -701,29 +701,60 @@ salvarBtn.onclick = () => {
       carregarReservasDoDia(dataHoje);
     });
 };
-
-/* ========================= LIMPAR SOMENTE QUA/SAB 00:00 ========================= */
-function limparSomenteQuaSab00() {
+function controlarCicloRifa() {
   const agora = new Date();
-  const dia = agora.getDay(); // 3 ou 6
+  const dia = agora.getDay(); // 4 = quinta | 0 = domingo
   const h = agora.getHours();
   const m = agora.getMinutes();
-  const hoje = agora.toISOString().slice(0,10);
 
-  if ((dia === 3 || dia === 6) && h === 0 && m === 0) {
-    if (localStorage.getItem('ultimaLimpeza') !== hoje) {
+  const liberado = podeMarcarAgora();
 
-      codigo.innerHTML = 'Nenhuma reserva carregada.';
-      db.ref('compras-dia/' + hoje).remove();
+  /* 🔒 BLOQUEIA OU LIBERA BOTÕES */
+  document.querySelectorAll('.numero').forEach(btn => {
+    const n = btn.textContent;
+
+    if (!liberado && !bloqueados.has(n)) {
+      btn.classList.add('bloqueado');
+      btn.disabled = true;
+      btn.classList.remove('marcado');
+    }
+
+    if (liberado && btn.classList.contains('bloqueado') && !bloqueados.has(n)) {
+      btn.classList.remove('bloqueado');
+      btn.disabled = false;
+    }
+  });
+
+  if (!liberado) {
+    selecionados = [];
+    atualizarTotais();
+  }
+
+  /* 🧹 LIMPA SOMENTE QUANDO LIBERA */
+  if ((dia === 4 || dia === 0) && h === 0 && m === 0) {
+
+    if (!localStorage.getItem('ciclo-liberado')) {
+
+      // 🔥 limpa firebase
+      db.ref('compras-dia').remove();
       db.ref('numerosBloqueados').remove();
 
-      localStorage.setItem('ultimaLimpeza', hoje);
-      console.log('🧹 Limpeza feita 00:00');
+      // 🔥 limpa textarea
+      codigo.innerHTML = 'Nenhuma reserva carregada.';
+
+      localStorage.setItem('ciclo-liberado', 'ok');
+      console.log('🧹 Limpeza + liberação executadas');
     }
   }
+
+  // reseta controle depois da meia-noite
+  if (h !== 0) {
+    localStorage.removeItem('ciclo-liberado');
+  }
 }
-setInterval(limparSomenteQuaSab00, 60000);
-/* ========================= DATA DO JOGO ========================= */
+
+setInterval(controlarCicloRifa, 30000);
+
 function proximaDataDeJogo() {
   const hoje = new Date();
   const d = hoje.getDay();
@@ -773,6 +804,7 @@ function atualizarDataJogo() {
 
 /* ========================= INIT ATUALIZADO ========================= */
 garantirNome();
+controlarCicloRifa();
 exibirNome();
 atualizarBloqueados();
 carregarReservasDoDia(dataAtualReservas);
