@@ -7,8 +7,8 @@
   <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
 <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
   <style>
     /* ---------- GERAL ---------- */
@@ -450,7 +450,7 @@ const btnEditarNome = document.getElementById('btnEditarNome');
 const modalNome = document.getElementById('modalNome');
 const inputNome = document.getElementById('inputNome');
 const btnContinuar = document.getElementById('btnContinuar');
-
+let jogoEncerrado = false;
 let selecionados = [];
 let bloqueados = new Set();
 let dataAtualReservas = new Date().toISOString().slice(0,10);
@@ -596,11 +596,12 @@ function gerarDezenasExtras(qtd, jaSelecionados, jaBloqueados) {
 function atualizarTextareaReservas(dados) {
   let html = cabecalhoDataJogo().replace(/\n/g, '<br>');
 
-  if (!dados || Object.keys(dados).length === 0) {
+if (!dados || Object.keys(dados).length === 0) {
+  if (!jogoEncerrado) {
     codigo.innerHTML = html + 'Nenhuma reserva para este jogo.';
-    return;
   }
-
+  return;
+}
   for (const horario of Object.keys(dados).sort()) {
     html += `<br><strong>[ HORARIO ] => ${horario}</strong><br><br>`;
 
