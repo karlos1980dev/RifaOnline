@@ -2,9 +2,13 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rifa da Sorte 1 pra 80</title>
+  <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
   <style>
     body {
@@ -81,43 +85,9 @@
   const grid = document.getElementById('grid-numeros');
 
   /* --------------------------------------------------
-      ➤ REMOVE BLOQUEIOS ANTIGOS (24h) / CORRIGIDO
-  -------------------------------------------------- */
-  function limparBloqueiosAntigos() {
-    const agora = Date.now();
-    const limite = 24 * 60 * 60 * 1000; // 24h
-
-    db.ref("numerosBloqueados").once("value").then(snapshot => {
-      const dados = snapshot.val() || {};
-      let updates = {};
-
-      for (let n in dados) {
-        const item = dados[n];
-
-        // Se não existir timestamp → apagar bloqueio antigo do Firebase
-        if (!item || !item.bloqueadoEm) {
-          updates[`numerosBloqueados/${n}`] = null;
-          continue;
-        }
-
-        // Se passou de 24 horas → liberar
-        if (agora - item.bloqueadoEm >= limite) {
-          updates[`numerosBloqueados/${n}`] = null;
-        }
-      }
-
-      if (Object.keys(updates).length > 0) {
-        db.ref().update(updates).then(() => carregarNumeros());
-      }
-    });
-  }
-
-  /* --------------------------------------------------
       ➤ GERAR A GRID DE NÚMEROS
   -------------------------------------------------- */
   function carregarNumeros() {
-    limparBloqueiosAntigos();
-
     db.ref("numerosBloqueados").once("value").then(snapshot => {
       const bloqueios = snapshot.val() || {};
       grid.innerHTML = "";
@@ -150,11 +120,12 @@
           const novoEstado = !estadoAtual;
 
           if (novoEstado) {
-            // SALVANDO COM TIMESTAMP CORRETAMENTE ✔
+            // Bloqueio manual
             db.ref("numerosBloqueados/" + numero).set({
               bloqueadoEm: Date.now()
             });
           } else {
+            // Desbloqueio manual
             db.ref("numerosBloqueados/" + numero).remove();
           }
 
@@ -166,6 +137,7 @@
 
   carregarNumeros();
   setInterval(carregarNumeros, 15000);  // atualiza a cada 15s
+
 </script>
 
 </body>
