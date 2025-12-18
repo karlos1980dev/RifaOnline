@@ -27,6 +27,16 @@ button{cursor:pointer;font-weight:bold;}
 .success{background:#27ae60;color:#fff;}
 
 textarea{width:100%;height:140px;margin-top:15px;background:#000;color:#0f0;border-radius:8px;padding:10px;border:none;resize:none;font-family:monospace;}
+.historicoItem{
+  background:#0a0f1e;
+  border-left:4px solid #f1c40f;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:12px;
+  white-space:pre-wrap;
+  font-family:monospace;
+  color:#0f0;
+}
 </style>
 </head>
 
@@ -35,7 +45,8 @@ textarea{width:100%;height:140px;margin-top:15px;background:#000;color:#0f0;bord
 <div class="box">
   <h2>🛠️ Painel Admin</h2>
   <h3>🧹 Painel de Limpeza Firebase</h3>
-
+<button class="success" onclick="modoCompras()">📋 Ver Compras do Dia</button>
+<button class="warning" onclick="modoHistorico()">📜 Ver Histórico</button>
   <button class="warning" onclick="limparTextareaIndex()">🧹 Limpar textarea (Index)</button>
   <button class="success" onclick="liberarNovoJogo()">🔓 Liberar novo jogo</button>
   <button class="danger" onclick="limparTudoFirebase()">❌ APAGAR TUDO DO FIREBASE</button>
@@ -50,7 +61,7 @@ textarea{width:100%;height:140px;margin-top:15px;background:#000;color:#0f0;bord
     <div>Total reservas: <span id="totalReservas">0</span></div>
     <div>Total do dia: R$ <span id="totalDia">0,00</span></div>
   </div>
-
+<div id="historicoBox" style="display:none"></div>
   <div id="lista"></div>
 </div>
 
@@ -167,10 +178,110 @@ function limparTudoFirebase(){
   if(!confirm('APAGAR TODO FIREBASE?'))return;
   db.ref().remove().then(()=>escrever('❌ Firebase apagado'));
 }
+const historicoBox = document.getElementById('historicoBox');
 
+/* ===== MODOS ===== */
+function modoHistorico(){
+  lista.style.display = 'none';
+  historicoBox.style.display = 'block';
+  carregarHistorico();
+}
+
+function modoCompras(){
+  historicoBox.style.display = 'none';
+  lista.style.display = 'block';
+  carregar(dataInput.value);
+}
+
+/* ===== CARREGAR HISTÓRICO ===== */
+function carregarHistorico(){
+  historicoBox.innerHTML = '🔄 Carregando histórico...';
+
+  db.ref('historico').orderByChild('timestamp').once('value', snap=>{
+    historicoBox.innerHTML = '';
+
+    if(!snap.exists()){
+      historicoBox.innerHTML = 'Nenhum histórico encontrado.';
+      return;
+    }
+
+    const dados = snap.val();
+    const chaves = Object.keys(dados).reverse(); // mais recente primeiro
+
+    chaves.forEach(id=>{
+      const h = dados[id];
+
+      historicoBox.innerHTML += `
+        <div class="historicoItem">
+📅 ${h.data} (${h.dia})
+⏰ ${h.hora}
+----------------------------------
+${h.conteudo}
+        </div>
+      `;
+    });
+  });
+}
 /* ===== EVENTOS ===== */
 dataInput.addEventListener('change',()=>carregar(dataInput.value));
 carregar(hoje);
+/* ===== CONTROLE AUTOMÁTICO QUARTA / SÁBADO 23:30 ===== */
+const CONTROLE_KEY = 'controle/execucaoAuto';
+
+function verificarHorarioAutomatico(){
+  const agora = new Date();
+
+  const diaSemana = agora.getDay(); // 3 = quarta | 6 = sábado
+  const hora = agora.getHours();
+  const minuto = agora.getMinutes();
+
+  if(!((diaSemana === 3 || diaSemana === 6) && hora === 23 && minuto === 30)){
+    return;
+  }
+
+  const idExecucao = agora.toISOString().slice(0,10) + '_23-30';
+
+  db.ref(CONTROLE_KEY).once('value', snap=>{
+    if(snap.val() === idExecucao){
+      return; // já executou hoje
+    }
+
+    executarLimpezaAutomatica(idExecucao);
+  });
+}
+
+function executarLimpezaAutomatica(idExecucao){
+  db.ref('index/textarea').once('value', snap=>{
+    const conteudo = snap.val() || '';
+
+    const agora = new Date();
+    const dataBR = agora.toLocaleDateString('pt-BR');
+    const diaBR = agora.toLocaleDateString('pt-BR',{weekday:'long'});
+    const horaBR = '23:30';
+
+    /* ===== SALVA HISTÓRICO ===== */
+    db.ref('historico/'+idExecucao).set({
+      data: dataBR,
+      dia: diaBR,
+      hora: horaBR,
+      conteudo: conteudo,
+      timestamp: Date.now()
+    });
+
+    /* ===== LIMPA INDEX + LIBERA ===== */
+    Promise.all([
+      db.ref('index/textarea').set(''),
+      db.ref('numerosBloqueados').remove(),
+      db.ref('controle/limparTextarea').set({limpar:true,em:Date.now()}),
+      db.ref(CONTROLE_KEY).set(idExecucao)
+    ]).then(()=>{
+      escrever('⏰ Limpeza automática executada ('+diaBR+' 23:30)');
+    });
+  });
+}
+
+/* ===== VERIFICA A CADA 30s ===== */
+setInterval(verificarHorarioAutomatico, 30000);
 </script>
 </body>
 </html>
