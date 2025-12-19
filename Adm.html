@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rifa da Sorte 1 pra 80</title>
+  <title>painel bloquea Numero</title>
   <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
 <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -71,86 +71,115 @@
   id="nomeBloqueio"
   placeholder="Nome para o bloqueio"
   style="width:100%;max-width:360px;padding:10px;border-radius:8px;border:none;margin-bottom:15px;"
+><div style="margin-top:10px;">
+  <strong>PIX atual:</strong>
+  <button
+  id="btnLimparPix"
+  style="
+    margin-top:10px;
+    padding:10px;
+    width:100%;
+    max-width:360px;
+    background:#e74c3c;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+  "
 >
+🧹 LIMPAR PIX
+</button>
+  <span id="pixAdminAtual" style="color:#2ecc71"></span>
+</div></br>
 <div id="grid-numeros"></div>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
-    authDomain: "rifa-782a3.firebaseapp.com",
-    databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
-    projectId: "rifa-782a3",
-    storageBucket: "rifa-782a3",
-    messagingSenderId: "88068598855",
-    appId: "1:88068598855:web:a230a06db76a4bbc125562"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const grid = document.getElementById('grid-numeros');
-
-  /* --------------------------------------------------
-      ➤ GERAR A GRID DE NÚMEROS
-  -------------------------------------------------- */
-  function carregarNumeros() {
-    db.ref("numerosBloqueados").once("value").then(snapshot => {
-      const bloqueios = snapshot.val() || {};
-      grid.innerHTML = "";
-
-      for (let i = 0; i < 100; i++) {
-        let num = i.toString().padStart(2, "0");
-        let bloqueado = bloqueios[num] ? true : false;
-
-        let item = document.createElement("div");
-        item.className = "item-numero";
-
-        let botaoClass = bloqueado ? "bloqueado" : "liberado";
-        let botaoTexto = bloqueado ? "Desbloquear" : "Bloquear";
-
-        item.innerHTML = `
-          <span class="numero-texto">${num}</span>
-          <button class="${botaoClass}" data-num="${num}" data-bloqueado="${bloqueado}">
-            ${botaoTexto}
-          </button>
-        `;
-
-        grid.appendChild(item);
-      }
-
-      /* BOTÕES DE BLOQUEAR/DESBLOQUEAR */
-      document.querySelectorAll("#grid-numeros button").forEach(btn => {
-        btn.onclick = () => {
-  const numero = btn.getAttribute("data-num");
-  const estadoAtual = btn.getAttribute("data-bloqueado") === "true";
-  const novoEstado = !estadoAtual;
-
-  const nome = document.getElementById("nomeBloqueio").value.trim();
-
-  if (novoEstado) {
-    if (!nome) {
-      alert("Informe o nome para bloquear a dezena");
-      return;
-    }
-
-    db.ref("numerosBloqueados/" + numero).set({
-      nome: nome,
-      bloqueadoEm: Date.now()
-    });
-
-  } else {
-    db.ref("numerosBloqueados/" + numero).remove();
-  }
-
-  carregarNumeros();
+const firebaseConfig = {
+  apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain: "rifa-782a3.firebaseapp.com",
+  databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId: "rifa-782a3",
+  storageBucket: "rifa-782a3",
+  messagingSenderId: "88068598855",
+  appId: "1:88068598855:web:a230a06db76a4bbc125562"
 };
-      });
-    });
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const grid = document.getElementById('grid-numeros');
+const nomeInput = document.getElementById("nomeBloqueio");
+
+/* 🔄 ATUALIZA EM TEMPO REAL */
+db.ref("numerosBloqueados").on("value", snapshot => {
+  const bloqueios = snapshot.val() || {};
+  grid.innerHTML = "";
+
+  for (let i = 0; i < 100; i++) {
+    const num = i.toString().padStart(2, "0");
+    const info = bloqueios[num];
+    const bloqueado = !!info;
+
+    const item = document.createElement("div");
+    item.className = "item-numero";
+
+    const nome = info?.nome || "";
+    const extra = info?.extra ? "🎁" : "";
+
+    const btn = document.createElement("button");
+    btn.className = bloqueado ? "bloqueado" : "liberado";
+    btn.textContent = bloqueado ? "Desbloquear" : "Bloquear";
+
+    btn.onclick = () => {
+      if (!bloqueado) {
+        const nomeBloq = nomeInput.value.trim();
+        if (!nomeBloq) {
+          alert("Informe o nome para bloquear");
+          return;
+        }
+
+        db.ref("numerosBloqueados/" + num).update({
+          nome: nomeBloq,
+          bloqueadoEm: Date.now()
+        });
+
+      } else {
+        db.ref("numerosBloqueados/" + num).remove();
+      }
+    };
+
+    item.innerHTML = `
+      <span class="numero-texto">${num} ${extra}</span>
+      <span style="font-size:12px;color:#ccc">${nome}</span>
+    `;
+    item.appendChild(btn);
+    grid.appendChild(item);
   }
+});
 
-  carregarNumeros();
-  setInterval(carregarNumeros, 15000);  // atualiza a cada 15s
+/* PIX ADMIN */
+db.ref('admin/config/pix').on('value', snap => {
+  const dados = snap.val();
+  if (dados?.chave) {
+    document.getElementById('pixAdminAtual').textContent = dados.chave;
+  }
+});
+document.getElementById('btnLimparPix').onclick = () => {
+  const ok = confirm('⚠️ Tem certeza que deseja LIMPAR o PIX?');
+  if (!ok) return;
 
+  db.ref('admin/config/pix').remove()
+    .then(() => {
+      document.getElementById('pixAdminAtual').textContent = '';
+      alert('✅ PIX removido com sucesso');
+    })
+    .catch(err => {
+      alert('❌ Erro ao limpar PIX');
+      console.error(err);
+    });
+};
 </script>
-
 </body>
-</html>
+</html> 
