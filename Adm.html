@@ -140,11 +140,12 @@ db.ref("numerosBloqueados").on("value", snapshot => {
           return;
         }
 
-        db.ref("numerosBloqueados/" + num).update({
-          nome: nomeBloq,
-          bloqueadoEm: Date.now()
-        });
-
+        db.ref("numerosBloqueados/" + num).set({
+  nome: nomeBloq,
+  status: '⏳ AGUARDANDO',
+  extra: false,
+  bloqueadoEm: Date.now()
+});
       } else {
         db.ref("numerosBloqueados/" + num).remove();
       }
