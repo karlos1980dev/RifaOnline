@@ -516,7 +516,7 @@ const btnMenu = document.getElementById('btnMenu');
 const salvarBtn = document.getElementById('salvar');
 const nomeExibicao = document.getElementById('nomeExibicao');
 const btnEditarNome = document.getElementById('btnEditarNome');
-
+let ultimaDataComDados = null;
 const modalNome = document.getElementById('modalNome');
 const inputNome = document.getElementById('inputNome');
 const btnContinuar = document.getElementById('btnContinuar');
@@ -699,7 +699,7 @@ function textoNumerosBloqueados(callback) {
       texto += `Nome:<span class="verde"> ${nome}</span>\n`;
       texto +=  `Numero: ${numeros}\n`;
       texto += `Status :<span class="${classeStatus}">${dadosNome.status}</span>\n`;
-      texto += '---------------------\n\n';
+      texto += '---------------------\n';
     });
 
     callback(texto);
@@ -724,16 +724,25 @@ function atualizarTextareaReservas(dados) {
 
       for (const k in dados[horario]) {
         const d = dados[horario][k];
-
+const countdownId = `countdown-${horario}-${k}`.replace(/[^a-zA-Z0-9-_]/g, '');
         const qtd = d.numeros.length;
         const valor = (qtd * 1).toFixed(2).replace('.', ',');
 
-        const status = d.status || 'AGUARDANDO';
+        let status = d.status || 'AGUARDANDO';
+
+if (status.toUpperCase().includes('PAGO')) {
+  status = '✅ PAGO';
+
+}
         const resultado = d.resultado || 'AGUARDANDO';
 
         const corStatus =
-          status.includes('PAGO') ? 'verde' :
-          status.includes('CANCELADO') ? 'vermelho' : 'amarelo';
+  status.includes('VALIDADO') || status.includes('PAGO')
+    ? 'verde'
+    : status.includes('CANCELADO')
+    ? 'vermelho'
+    : 'amarelo';
+          
 
         const corResultado =
           resultado.includes('GANHOU') ? 'verde' :
@@ -744,24 +753,46 @@ function atualizarTextareaReservas(dados) {
           extrasTxt = `<br><strong>🎁 Dzn extra:</strong> ${d.dezenasExtras.join('-')}`;
         }
 
-        html += `                   
+        html += `
 Nome: <span class="verde">${d.nome}</span><br>
 Números: ${d.numeros.join('-')} ${extrasTxt}<br>
-Quantidade: ${qtd}
+Quantidade: ${qtd}<br>
 Valor a pagar: R$ ${valor}
 Status: <span class="${corStatus}">${status}</span>
-Resultado: <span class="${corResultado}">${resultado}</span>
+Resultado: <span class="${corResultado}">${resultado}</span></br>
+<div id="${countdownId}" class="amarelo"></div><br>
 -------------------------<br>
 `;
-      }
-    }
+   setTimeout(() => {
+  const el = document.getElementById(countdownId);
+
+  if (!el) return;
+
+  if (!d.dataHora) {
+    el.innerHTML = '<span class="vermelho">⛔ Horário não definido</span>';
+    return;
+  }
+
+  gerarCountdown(countdownId, d.dataHora, d.status);
+}, 50);   }
+    }            
 
     codigo.innerHTML = html;
   });
-}
+}      
+  
 function carregarReservasDoDia(data) {
   db.ref(`compras-dia/${data}`).once('value').then(snap => {
-    atualizarTextareaReservas(snap.val());
+    const dados = snap.val();
+
+    // ❌ NÃO LIMPA SE NÃO TIVER DADOS
+    if (!dados) {
+      console.log('📅 Sem dados para', data, '- mantendo histórico');
+      return;
+    }
+
+    ultimaDataComDados = data;
+    atualizarTextareaReservas(dados);
   });
 }
 
@@ -792,7 +823,7 @@ salvarBtn.onclick = () => {
     horario,
     status: '⏳ AGUARDANDO',
     resultado: '⏳ AGUARDANDO',
-    dataHora: new Date().toLocaleString()
+    dataHora: new Date().toISOString()
   };
 
   db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados)
@@ -932,10 +963,117 @@ function salvarPixAdmin() {
     fecharPixAdmin();
   });
 }
+
+
+function gerarCountdown(idElemento, dataHoraCompra, status) {
+  const el = document.getElementById(idElemento);
+  if (!el) return;
+
+  // ✅ SE JÁ ESTÁ PAGO
+  if (status && status.toUpperCase().includes('PAGO')) {
+    el.innerHTML =
+      '<span class="verde">✅ PIX VALIDADO</span>';
+    return;
+  }
+
+  const inicio = Date.parse(dataHoraCompra);
+
+  if (isNaN(inicio)) {
+    el.innerHTML =
+      '<span class="amarelo">⏳ Aguardando pagamento</span>';
+    return;
+  }
+
+  const fim = inicio + (2 * 60 * 60 * 1000);
+  let timer = null;
+
+  function atualizar() {
+    // 🛑 SE MUDOU PARA PAGO DURANTE O TEMPO
+    if (status && status.toUpperCase().includes('PAGO')) {
+      el.innerHTML =
+        '<span class="verde">✅ PIX VALIDADO</span>';
+      clearInterval(timer);
+      return;
+    }
+
+    const restante = fim - Date.now();
+
+    if (restante <= 0) {
+      el.innerHTML =
+        '<span class="vermelho">⏰ Tempo encerrado</span>';
+      clearInterval(timer);
+      return;
+    }
+
+    const h = Math.floor(restante / 3600000);
+    const m = Math.floor((restante % 3600000) / 60000);
+    const s = Math.floor((restante % 60000) / 1000);
+
+    el.innerHTML =
+      `⏳ Faca o Pagamento Para Validar sua Reserva ate ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+
+  atualizar();
+  timer = setInterval(atualizar, 1000);
+}
+function podeVirarPerdeuAutomatico() {
+  const agora = new Date();
+  const dia = agora.getDay(); // 0=Dom, 3=Qua, 6=Sáb
+  const h = agora.getHours();
+  const m = agora.getMinutes();
+
+  // somente quarta (3) e sábado (6)
+  if (dia !== 3 && dia !== 6) return false;
+
+  // após 20:30
+  return h > 20 || (h === 20 && m >= 30);
+}
+function atualizarResultadosAutomaticamente() {
+  if (!podeVirarPerdeuAutomatico()) return;
+
+  const hoje = new Date().toISOString().slice(0,10);
+
+  db.ref(`compras-dia/${hoje}`).once('value').then(snap => {
+    const dados = snap.val();
+    if (!dados) return;
+
+    const updates = {};
+
+    Object.keys(dados).forEach(horario => {
+      Object.keys(dados[horario]).forEach(id => {
+        const item = dados[horario][id];
+
+        if (
+          item.resultado &&
+          item.resultado.includes('AGUARDANDO')
+        ) {
+          updates[
+            `compras-dia/${hoje}/${horario}/${id}/resultado`
+          ] = '❌ PERDEU';
+        }
+      });
+    });
+
+    if (Object.keys(updates).length > 0) {
+      db.ref().update(updates).then(() => {
+        console.log('⏰ Resultados mudaram para PERDEU (Qua/Sáb 20:30)');
+        carregarReservasDoDia(hoje);
+      });
+    }
+  });
+}
+
+// verifica ao abrir
+atualizarResultadosAutomaticamente();
+
+// verifica a cada minuto
+setInterval(atualizarResultadosAutomaticamente, 60000);
+
 /* ========================= INIT ATUALIZADO ========================= */
 garantirNome();
-
 exibirNome();
+
+atualizarResultadosAutomaticamente();
 atualizarBloqueados();
 carregarReservasDoDia(dataAtualReservas);
 atualizarDataJogo(); // Agora chamamos a função para mostrar a data
