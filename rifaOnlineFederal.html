@@ -818,45 +818,7 @@ salvarBtn.onclick = () => {
       carregarReservasDoDia(dataHoje);
     });
 };
-function controlarCicloRifa() {
-  const agora = new Date();
-  const dia = agora.getDay(); // 3 = quarta | 6 = sábado
-  const h = agora.getHours();
-  const m = agora.getMinutes();
 
-  /* 🧹 + 📦 HISTÓRICO AUTOMÁTICO
-     QUARTA E SÁBADO ÀS 23:30 */
-  if ((dia === 3 || dia === 6) && h === 23 && m === 30) {
-
-    if (!localStorage.getItem('reset-2330')) {
-
-      /* 📦 salva histórico antes */
-      salvarHistoricoAutomatico();
-
-      /* 🧹 limpa textarea */
-      codigo.innerHTML = 'Nenhuma reserva carregada.';
-
-      /* 🔓 libera botões */
-      document.querySelectorAll('.numero').forEach(btn => {
-        btn.classList.remove('bloqueado', 'marcado', 'extra');
-        btn.disabled = false;
-      });
-
-      selecionados = [];
-      bloqueados.clear();
-      atualizarTotais();
-
-      localStorage.setItem('reset-2330', 'ok');
-      console.log('🧹 Reset completo com histórico salvo');
-    }
-  }
-
-  /* 🔁 libera próxima execução */
-  if (h !== 23 || m !== 30) {
-    localStorage.removeItem('reset-2330');
-  }
-}
-setInterval(controlarCicloRifa, 30000);
 
 function proximaDataDeJogo() {
   const hoje = new Date();
@@ -934,11 +896,13 @@ function podeAbrirPixAdmin() {
   const dia = agora.getDay(); // 3 = quarta | 6 = sábado
   const minutos = agora.getHours() * 60 + agora.getMinutes();
 
-  // só quarta e sábado
+  // somente quarta e sábado
   if (dia !== 3 && dia !== 6) return false;
 
-  // só após 20:00
-  return minutos >= (20 * 60);
+  const inicio = 20 * 60;      // 20:00
+  const fim = 23 * 60 + 59;    // 23:59
+
+  return minutos >= inicio && minutos <= fim;
 }
 const btnPixAdmin = document.getElementById('btnPixAdmin');
 const modalPixAdmin = document.getElementById('modalPixAdmin');
@@ -946,7 +910,7 @@ const inputPixAdmin = document.getElementById('inputPixAdmin');
 
 btnPixAdmin.onclick = () => {
   if (!podeAbrirPixAdmin()) {
-    alert('🔒 PIX do Ganhador será liberado às 20:30');
+    alert('🔒 PIX do Ganhador será liberado às 20:00');
     return;
   }
   inputPixAdmin.value = '';
@@ -970,7 +934,7 @@ function salvarPixAdmin() {
 }
 /* ========================= INIT ATUALIZADO ========================= */
 garantirNome();
-controlarCicloRifa();
+
 exibirNome();
 atualizarBloqueados();
 carregarReservasDoDia(dataAtualReservas);
