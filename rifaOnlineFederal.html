@@ -577,7 +577,9 @@ btnEditarNome.onclick = abrirModalNome;
 /* ========================= MENU ========================= */
 btnMenu.onclick = () => {
   menuEl.classList.toggle('open');
-  if (menuEl.classList.contains('open')) carregarReservasDoDia(dataAtualReservas);
+  if (menuEl.classList.contains('open')) textoNumerosBloqueados(texto => {
+  codigo.innerHTML = texto + cabecalhoDataJogo().replace(/\n/g,'<br>');
+});
 };
 
 /* ========================= SELEÇÃO ========================= */
@@ -759,7 +761,7 @@ Números: ${d.numeros.join('-')} ${extrasTxt}<br>
 Quantidade: ${qtd}<br>
 Valor a pagar: R$ ${valor}
 Status: <span class="${corStatus}">${status}</span>
-Resultado: <span class="${corResultado}">${resultado}</span></br>
+Resultado: <span class="${corResultado}">${resultado}</span></>
 <div id="${countdownId}" class="amarelo"></div><br>
 -------------------------<br>
 `;
