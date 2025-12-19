@@ -45,6 +45,19 @@ textarea{width:100%;height:140px;margin-top:15px;background:#000;color:#0f0;bord
 <div class="box">
   <h2>🛠️ Painel Admin</h2>
   <h3>🧹 Painel de Limpeza Firebase</h3>
+  <button onclick="limparPixGanhador()" style="
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  background:#e74c3c;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:bold;
+">
+🧹 Limpar PIX do ganhador
+</button>
 <button class="success" onclick="modoCompras()">📋 Ver Compras do Dia</button>
 <button class="warning" onclick="modoHistorico()">📜 Ver Histórico</button>
   <button class="warning" onclick="limparTextareaIndex()">🧹 Limpar textarea (Index)</button>
@@ -157,8 +170,28 @@ function carregar(data){
 function alterarStatus(d,h,id,v){ db.ref(`compras-dia/${d}/${h}/${id}`).update({status:v}); }
 function alterarResultado(d,h,id,v){ db.ref(`compras-dia/${d}/${h}/${id}`).update({resultado:v}); }
 function resetar(d,h,id){ db.ref(`compras-dia/${d}/${h}/${id}`).update({status:'aguardando',resultado:'aguardando'}); }
-function excluir(d,h,id){ if(confirm('Excluir reserva?')) db.ref(`compras-dia/${d}/${h}/${id}`).remove(); }
+function excluir(data, horario, id){
+  if(!confirm('Excluir reserva e liberar números?')) return;
 
+  db.ref(`compras-dia/${data}/${horario}/${id}`).once('value', snap=>{
+    const d = snap.val();
+    if(!d) return;
+
+    const todos = [
+      ...(d.numeros || []),
+      ...(d.dezenasExtras || [])
+    ];
+
+    const updates = {};
+    todos.forEach(n=>{
+      updates['numerosBloqueados/'+n] = null;
+    });
+
+    updates[`compras-dia/${data}/${horario}/${id}`] = null;
+
+    db.ref().update(updates);
+  });
+}
 /* ===== PAINEL ===== */
 function escrever(msg){ log.value += '\n'+msg; log.scrollTop = log.scrollHeight; }
 
@@ -175,7 +208,11 @@ function liberarNovoJogo(){
 }
 
 function limparTudoFirebase(){
-  if(!confirm('APAGAR TODO FIREBASE?'))return;
+  const senha = prompt('Digite a senha ADMIN para apagar tudo');
+if(senha !== '12345') {
+  alert('Senha incorreta');
+  return;
+}
   db.ref().remove().then(()=>escrever('❌ Firebase apagado'));
 }
 const historicoBox = document.getElementById('historicoBox');
@@ -279,7 +316,18 @@ function executarLimpezaAutomatica(idExecucao){
     });
   });
 }
+function limparPixGanhador() {
+  if (!confirm('Deseja realmente apagar o PIX do ganhador?')) return;
 
+  db.ref('admin/ganhador/pix').remove()
+    .then(() => {
+      alert('✅ PIX do ganhador removido');
+    })
+    .catch(err => {
+      alert('Erro ao limpar PIX');
+      console.error(err);
+    });
+}
 /* ===== VERIFICA A CADA 30s ===== */
 setInterval(verificarHorarioAutomatico, 30000);
 </script>
