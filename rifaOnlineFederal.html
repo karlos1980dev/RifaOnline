@@ -437,22 +437,39 @@
 </div>
   <!-- MENU LATERAL -->
   
-  <div id="menu" aria-hidden="true">
-      <button id="btnPixAdmin" style="
-  width:100%;
-  text-align:center;
-  padding:10px;
-  margin-bottom:10px;
-  background:#27ae60;
-  color:#fff;
-  border:none;
-  border-radius:8px;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer;
-">
-💳 RECEBER O PREMIO 
-</button>
+ <div id="menu" aria-hidden="true">
+  <button id="btnPixAdmin" style="
+    width:48%;
+    text-align:center;
+    padding:10px;
+    margin-bottom:10px;
+    background:#27ae60;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+    RECEBER PRÊMIO
+  </button>
+  
+  <button id="btnCarregarReservas" onclick="carregarReservas()" style="
+    width:48%;
+    text-align:center;
+    padding:10px;
+    margin-bottom:10px;
+    background:#3498db;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+    VER APOSTA
+  </button>
+
     <h3>Reservas do dia</h3>
     <div class="visualizador" id="codigo">Nenhuma reserva carregada</div>
     
@@ -1064,7 +1081,10 @@ function atualizarResultadosAutomaticamente() {
     }
   });
 }
-
+function carregarReservas() {
+  const dataHoje = new Date().toISOString().slice(0,10);
+  carregarReservasDoDia(dataHoje); // Carrega as reservas do dia atual
+}
 // verifica ao abrir
 atualizarResultadosAutomaticamente();
 
@@ -1074,7 +1094,7 @@ setInterval(atualizarResultadosAutomaticamente, 60000);
 /* ========================= INIT ATUALIZADO ========================= */
 garantirNome();
 exibirNome();
-
+carregarReservas();
 atualizarResultadosAutomaticamente();
 atualizarBloqueados();
 carregarReservasDoDia(dataAtualReservas);
