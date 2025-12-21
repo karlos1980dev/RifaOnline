@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rifa da Sorte Entre Amigos 1 pra 80</title>
-  <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
-<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
+  <title>Rifa  Entre Amigos 1 pra 80</title>
+  <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/quartasabado.jpg" type="image/jpg">
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/quartasabado.jpg" type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
@@ -364,7 +364,7 @@
 </h1>
 
   <div id="topoWrapper" role="banner" aria-label="Topo">
-    <button id="btnMenu" aria-label="Abrir menu" title="Abrir menu">☰</button>
+    <button style="color:#fff;background:black;font-weight:bold;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">VER</button>
 
     <div id="topoInputs" role="form" aria-label="Formulário topo">
       <input style="width:90px" type="number" id="valor" value="1.00" readonly>
@@ -439,7 +439,7 @@
   
  <div id="menu" aria-hidden="true">
   <button id="btnPixAdmin" style="
-    width:48%;
+    width:88%;
     text-align:center;
     padding:10px;
     margin-bottom:10px;
@@ -454,23 +454,9 @@
     RECEBER PRÊMIO
   </button>
   
-  <button id="btnCarregarReservas" onclick="carregarReservas()" style="
-    width:48%;
-    text-align:center;
-    padding:10px;
-    margin-bottom:10px;
-    background:#3498db;
-    color:#fff;
-    border:none;
-    border-radius:8px;
-    font-size:14px;
-    font-weight:bold;
-    cursor:pointer;
-  ">
-    VER APOSTA
-  </button>
+  
 
-    <h3>Reservas do dia</h3>
+    <h3 style="text-align:center;">Reservas do dia</h3>
     <div class="visualizador" id="codigo">Nenhuma reserva carregada</div>
     
   </div>
@@ -483,14 +469,30 @@
     </div>
 
     <div style="flex:1; min-width:120px; text-align:right;">
-        <strong>Recebe: R$ <span id="totalReceber">0,00</span></strong>
+                <strong>Recebe: R$ <span id="totalReceber">0,00</span></strong>
     </div>
     
     
   </div>
+<p id="dataJogo" style="color:gold;font-weight:bold;"></p>
   
-      <p id="dataJogo" style="color:gold;font-weight:bold;"></p>
-      
+     
+<!-- ADICIONE ESTA LINHA A-->
+<p id="dezenaAtual" style="
+  color:#7bff55;
+  font-weight:bold;
+  font-size:18px;
+  margin:15px 0;
+  padding:10px;
+  background:rgba(128, 152, 255, 0.1);
+  border-radius:10px;
+  display:block;
+">🏆 Dezena premiada: Aguardando</p>
+</div>
+
+
+<div id="numeros" aria-label="Números da rifa"></div>
+
       
 <div id="numeros" aria-label="Números da rifa"></div>
 <p id="rodapeInfo">SORTE E SUA A GARANTIA E NOSSA </br>JOGUE COM RESPONSABILIDADE</p>
@@ -540,7 +542,22 @@ const btnContinuar = document.getElementById('btnContinuar');
 let jogoEncerrado = false;
 let selecionados = [];
 let bloqueados = new Set();
-let dataAtualReservas = new Date().toISOString().slice(0,10);
+
+/* ========================= CALCULAR INÍCIO E FIM DA SEMANA ATUAL ========================= */
+function getInicioDaSemana() {
+  const hoje = new Date();
+  const diaSemana = hoje.getDay(); // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
+  const diasParaInicio = diaSemana === 0 ? -6 : 1 - diaSemana; // Semana começa na Segunda
+  const inicio = new Date(hoje);
+  inicio.setDate(hoje.getDate() + diasParaInicio);
+  return inicio.toISOString().slice(0, 10); // Formato: YYYY-MM-DD
+}
+
+function getFimDaSemana() {
+  const inicio = new Date(getInicioDaSemana());
+  inicio.setDate(inicio.getDate() + 6); // Semana termina na Sábado
+  return inicio.toISOString().slice(0, 10);
+}
 
 /* ========================= REGRAS DE DIA/HORA ========================= */
 function podeMarcarAgora() {
@@ -590,14 +607,6 @@ btnContinuar.onclick = () => {
   exibirNome();
 };
 btnEditarNome.onclick = abrirModalNome;
-
-/* ========================= MENU ========================= */
-btnMenu.onclick = () => {
-  menuEl.classList.toggle('open');
-  if (menuEl.classList.contains('open')) textoNumerosBloqueados(texto => {
-  codigo.innerHTML = texto + cabecalhoDataJogo().replace(/\n/g,'<br>');
-});
-};
 
 /* ========================= SELEÇÃO ========================= */
 function toggleNumero(btn, num) {
@@ -718,100 +727,145 @@ function textoNumerosBloqueados(callback) {
       texto += `Nome:<span class="verde"> ${nome}</span>\n`;
       texto +=  `Numero: ${numeros}\n`;
       texto += `Status :<span class="${classeStatus}">${dadosNome.status}</span>\n`;
-      texto += '---------------------\n';
+      texto += '-----------------------------\n';
     });
 
     callback(texto);
   });
 }
-function atualizarTextareaReservas(dados) {
-
+/* ========================= EXIBIR TODAS AS RESERVAS DA SEMANA NO TEXTAREA ========================= */
+/* ========================= EXIBIR APENAS A PARTE RELEVANTE DA SEMANA NO TEXTAREA ========================= */
+function atualizarTextareaReservasSemana(todasReservas) {
   textoNumerosBloqueados(textoBloq => {
+    let html = textoBloq.replace(/\n/g, '<br>');
+    html += cabecalhoDataJogo().replace(/\n/g, '<br>');
+    const hoje = new Date();
+    const diaAtual = hoje.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+    const inicioSemana = getInicioDaSemana();
+    const fimSemana = getFimDaSemana();
 
-    let html = textoBloq.replace(/\n/g,'<br>');
-    html += cabecalhoDataJogo().replace(/\n/g,'<br>');
+    // Define qual parte exibir com base no dia atual
+    let tituloParte, diasParte, descricaoParte;
+    if (diaAtual === 0 || (diaAtual >= 1 && diaAtual <= 4)) {
+      // Domingo OU Seg a Quinta: exibir Seg a Quar
+      tituloParte = '🔹 ETAPA 1: SEGUNDA A QUARTA';
+      descricaoParte = `Segunda (${inicioSemana.split('-').reverse().join('/')}) a Quarta`;
+      diasParte = dia => dia >= 1 && dia <= 3;
+    } else if (diaAtual >= 5 && diaAtual <= 6) {
+      // Sexta ou Sábado: exibir Quin a Sáb
+      tituloParte = '';
+      descricaoParte = `Quinta a Sábado (${fimSemana.split('-').reverse().join('/')})`;
+      diasParte = dia => dia >= 4 && dia <= 6;
+    }
+  
+    html += '------------------------------<br>';
 
-    if (!dados || Object.keys(dados).length === 0) {
-      if (!jogoEncerrado) {
-        codigo.innerHTML = html + 'Nenhuma reserva para este jogo.';
-      }
+    if (!todasReservas || Object.keys(todasReservas).length === 0) {
+      html += 'Nenhuma reserva nessa etapa.<br><br>';
+      codigo.innerHTML = html;
       return;
     }
 
-    for (const horario of Object.keys(dados).sort()) {
-      html += `<br><strong>[ HORARIO ] => ${horario}</strong><br>`;
+    // Ordena os dias carregados
+    const diasOrdenados = Object.keys(todasReservas).sort();
 
-      for (const k in dados[horario]) {
-        const d = dados[horario][k];
-const countdownId = `countdown-${horario}-${k}`.replace(/[^a-zA-Z0-9-_]/g, '');
-        const qtd = d.numeros.length;
-        const valor = (qtd * 1).toFixed(2).replace('.', ',');
+    // Exibe cada dia da parte relevante
+    diasOrdenados.forEach(dataStr => {
+      const dadosDia = todasReservas[dataStr];
+      const dataBR = dataStr.split('-').reverse().join('/');
+      const diaSemana = new Date(dataStr).toLocaleDateString('pt-BR', { weekday: 'long' });
 
-        let status = d.status || 'AGUARDANDO';
+      html += ``;
+      
 
-if (status.toUpperCase().includes('PAGO')) {
-  status = '✅ PAGO';
+      const horariosOrdenados = Object.keys(dadosDia).sort();
+      horariosOrdenados.forEach(horario => {
+        html += `<br><strong>[ HORÁRIO ] => ${horario}</strong><br>`;
 
-}
-        const resultado = d.resultado || 'AGUARDANDO';
+        for (const k in dadosDia[horario]) {
+          const d = dadosDia[horario][k];
+          const countdownId = `countdown-${dataStr}-${horario}-${k}`.replace(/[^a-zA-Z0-9-_]/g, '');
+          const qtd = d.numeros.length;
+          const valor = (qtd * 1).toFixed(2).replace('.', ',');
 
-        const corStatus =
-  status.includes('VALIDADO') || status.includes('PAGO')
-    ? 'verde'
-    : status.includes('CANCELADO')
-    ? 'vermelho'
-    : 'amarelo';
-          
+          let status = d.status || 'AGUARDANDO';
+          if (status.toUpperCase().includes('PAGO')) status = '✅ PAGO';
 
-        const corResultado =
-          resultado.includes('GANHOU') ? 'verde' :
-          resultado.includes('PERDEU') ? 'vermelho' : 'amarelo';
+          const resultado = d.resultado || 'AGUARDANDO';
 
-        let extrasTxt = '';
-        if (d.dezenasExtras && d.dezenasExtras.length) {
-          extrasTxt = `<br><strong>🎁 Dzn extra:</strong> ${d.dezenasExtras.join('-')}`;
-        }
+          const corStatus = status.includes('VALIDADO') || status.includes('PAGO') ? 'verde' : status.includes('CANCELADO') ? 'vermelho' : 'amarelo';
+          const corResultado = resultado.includes('GANHOU') ? 'verde' : resultado.includes('PERDEU') ? 'vermelho' : 'amarelo';
 
-        html += `
+          let extrasTxt = d.dezenasExtras && d.dezenasExtras.length ? `<br><strong>🎁 Dzn extra:</strong> ${d.dezenasExtras.join('-')}` : '';
+
+          html += `
 Nome: <span class="verde">${d.nome}</span><br>
 Números: ${d.numeros.join('-')} ${extrasTxt}<br>
 Quantidade: ${qtd}<br>
-Valor a pagar: R$ ${valor}
-Status: <span class="${corStatus}">${status}</span>
-Resultado: <span class="${corResultado}">${resultado}</span></>
+Valor a pagar: R$ ${valor}<br>
+Status: <span class="${corStatus}">${status}</span><br>
+Resultado: <span class="${corResultado}">${resultado}</span><br>
 <div id="${countdownId}" class="amarelo"></div><br>
--------------------------<br>
+---------------------------<br>
 `;
-   setTimeout(() => {
-  const el = document.getElementById(countdownId);
 
-  if (!el) return;
-
-  if (!d.dataHora) {
-    el.innerHTML = '<span class="vermelho">⛔ Horário não definido</span>';
-    return;
-  }
-
-  gerarCountdown(countdownId, d.dataHora, d.status);
-}, 50);   }
-    }            
+          setTimeout(() => {
+            const el = document.getElementById(countdownId);
+            if (el) gerarCountdown(countdownId, d.dataHora, d.status);
+          }, 50);
+        }
+      });
+    });
 
     codigo.innerHTML = html;
   });
-}      
-  
-function carregarReservasDoDia(data) {
-  db.ref(`compras-dia/${data}`).once('value').then(snap => {
-    const dados = snap.val();
+}
 
-    // ❌ NÃO LIMPA SE NÃO TIVER DADOS
-    if (!dados) {
-      console.log('📅 Sem dados para', data, '- mantendo histórico');
-      return;
+
+/* ========================= CARREGAR TODAS AS RESERVAS DA SEMANA ========================= */
+/* ========================= CARREGAR APENAS RESERVAS DA PARTE RELEVANTE DA SEMANA ========================= */
+function carregarReservasDaSemana() {
+  const inicioSemana = getInicioDaSemana();
+  const fimSemana = getFimDaSemana();
+  const todasReservas = {};
+  const hoje = new Date();
+  const diaAtual = hoje.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+
+  // Define quais dias carregar com base no dia atual
+  let diasParaCarregar = [];
+  const dataAtual = new Date(inicioSemana);
+
+  while (dataAtual.toISOString().slice(0, 10) <= fimSemana) {
+    const dataStr = dataAtual.toISOString().slice(0, 10);
+    const diaDaSemana = new Date(dataStr).getDay();
+
+    // Regra: carregar apenas a parte relevante
+    if (diaAtual === 0 || (diaAtual >= 1 && diaAtual <= 4)) {
+      // Domingo OU Seg a Quinta: carregar Seg a Quar
+      if (diaDaSemana >= 1 && diaDaSemana <= 3) diasParaCarregar.push(dataStr);
+    } else if (diaAtual >= 5 && diaAtual <= 6) {
+      // Sexta ou Sábado: carregar Quin a Sáb
+      if (diaDaSemana >= 4 && diaDaSemana <= 6) diasParaCarregar.push(dataStr);
     }
 
-    ultimaDataComDados = data;
-    atualizarTextareaReservas(dados);
+    dataAtual.setDate(dataAtual.getDate() + 1);
+  }
+
+  // Carrega apenas os dias selecionados
+  let diasCarregados = 0;
+  diasParaCarregar.forEach(dataStr => {
+    db.ref(`compras-dia/${dataStr}`).once('value').then(snap => {
+      const dadosDia = snap.val();
+      if (dadosDia) {
+        todasReservas[dataStr] = dadosDia;
+      }
+      diasCarregados++;
+
+      // Quando terminar de carregar todos os dias, exibe
+      if (diasCarregados === diasParaCarregar.length) {
+        atualizarTextareaReservasSemana(todasReservas);
+      }
+    });
   });
 }
 
@@ -865,7 +919,7 @@ salvarBtn.onclick = () => {
 
       atualizarTotais();
       atualizarBloqueados();
-      carregarReservasDoDia(dataHoje);
+      
     });
 };
 
@@ -978,7 +1032,7 @@ function salvarPixAdmin() {
     chave: pix,
     atualizadoEm: Date.now()
   }).then(() => {
-    alert('✅ PIX salvo (somente no painel)');
+    alert('✅ PIX salvo (AGUARDE ATE 30 MINUTOS PARA RECEBER O VALOR )');
     fecharPixAdmin();
   });
 }
@@ -1003,7 +1057,7 @@ function gerarCountdown(idElemento, dataHoraCompra, status) {
     return;
   }
 
-  const fim = inicio + (2 * 60 * 60 * 1000);
+  const fim = inicio + (1 * 60 * 60 * 1000);
   let timer = null;
 
   function atualizar() {
@@ -1019,7 +1073,7 @@ function gerarCountdown(idElemento, dataHoraCompra, status) {
 
     if (restante <= 0) {
       el.innerHTML =
-        '<span class="vermelho">⏰ Tempo encerrado</span>';
+        '<span class="vermelho">⏰ pagamento nao indetificado</span>';
       clearInterval(timer);
       return;
     }
@@ -1076,29 +1130,86 @@ function atualizarResultadosAutomaticamente() {
     if (Object.keys(updates).length > 0) {
       db.ref().update(updates).then(() => {
         console.log('⏰ Resultados mudaram para PERDEU (Qua/Sáb 20:30)');
-        carregarReservasDoDia(hoje);
+carregarReservasDaSemana(); // ✅ AGORA CARREGA A SEMANA
+
       });
     }
   });
 }
-function carregarReservas() {
-  const dataHoje = new Date().toISOString().slice(0,10);
-  carregarReservasDoDia(dataHoje); // Carrega as reservas do dia atual
+function fecharPixAdmin() {
+  document.getElementById('modalPixAdmin').style.display = 'none';
 }
-// verifica ao abrir
-atualizarResultadosAutomaticamente();
+/* ========================= DEZENA PREMIADA PÚBLICA ========================= */
+const dezenaAtualPublica = document.getElementById('dezenaAtual');
 
-// verifica a cada minuto
-setInterval(atualizarResultadosAutomaticamente, 60000);
+// Função para atualizar a dezena premiada exibida e destacar na grade
+function atualizarDezenaPremiadaPublica() {
+  db.ref('admin/config/dezenaPremiada').once('value').then(snap => {
+    const dezena = snap.val();
+    
+    // Atualiza o texto da dezena
+    if (dezena) {
+      const dezenaFormatada = dezena.padStart(2, '0');
+      dezenaAtualPublica.textContent = `🏆 Dezena premiada: ${dezenaFormatada}`;
+      
+      // Destaca a dezena na grade de números
+      document.querySelectorAll('.numero').forEach(btn => {
+        if (btn.textContent === dezenaFormatada) {
+          btn.style.background = 'linear-gradient(135deg, #8098ff, #6f86e6)';
+          btn.style.boxShadow = '0 0 15px rgba(128, 152, 255, 0.8)';
+          btn.style.border = '2px solid #fff';
+        } else {
+          // Volta o estilo original para os outros números (exceto bloqueados/extras)
+          if (!btn.classList.contains('bloqueado') && !btn.classList.contains('extra')) {
+            btn.style.background = '#3498db';
+            btn.style.boxShadow = 'none';
+            btn.style.border = 'none';
+          }
+        }
+      });
+    } else {
+      dezenaAtualPublica.textContent = `🏆 Dezena premiada: Aguardando`;
+      
+      // Remove destaque de todos os números
+      document.querySelectorAll('.numero').forEach(btn => {
+        if (!btn.classList.contains('bloqueado') && !btn.classList.contains('extra')) {
+          btn.style.background = '#3498db';
+          btn.style.boxShadow = 'none';
+          btn.style.border = 'none';
+        }
+      });
+    }
+  }).catch(err => {
+    console.error('Erro ao carregar dezena premiada:', err);
+    dezenaAtualPublica.textContent = `🏆 Erro ao carregar resultado`;
+  });
+}
+
+// Atualiza a dezena quando a página carrega
+atualizarDezenaPremiadaPublica();
+
+// Atualiza automaticamente se houver alterações no Firebase (ex: quando admin define)
+db.ref('admin/config/dezenaPremiada').on('value', () => {
+  atualizarDezenaPremiadaPublica();
+});
 
 /* ========================= INIT ATUALIZADO ========================= */
 garantirNome();
 exibirNome();
-carregarReservas();
+carregarReservasDaSemana(); // AGORA CARREGA TODA A SEMANA
 atualizarResultadosAutomaticamente();
 atualizarBloqueados();
-carregarReservasDoDia(dataAtualReservas);
-atualizarDataJogo(); // Agora chamamos a função para mostrar a data
+atualizarDataJogo(); // Mostra a data do próximo jogo
+
+// Atualizar o menu quando abrir (agora com reservas da semana)
+btnMenu.onclick = () => {
+  menuEl.classList.toggle('open');
+  if (menuEl.classList.contains('open')) {
+    carregarReservasDaSemana();
+  }
+};
+
+
 </script>
 </body>
 </html> 
