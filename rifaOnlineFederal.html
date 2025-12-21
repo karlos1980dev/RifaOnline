@@ -28,7 +28,7 @@
         background: var(--bg);
         color:var(--text);
         margin:0;
-        padding-top: 80px;
+        padding-top: 50px;
         text-align:center;
     }
 
@@ -57,7 +57,7 @@
         display:flex;
         align-items:center;
         padding:8px 10px;
-        gap:14px;
+        gap:4px;
         z-index:1000;
         border-bottom:2px solid rgba(0,0,0,0.3);
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
@@ -337,7 +337,8 @@
       📋 Copiar PIX
     </button>
 
-    <p id="pixMsg" style="color:green;display:none;">✔ PIX copiado!</p>
+  <p id="pixMsg" style="color:green;display:none;">✔ PIX copiado! Modal fechará em breve...</p>
+
 
     <button onclick="fecharModalPix()" style="
       margin-top:10px;
@@ -364,17 +365,17 @@
 </h1>
 
   <div id="topoWrapper" role="banner" aria-label="Topo">
-    <button style="color:#fff;background:black;font-weight:bold;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">VER</button>
+    <button style="color:#fff;background:black;font-weight:bold;padding:2px 14px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">VER</button>
 
     <div id="topoInputs" role="form" aria-label="Formulário topo">
-      <input style="width:90px" type="number" id="valor" value="1.00" readonly>
+      <input style="width:90px;font-weight:bold;" type="number" id="valor" value="1.00" readonly>
       <select id="horarios" style="width:120px" aria-label="Horário">
         <option value="20:00">20:00</option>    
       </select>
       <button id="salvar" title="Salvar reserva">Salvar</button>
     </div>
 
-    <div id="nomeBox" style="margin-left:10px;">
+    <div id="nomeBox" style="margin-left:10px; background:black; color:white; padding:0px 10px;border-radius:10px;" >
       <span id="nomeExibicao" aria-live="polite">Bem-vindo</span>
       <button id="btnEditarNome" title="Alterar nome">Editar</button>
     </div>
@@ -439,7 +440,7 @@
   
  <div id="menu" aria-hidden="true">
   <button id="btnPixAdmin" style="
-    width:88%;
+    width:100%;
     text-align:center;
     padding:10px;
     margin-bottom:10px;
@@ -456,7 +457,7 @@
   
   
 
-    <h3 style="text-align:center;">Reservas do dia</h3>
+    
     <div class="visualizador" id="codigo">Nenhuma reserva carregada</div>
     
   </div>
@@ -733,7 +734,7 @@ function textoNumerosBloqueados(callback) {
     callback(texto);
   });
 }
-/* ========================= EXIBIR TODAS AS RESERVAS DA SEMANA NO TEXTAREA ========================= */
+
 /* ========================= EXIBIR APENAS A PARTE RELEVANTE DA SEMANA NO TEXTAREA ========================= */
 function atualizarTextareaReservasSemana(todasReservas) {
   textoNumerosBloqueados(textoBloq => {
@@ -748,7 +749,7 @@ function atualizarTextareaReservasSemana(todasReservas) {
     let tituloParte, diasParte, descricaoParte;
     if (diaAtual === 0 || (diaAtual >= 1 && diaAtual <= 4)) {
       // Domingo OU Seg a Quinta: exibir Seg a Quar
-      tituloParte = '🔹 ETAPA 1: SEGUNDA A QUARTA';
+      tituloParte = '';
       descricaoParte = `Segunda (${inicioSemana.split('-').reverse().join('/')}) a Quarta`;
       diasParte = dia => dia >= 1 && dia <= 3;
     } else if (diaAtual >= 5 && diaAtual <= 6) {
@@ -955,6 +956,10 @@ function copiarPix() {
   const chave = document.getElementById("pixChave").innerText;
   navigator.clipboard.writeText(chave).then(() => {
     document.getElementById("pixMsg").style.display = "block";
+    // Fecha o modal após 1,5 segundos (para o usuário ver a confirmação)
+    setTimeout(() => {
+      fecharModalPix();
+    }, 3500);
   });
 }
 
@@ -1142,14 +1147,19 @@ function fecharPixAdmin() {
 /* ========================= DEZENA PREMIADA PÚBLICA ========================= */
 const dezenaAtualPublica = document.getElementById('dezenaAtual');
 
+// Oculta o elemento POR PADRÃO (antes de carregar dados)
+dezenaAtualPublica.style.display = 'none';
+
 // Função para atualizar a dezena premiada exibida e destacar na grade
 function atualizarDezenaPremiadaPublica() {
   db.ref('admin/config/dezenaPremiada').once('value').then(snap => {
     const dezena = snap.val();
     
-    // Atualiza o texto da dezena
+    // Verifica se há dezena definida (ou seja, se houve alteração no painel)
     if (dezena) {
       const dezenaFormatada = dezena.padStart(2, '0');
+      // Mostra o elemento e define o texto com a dezena
+      dezenaAtualPublica.style.display = 'block';
       dezenaAtualPublica.textContent = `🏆 Dezena premiada: ${dezenaFormatada}`;
       
       // Destaca a dezena na grade de números
@@ -1168,7 +1178,8 @@ function atualizarDezenaPremiadaPublica() {
         }
       });
     } else {
-      dezenaAtualPublica.textContent = `🏆 Dezena premiada: Aguardando`;
+      // Se não há dezena, oculta o elemento (não mostra "Aguardando")
+      dezenaAtualPublica.style.display = 'none';
       
       // Remove destaque de todos os números
       document.querySelectorAll('.numero').forEach(btn => {
@@ -1181,17 +1192,19 @@ function atualizarDezenaPremiadaPublica() {
     }
   }).catch(err => {
     console.error('Erro ao carregar dezena premiada:', err);
-    dezenaAtualPublica.textContent = `🏆 Erro ao carregar resultado`;
+    // Oculta o elemento também em caso de erro (para não mostrar mensagem desnecessária)
+    dezenaAtualPublica.style.display = 'none';
   });
 }
 
-// Atualiza a dezena quando a página carrega
+// Atualiza a dezena quando a página carrega (mas fica oculta se não houver dezena)
 atualizarDezenaPremiadaPublica();
 
-// Atualiza automaticamente se houver alterações no Firebase (ex: quando admin define)
+// Atualiza automaticamente QUANDO O PAINEL ADMIN ALTERAR a dezena no Firebase
 db.ref('admin/config/dezenaPremiada').on('value', () => {
   atualizarDezenaPremiadaPublica();
 });
+
 
 /* ========================= INIT ATUALIZADO ========================= */
 garantirNome();
