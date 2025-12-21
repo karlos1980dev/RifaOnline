@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<img src="<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -63,6 +63,92 @@ textarea{width:100%;height:140px;margin-top:15px;background:#000;color:#0f0;bord
   <button class="warning" onclick="limparTextareaIndex()">🧹 Limpar textarea (Index)</button>
   <button class="success" onclick="liberarNovoJogo()">🔓 Liberar novo jogo</button>
   <button class="danger" onclick="limparTudoFirebase()">❌ APAGAR TUDO DO FIREBASE</button>
+<!-- DEZENA PREMIADA - INÍCIO -->
+<!-- DEZENA PREMIADA - INÍCIO -->
+<div style="display:flex; gap:6px; margin:10px 0;">
+  <button id="btnDezenaAdmin" style="
+    flex:1;
+    padding:10px;
+    background:#8098ff;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+  ">🏆 Definir Dezena Premiada</button>
+
+  <button id="btnLimparDezena" style="
+    flex:1;
+    padding:10px;
+    background:#e74c3c;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+  ">🗑️ Limpar Dezena</button>
+</div>
+
+<!-- Elemento para exibir a dezena atual -->
+<p id="dezenaAtual" style="color:#8098ff; font-weight:bold; font-size:16px; margin:10px 0; text-align:center;"></p>
+<!-- ... restante do modal ... -->
+
+
+
+<!-- Modal para definir dezena (ficará oculto até ser aberto) -->
+<div id="modalDezenaAdmin" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  ">
+    <h2>🔐 Definir Dezena Premiada</h2>
+    <input id="inputDezenaAdmin" type="number" min="0" max="99" placeholder="Digite a dezena (0-99)"
+      style="
+        width:100%;
+        padding:12px;
+        font-size:16px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        margin-bottom:10px;
+        text-align:center;
+      "
+    >
+    <button id="btnSalvarDezena" style="
+      width:100%;
+      padding:10px;
+      background:#8098ff;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      font-weight:bold;
+    ">💾 Salvar Dezena</button>
+    <button id="btnFecharDezena" style="
+      width:100%;
+      margin-top:8px;
+      padding:8px;
+      background:#ccc;
+      border:none;
+      border-radius:8px;
+    ">Cancelar</button>
+  </div>
+</div>
+<!-- DEZENA PREMIADA - FIM -->
 
   <textarea id="log" readonly>Pronto.</textarea>
 
@@ -328,8 +414,115 @@ function limparPixGanhador() {
       console.error(err);
     });
 }
+
+// Elementos da dezena premiada
+const dezenaAtualEl = document.getElementById('dezenaAtual');
+const modalDezenaAdmin = document.getElementById('modalDezenaAdmin');
+const inputDezenaAdmin = document.getElementById('inputDezenaAdmin');
+const btnDezenaAdmin = document.getElementById('btnDezenaAdmin');
+const btnSalvarDezena = document.getElementById('btnSalvarDezena');
+const btnFecharDezena = document.getElementById('btnFecharDezena');
+
+
+// Regra de acesso: SÓ PERMITE QUARTA E SÁBADO A PARTIR DAS 20:00
+function podeDefinirDezena() {
+  const agora = new Date();
+  const diaSemana = agora.getDay(); // 3 = quarta, 6 = sábado
+  const minutosAtuais = agora.getHours() * 60 + agora.getMinutes(); // Total de minutos desde meia-noite
+  
+  // Verifica se é quarta OU sábado E se já passou das 20:00 (1200 minutos desde meia-noite)
+  return (diaSemana === 3 || diaSemana === 6) && minutosAtuais >= 1200;
+}
+
+
+// Atualiza a dezena premiada exibida no painel
+function atualizarDezenaExibida() {
+  db.ref('admin/config/dezenaPremiada').once('value').then(snap => {
+    const dezena = snap.val();
+    if (dezena) {
+      dezenaAtualEl.textContent = `🏆 Dezena premiada atual: ${dezena.padStart(2, '0')}`;
+    } else {
+      dezenaAtualEl.textContent = `🏆 Dezena premiada atual: Nenhuma`;
+    }
+  }).catch(err => {
+    console.error('Erro ao carregar dezena:', err);
+    dezenaAtualEl.textContent = `🏆 Erro ao carregar dezena`;
+  });
+}
+
+
+// Abre o modal para definir a dezena
+function abrirModalDezena() {
+  if (!podeDefinirDezena()) {
+    alert('🔒 A dezena premiada só pode ser definida às 20:00 de quarta e sábado!');
+    return;
+  }
+  inputDezenaAdmin.value = ''; // Limpa o campo
+  modalDezenaAdmin.style.display = 'flex';
+}
+
+
+// Salva a dezena no Firebase
+function salvarDezenaPremiada() {
+  const dezena = inputDezenaAdmin.value.trim();
+  
+  // Valida se é uma dezena válida (0-99)
+  if (dezena === '' || isNaN(dezena) || dezena < 0 || dezena > 99) {
+    alert('⚠ Digite uma dezena válida entre 0 e 99!');
+    return;
+  }
+
+  db.ref('admin/config/dezenaPremiada').set(dezena)
+    .then(() => {
+      alert('✅ Dezena premiada salva com sucesso!');
+      fecharModalDezena();
+      atualizarDezenaExibida();
+      // Escreve no log do painel (se existir)
+      if (log) log.value += `\n✔ Dezena premiada salva: ${dezena.padStart(2, '0')}`;
+    })
+    .catch(err => {
+      alert('❌ Erro ao salvar dezena. Tente novamente.');
+      console.error('Erro ao salvar dezena:', err);
+      
+    });
+}
+
+// Adiciona botão de limpar dezena
+const btnLimparDezena = document.getElementById('btnLimparDezena');
+
+btnLimparDezena.addEventListener('click', () => {
+  if (!confirm('Tem certeza que quer apagar a dezena premiada?')) return;
+
+  db.ref('admin/config/dezenaPremiada').remove()
+    .then(() => {
+      alert('✅ Dezena premiada apagada com sucesso!');
+      atualizarDezenaExibida();
+      if (log) log.value += `\n✔ Dezena premiada apagada`;
+    })
+    .catch(err => {
+      alert('❌ Erro ao apagar dezena. Tente novamente.');
+      console.error('Erro ao apagar dezena:', err);
+    });
+});
+
+// Fecha o modal
+function fecharModalDezena() {
+  modalDezenaAdmin.style.display = 'none';
+}
+
+
+// Adiciona eventos aos botões
+btnDezenaAdmin.addEventListener('click', abrirModalDezena);
+btnSalvarDezena.addEventListener('click', salvarDezenaPremiada);
+btnFecharDezena.addEventListener('click', fecharModalDezena);
+
+
+// Carrega a dezena ao iniciar o painel
+atualizarDezenaExibida();
+
 /* ===== VERIFICA A CADA 30s ===== */
-setInterval(verificarHorarioAutomatico, 30000);
+setInterval(verificarHorarioAutomatico, 30000); 
+
 </script>
 </body>
 </html>
