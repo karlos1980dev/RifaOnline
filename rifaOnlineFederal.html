@@ -45,6 +45,7 @@
     h1{
         font-size:22px;
         margin:8px 0;
+        
     }
 
     /* ---------- TOPO FIXO ---------- */
@@ -365,12 +366,12 @@
 </h1>
 
   <div id="topoWrapper" role="banner" aria-label="Topo">
-    <button style="color:#fff;background:black;font-weight:bold;padding:2px 14px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">VER</button>
+    <button style="color:#000000;background:#2bd5ff;font-weight:bold;padding:2px 14px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">VER</button>
 
     <div id="topoInputs" role="form" aria-label="Formulário topo">
       <input style="width:90px;font-weight:bold;" type="number" id="valor" value="1.00" readonly>
       <select id="horarios" style="width:120px" aria-label="Horário">
-        <option value="20:00">20:00</option>    
+        <option value="20:00">FEDERAL</option>    
       </select>
       <button id="salvar" title="Salvar reserva">Salvar</button>
     </div>
@@ -1196,16 +1197,12 @@ function atualizarDezenaPremiadaPublica() {
     dezenaAtualPublica.style.display = 'none';
   });
 }
-
 // Atualiza a dezena quando a página carrega (mas fica oculta se não houver dezena)
 atualizarDezenaPremiadaPublica();
-
 // Atualiza automaticamente QUANDO O PAINEL ADMIN ALTERAR a dezena no Firebase
 db.ref('admin/config/dezenaPremiada').on('value', () => {
   atualizarDezenaPremiadaPublica();
 });
-
-
 /* ========================= INIT ATUALIZADO ========================= */
 garantirNome();
 exibirNome();
@@ -1213,7 +1210,6 @@ carregarReservasDaSemana(); // AGORA CARREGA TODA A SEMANA
 atualizarResultadosAutomaticamente();
 atualizarBloqueados();
 atualizarDataJogo(); // Mostra a data do próximo jogo
-
 // Atualizar o menu quando abrir (agora com reservas da semana)
 btnMenu.onclick = () => {
   menuEl.classList.toggle('open');
@@ -1221,8 +1217,6 @@ btnMenu.onclick = () => {
     carregarReservasDaSemana();
   }
 };
-
-
 </script>
 </body>
 </html> 
