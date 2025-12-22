@@ -822,49 +822,52 @@ Resultado: <span class="${corResultado}">${resultado}</span><br>
 }
 
 
-/* ========================= CARREGAR TODAS AS RESERVAS DA SEMANA ========================= */
-/* ========================= CARREGAR APENAS RESERVAS DA PARTE RELEVANTE DA SEMANA ========================= */
+/* ========================= CARREGAR APENAS RESERVAS DA PARTE RELEVANTE DA SEMANA + APENAS DIAS COM RESERVAS ========================= */
 function carregarReservasDaSemana() {
   const inicioSemana = getInicioDaSemana();
   const fimSemana = getFimDaSemana();
   const todasReservas = {};
   const hoje = new Date();
-  const diaAtual = hoje.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+  const diaAtual = hoje.getDay(); // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab
+  const dataAtualHoje = hoje.toISOString().slice(0, 10); // Data de hoje no formato AAAA-MM-DD
 
-  // Define quais dias carregar com base no dia atual
+  // Define quais dias CARREGAR com base no dia atual (inclusive se hoje for Quarta)
   let diasParaCarregar = [];
-  const dataAtual = new Date(inicioSemana);
+  const dataPercorrer = new Date(inicioSemana);
 
-  while (dataAtual.toISOString().slice(0, 10) <= fimSemana) {
-    const dataStr = dataAtual.toISOString().slice(0, 10);
+  while (dataPercorrer.toISOString().slice(0, 10) <= fimSemana) {
+    const dataStr = dataPercorrer.toISOString().slice(0, 10);
     const diaDaSemana = new Date(dataStr).getDay();
 
-    // Regra: carregar apenas a parte relevante
-    if (diaAtual === 0) {
-  // Domingo: carregar apenas o domingo
-  if (diaDaSemana === 0) diasParaCarregar.push(dataStr);
-} else if (diaAtual >= 1 && diaAtual <= 4) {
-  // Seg a Quinta: carregar Seg a Quar
-  if (diaDaSemana >= 1 && diaDaSemana <= 3) diasParaCarregar.push(dataStr);
-} else if (diaAtual >= 5 && diaAtual <= 6) {
-  // Sexta ou Sábado: carregar Quin a Sáb
-  if (diaDaSemana >= 4 && diaDaSemana <= 6) diasParaCarregar.push(dataStr);
-}
+    // Regra ajustada:
+    // - Até Quarta-feira (inclusive): carrega Dom, Seg, Ter, Qua
+    // - A partir de Quinta-feira: carrega Qui, Sex, Sab
+    const ehAntesOuQuarta = new Date(dataStr) <= new Date(dataAtualHoje) || diaDaSemana === 3;
+    if (ehAntesOuQuarta) {
+      if (diaDaSemana === 0 || diaDaSemana >= 1 && diaDaSemana <= 3) {
+        diasParaCarregar.push(dataStr);
+      }
+    } else {
+      if (diaDaSemana >= 4 && diaDaSemana <= 6) {
+        diasParaCarregar.push(dataStr);
+      }
+    }
 
-    dataAtual.setDate(dataAtual.getDate() + 1);
+    dataPercorrer.setDate(dataPercorrer.getDate() + 1);
   }
 
-  // Carrega apenas os dias selecionados
+  // Carrega apenas os dias selecionados E só mantém aqueles que tem reservas
   let diasCarregados = 0;
   diasParaCarregar.forEach(dataStr => {
     db.ref(`compras-dia/${dataStr}`).once('value').then(snap => {
       const dadosDia = snap.val();
-      if (dadosDia) {
+      // Só adiciona o dia se houver pelo menos uma reserva nele
+      if (dadosDia && Object.keys(dadosDia).length > 0) {
         todasReservas[dataStr] = dadosDia;
       }
       diasCarregados++;
 
-      // Quando terminar de carregar todos os dias, exibe
+      // Quando terminar de carregar, exibe os dias com reservas
       if (diasCarregados === diasParaCarregar.length) {
         atualizarTextareaReservasSemana(todasReservas);
       }
