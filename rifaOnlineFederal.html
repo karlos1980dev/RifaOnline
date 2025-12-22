@@ -97,6 +97,7 @@
 
     #salvar {
         background: var(--green);
+        color:#000000;
         cursor:pointer;
         height:30px;
         padding:8px;
@@ -369,11 +370,11 @@
     <button style="color:#000000;background:#2bd5ff;font-weight:bold;padding:2px 14px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">VER</button>
 
     <div id="topoInputs" role="form" aria-label="Formulário topo">
-      <input style="width:90px;font-weight:bold;" type="number" id="valor" value="1.00" readonly>
-      <select id="horarios" style="width:120px" aria-label="Horário">
+      <input style="width:70px;font-weight:bold;" type="number" id="valor" value="1.00" readonly>
+      <select id="horarios" style="font-weight:bold;width:120px" aria-label="Horário">
         <option value="20:00">FEDERAL</option>    
       </select>
-      <button id="salvar" title="Salvar reserva">Salvar</button>
+      <button id="salvar" title="Salvar reserva">SALVAR</button>
     </div>
 
     <div id="nomeBox" style="margin-left:10px; background:black; color:white; padding:0px 10px;border-radius:10px;" >
@@ -564,16 +565,14 @@ function getFimDaSemana() {
 /* ========================= REGRAS DE DIA/HORA ========================= */
 function podeMarcarAgora() {
   const agora = new Date();
-  const dia = agora.getDay(); // 0=dom
+  const dia = agora.getDay(); // 0=dom, 3=qua, 6=sab
   const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-
-  if (dia === 0) return false; // domingo fechado
 
   if (dia === 3 || dia === 6) {
     return minutosAgora < (20 * 60); // quarta e sábado até 20:00
   }
 
-  return true; // demais dias 24h
+  return true; // domingo, segunda, terça, quarta (antes de 20h) e quinta liberados 24h
 }
 
 /* ========================= CRIA 00-99 ========================= */
@@ -800,12 +799,11 @@ function atualizarTextareaReservasSemana(todasReservas) {
 
           let extrasTxt = d.dezenasExtras && d.dezenasExtras.length ? `<br><strong>🎁 Dzn extra:</strong> ${d.dezenasExtras.join('-')}` : '';
 
-          html += `
-Nome: <span class="verde">${d.nome}</span><br>
-Números: ${d.numeros.join('-')} ${extrasTxt}<br>
-Quantidade: ${qtd}<br>
+          html += `</br>Nome: <span class="verde">${d.nome}</span><br>
+Quantidade: ${qtd}</br>
+Números Escolhido : ${d.numeros.join('-')} ${extrasTxt}<br>
 Valor a pagar: R$ ${valor}<br>
-Status: <span class="${corStatus}">${status}</span><br>
+Status: <span class="${corStatus}">${status}</span>
 Resultado: <span class="${corResultado}">${resultado}</span><br>
 <div id="${countdownId}" class="amarelo"></div><br>
 ---------------------------<br>
@@ -842,13 +840,16 @@ function carregarReservasDaSemana() {
     const diaDaSemana = new Date(dataStr).getDay();
 
     // Regra: carregar apenas a parte relevante
-    if (diaAtual === 0 || (diaAtual >= 1 && diaAtual <= 4)) {
-      // Domingo OU Seg a Quinta: carregar Seg a Quar
-      if (diaDaSemana >= 1 && diaDaSemana <= 3) diasParaCarregar.push(dataStr);
-    } else if (diaAtual >= 5 && diaAtual <= 6) {
-      // Sexta ou Sábado: carregar Quin a Sáb
-      if (diaDaSemana >= 4 && diaDaSemana <= 6) diasParaCarregar.push(dataStr);
-    }
+    if (diaAtual === 0) {
+  // Domingo: carregar apenas o domingo
+  if (diaDaSemana === 0) diasParaCarregar.push(dataStr);
+} else if (diaAtual >= 1 && diaAtual <= 4) {
+  // Seg a Quinta: carregar Seg a Quar
+  if (diaDaSemana >= 1 && diaDaSemana <= 3) diasParaCarregar.push(dataStr);
+} else if (diaAtual >= 5 && diaAtual <= 6) {
+  // Sexta ou Sábado: carregar Quin a Sáb
+  if (diaDaSemana >= 4 && diaDaSemana <= 6) diasParaCarregar.push(dataStr);
+}
 
     dataAtual.setDate(dataAtual.getDate() + 1);
   }
@@ -1088,13 +1089,15 @@ function gerarCountdown(idElemento, dataHoraCompra, status) {
     const m = Math.floor((restante % 3600000) / 60000);
     const s = Math.floor((restante % 60000) / 1000);
 
+    // 🟥 SÓ O CRONÔMETRO FICA VERMELHO
     el.innerHTML =
-      `⏳ Faca o Pagamento Para Validar sua Reserva ate ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      `⏳ Faca o PIX Para Validar Sua Reserva Suas Dezenas Apos Esse Prazo Sera LIBERADO  <span class="vermelho">${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</span>`;
   }
 
   atualizar();
   timer = setInterval(atualizar, 1000);
 }
+
 function podeVirarPerdeuAutomatico() {
   const agora = new Date();
   const dia = agora.getDay(); // 0=Dom, 3=Qua, 6=Sáb
@@ -1197,12 +1200,16 @@ function atualizarDezenaPremiadaPublica() {
     dezenaAtualPublica.style.display = 'none';
   });
 }
+
 // Atualiza a dezena quando a página carrega (mas fica oculta se não houver dezena)
 atualizarDezenaPremiadaPublica();
+
 // Atualiza automaticamente QUANDO O PAINEL ADMIN ALTERAR a dezena no Firebase
 db.ref('admin/config/dezenaPremiada').on('value', () => {
   atualizarDezenaPremiadaPublica();
 });
+
+
 /* ========================= INIT ATUALIZADO ========================= */
 garantirNome();
 exibirNome();
@@ -1210,6 +1217,7 @@ carregarReservasDaSemana(); // AGORA CARREGA TODA A SEMANA
 atualizarResultadosAutomaticamente();
 atualizarBloqueados();
 atualizarDataJogo(); // Mostra a data do próximo jogo
+
 // Atualizar o menu quando abrir (agora com reservas da semana)
 btnMenu.onclick = () => {
   menuEl.classList.toggle('open');
