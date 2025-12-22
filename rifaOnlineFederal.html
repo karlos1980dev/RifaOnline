@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rifa  Entre Amigos 1 pra 80</title>
+  <title>raffle between friends</title>
   <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/quartasabado.jpg" type="image/jpg">
 <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/quartasabado.jpg" type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -339,7 +339,7 @@
       📋 Copiar PIX
     </button>
 
-  <p id="pixMsg" style="color:green;display:none;">✔ PIX copiado! Modal fechará em breve...</p>
+  <p id="pixMsg" style="color:green;display:none;">✔ PIX copiado! </br>FAÇA O PAGAMANTO e BOA SORTE...</p>
 
 
     <button onclick="fecharModalPix()" style="display:none;
@@ -1074,7 +1074,7 @@ function gerarCountdown(idElemento, dataHoraCompra, status) {
     return;
   }
 
-  const fim = inicio + (1 * 60 * 60 * 1000);
+  const fim = inicio + (1 * 30 * 60 * 1000);
   let timer = null;
 
   function atualizar() {
@@ -1101,7 +1101,7 @@ function gerarCountdown(idElemento, dataHoraCompra, status) {
 
     // 🟥 SÓ O CRONÔMETRO FICA VERMELHO
     el.innerHTML =
-      `⏳ Faca o PIX Para Validar Sua Reserva Suas Dezenas Apos Esse Prazo Sera LIBERADO  <span class="vermelho">${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</span>`;
+      `⏳ Faca o PIX Para Validar Sua Reserva. Suas Dezenas Sera LIBERADA apos Esse Prazo <span class="vermelho">${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</span>`;
   }
 
   atualizar();
@@ -1272,4 +1272,4 @@ btnMenu.onclick = () => {
 
 </script>
 </body>
-</html>
+</html> 
