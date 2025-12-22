@@ -342,7 +342,7 @@
   <p id="pixMsg" style="color:green;display:none;">✔ PIX copiado! Modal fechará em breve...</p>
 
 
-    <button onclick="fecharModalPix()" style="
+    <button onclick="fecharModalPix()" style="display:none;
       margin-top:10px;
       background:#ccc;
       padding:8px;
@@ -801,7 +801,7 @@ function atualizarTextareaReservasSemana(todasReservas) {
 
           html += `</br>Nome: <span class="verde">${d.nome}</span><br>
 Quantidade: ${qtd}</br>
-Números Escolhido : ${d.numeros.join('-')} ${extrasTxt}<br>
+Dezena Escolhida : ${d.numeros.join('-')} ${extrasTxt}<br>
 Valor a pagar: R$ ${valor}<br>
 Status: <span class="${corStatus}">${status}</span>
 Resultado: <span class="${corResultado}">${resultado}</span><br>
@@ -875,7 +875,6 @@ function carregarReservasDaSemana() {
   });
 }
 
-/* ========================= SALVAR ========================= */
 salvarBtn.onclick = () => {
   if (selecionados.length === 0) return alert('Selecione números');
   if (!podeMarcarAgora()) return alert('Prazo encerrado');
@@ -917,18 +916,18 @@ salvarBtn.onclick = () => {
       });
       return db.ref().update(updates);
     })
-    .then(() => {
-      abrirModalPix();
+.then(() => {
+  abrirModalPix();
 
-      selecionados = [];
-      document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
+  selecionados = [];
+  document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
 
-      atualizarTotais();
-      atualizarBloqueados();
-      
-    });
+  atualizarTotais();
+  atualizarBloqueados();
+
+  // ⚠️ LOGICA ANTIGA DE ABRIR MENU APOS SALVAR FOI REMOVIDA AQUI
+});   
 };
-
 
 function proximaDataDeJogo() {
   const hoje = new Date();
@@ -961,7 +960,15 @@ function copiarPix() {
   const chave = document.getElementById("pixChave").innerText;
   navigator.clipboard.writeText(chave).then(() => {
     document.getElementById("pixMsg").style.display = "block";
-    // Fecha o modal após 1,5 segundos (para o usuário ver a confirmação)
+
+    // ✅ NOVO: ABRE O MENU AO COPIAR O PIX
+    if (!menuEl.classList.contains('open')) {
+      btnMenu.click(); // Simula clique no botão "VER" para abrir
+    } else {
+      carregarReservasDaSemana(); // Atualiza se já estiver aberto
+    }
+
+    // Fecha o modal após 3,5 segundos
     setTimeout(() => {
       fecharModalPix();
     }, 3500);
@@ -1211,6 +1218,20 @@ atualizarDezenaPremiadaPublica();
 db.ref('admin/config/dezenaPremiada').on('value', () => {
   atualizarDezenaPremiadaPublica();
 });
+// Fecha o menu ao clicar fora dele
+document.addEventListener('click', (e) => {
+  // Verifica se o menu está aberto E se o clique não foi no botão ou no próprio menu
+  if (
+    menuEl.classList.contains('open') &&
+    !btnMenu.contains(e.target) &&
+    !menuEl.contains(e.target)
+  ) {
+    menuEl.classList.remove('open');
+    menuEl.setAttribute('aria-hidden', 'true');
+    // Limpa temporizador se fechar ao clicar fora
+    if (temporizadorMenu) clearTimeout(temporizadorMenu);
+  }
+});
 
 
 /* ========================= INIT ATUALIZADO ========================= */
@@ -1222,12 +1243,33 @@ atualizarBloqueados();
 atualizarDataJogo(); // Mostra a data do próximo jogo
 
 // Atualizar o menu quando abrir (agora com reservas da semana)
+// Variável para controlar o temporizador (evitar múltiplos temporizadores ao abrir/fechar rápido)
+let temporizadorMenu;
+
+// Abre/fecha o menu com o botão + temporizador de 30 segundos
 btnMenu.onclick = () => {
   menuEl.classList.toggle('open');
+  menuEl.setAttribute('aria-hidden', !menuEl.classList.contains('open')); // Acessibilidade
+
   if (menuEl.classList.contains('open')) {
-    carregarReservasDaSemana();
+    carregarReservasDaSemana(); // Carrega reservas ao abrir
+
+    // Limpa temporizador antigo (se houver)
+    if (temporizadorMenu) clearTimeout(temporizadorMenu);
+
+    // Fecha o menu após 30 segundos (30.000 milissegundos)
+    temporizadorMenu = setTimeout(() => {
+      if (menuEl.classList.contains('open')) {
+        menuEl.classList.remove('open');
+        menuEl.setAttribute('aria-hidden', 'true');
+      }
+    }, 20000);
+  } else {
+    // Limpa temporizador se fechar manualmente antes dos 30 segundos
+    if (temporizadorMenu) clearTimeout(temporizadorMenu);
   }
 };
+
 </script>
 </body>
-</html> 
+</html>
