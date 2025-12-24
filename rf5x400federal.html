@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>raffle between friends</title>
-  <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fd400.jpg" type="image/jpg">
-<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fd400.jpg" type="image/jpg">
+  <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/quartasabado.jpg" type="image/jpg">
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/quartasabado.jpg" type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
@@ -58,7 +58,7 @@
         display:flex;
         align-items:center;
         padding:8px 10px;
-        gap:4px;
+        gap:6px;
         z-index:1000;
         border-bottom:2px solid rgba(0,0,0,0.3);
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
@@ -78,7 +78,7 @@
     #topoInputs {
         display:flex;
         align-items:center;
-        gap:12px;
+        gap:6px;
         width:100%;
     }
 
@@ -87,7 +87,7 @@
     #salvar {
         flex: 1;
         padding:6px;
-        font-size:14px;
+        font-size:13px;
         border-radius:8px;
         border:none;
         text-align:center;
@@ -371,7 +371,7 @@
 </h1>
 
   <div id="topoWrapper" role="banner" aria-label="Topo">
-    <button style="color:#fff;background:#000000;font-weight:bold;padding:4px 20px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">VER</button>
+    <button style="color:#fff;background:#000000;font-weight:bold;padding:4px 14px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">☰VER</button>
 
     <div id="topoInputs" role="form" aria-label="Formulário topo">
       <input style="width:70px;font-weight:bold;" type="number" id="valor" value="5.00" readonly>
@@ -791,7 +791,7 @@ function atualizarTextareaReservasSemana(todasReservas) {
           const d = dadosDia[horario][k];
           const countdownId = `countdown-${dataStr}-${horario}-${k}`.replace(/[^a-zA-Z0-9-_]/g, '');
           const qtd = d.numeros.length;
-          const valor = (qtd * 1).toFixed(2).replace('.', ',');
+          const valor = (qtd * 5).toFixed(2).replace('.', ',');
 
           let status = d.status || 'AGUARDANDO';
           if (status.toUpperCase().includes('PAGO')) status = '✅ PAGO';
