@@ -292,7 +292,51 @@
 </head>
 <body>
      
-    <!-- MODAL PIX -->
+   <!-- MODAL DE RECEBER PRÊMIO -->
+<div id="modalPremio" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#111;
+    color:#fff;
+    width:92%;
+    max-width:420px;
+    padding:25px;
+    border-radius:14px;
+    text-align:center;
+    border:2px solid #8098ff;
+  ">
+    <h2 style="color:#ffd700; margin-top:0;">🎉 PARABÉNS, GANHADOR(A)! 🎉</h2>
+    
+    <p style="margin:15px 0;">Para receber seu prêmio de <strong style="color:#2ecc71;">R$ 80,00</strong>, siga esses passos:</p>
+    
+    <ol style="text-align:left; margin:20px 0; padding-left:25px;">
+      <li>1. Tire print do seu comprovante de reserva</li>
+      <li>2. Confira a dezena premiada exibida na tela</li>
+      <li>3. Envie ambos para o administrador no WhatsApp</li>
+    </ol>
+    
+    <button onclick="fecharModalPremio()" style="
+      margin-top:10px;
+      background:#8098ff;
+      color:#fff;
+      padding:10px 20px;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      font-weight:bold;
+    ">
+      Fechar
+    </button>
+  </div>
+</div>
+
 <!-- MODAL PIX -->
 <div id="modalPix" style="
   position:fixed;
@@ -352,6 +396,10 @@
     ">
       Fechar
     </button>
+    <footer>
+    <p>todos os direitos reservado</br>
+    Newtech</p>
+</footer>
   </div>
 </div>
     <img class="imagemIcone"     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg">
@@ -367,12 +415,12 @@
 </h1>
 
   <div id="topoWrapper" role="banner" aria-label="Topo">
-    <button style="color:#fff;background:#000000;font-weight:bold;padding:4px 20px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">VER</button>
+    <button style="color:#000;background: var(--green);font-weight:bold;padding:4px 20px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">VER</button>
 
     <div id="topoInputs" role="form" aria-label="Formulário topo">
       <input style="width:70px;font-weight:bold;" type="number" id="valor" value="1.00" readonly>
       <select id="horarios" style="font-weight:bold;width:120px" aria-label="Horário">
-        <option value="20:00">FEDERAL</option>    
+        <option value="20:00">FEDERAL</option type="disablet" readonly>    
       </select>
       <button id="salvar" title="Salvar reserva">SALVAR</button>
     </div>
@@ -441,11 +489,11 @@
   <!-- MENU LATERAL -->
   
  <div id="menu" aria-hidden="true">
+  <div style="display: flex; gap: 8px; margin-bottom: 10px;">
   <button id="btnPixAdmin" style="
-    width:100%;
+    flex: 1;
     text-align:center;
     padding:10px;
-    margin-bottom:10px;
     background:#27ae60;
     color:#fff;
     border:none;
@@ -456,8 +504,88 @@
   ">
     RECEBER PRÊMIO
   </button>
-  
-  
+
+  <button id="btnHistoricoData" style="
+    flex: 1;
+    text-align:center;
+    padding:10px;
+    background:#8098ff;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+    HISTÓRICO POR DATA
+  </button>
+</div>
+
+
+<!-- MODAL PARA SELECIONAR DATA DO HISTÓRICO -->
+<div id="modalHistoricoData" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  ">
+    <h2>📅 Selecionar Data do Histórico</h2>
+
+    <input id="inputDataHistorico" type="date"
+      style="
+        width:100%;
+        padding:12px;
+        text-align:center;
+        font-size:16px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        margin-bottom:15px;
+      "
+    >
+
+    <div style="display: flex; gap: 8px;">
+      <button onclick="fecharModalHistoricoData()" style="
+        flex: 1;
+        padding:8px;
+        text-align:center;
+        background:#ccc;
+        border:none;
+        border-radius:8px;
+      ">
+        Cancelar
+      </button>
+      
+      <button onclick="carregarHistoricoPorData()" style="
+        flex: 1;
+        padding:10px;
+        text-align:center;
+        background:#8098ff;
+        color:#fff;
+        border:none;
+        border-radius:8px;
+        font-size:16px;
+        font-weight:bold;
+      ">
+        📤 Carregar
+      </button>
+
+      
+    </div>
+  </div>
+</div>
+
 
     
     <div class="visualizador" id="codigo">Nenhuma reserva carregada</div>
@@ -493,10 +621,6 @@
 ">🏆 Dezena premiada: Aguardando</p>
 </div>
 
-
-<div id="numeros" aria-label="Números da rifa"></div>
-
-      
 <div id="numeros" aria-label="Números da rifa"></div>
 <p id="rodapeInfo">SORTE E SUA A GARANTIA E NOSSA </br>JOGUE COM RESPONSABILIDADE</p>
 
@@ -545,6 +669,12 @@ const btnContinuar = document.getElementById('btnContinuar');
 let jogoEncerrado = false;
 let selecionados = [];
 let bloqueados = new Set();
+// ELEMENTOS DO HISTÓRICO
+const btnHistoricoData = document.getElementById('btnHistoricoData');
+const modalHistoricoData = document.getElementById('modalHistoricoData');
+const inputDataHistorico = document.getElementById('inputDataHistorico');
+// TEMPORIZADOR DO MENU
+let temporizadorMenu;
 
 /* ========================= CALCULAR INÍCIO E FIM DA SEMANA ATUAL ========================= */
 function getInicioDaSemana() {
@@ -764,6 +894,8 @@ function atualizarTextareaReservasSemana(todasReservas) {
     if (!todasReservas || Object.keys(todasReservas).length === 0) {
       html += 'Nenhuma reserva nessa etapa.<br><br>';
       codigo.innerHTML = html;
+      // ADICIONEI A LINHA AQUI TAMBÉM (caso não haja reservas, ainda assim salva o histórico)
+      salvarHistoricoAutomatico();
       return;
     }
 
@@ -818,9 +950,10 @@ Resultado: <span class="${corResultado}">${resultado}</span><br>
     });
 
     codigo.innerHTML = html;
+    // LINHA CORRETA AQUI (DENTRO DO BLOCO textoNumerosBloqueados)
+    salvarHistoricoAutomatico();
   });
 }
-
 
 /* ========================= CARREGAR APENAS RESERVAS DA PARTE RELEVANTE DA SEMANA + APENAS DIAS COM RESERVAS ========================= */
 function carregarReservasDaSemana() {
@@ -873,9 +1006,15 @@ function carregarReservasDaSemana() {
       }
     });
   });
+  if (diasCarregados === diasParaCarregar.length) {
+    atualizarTextareaReservasSemana(todasReservas);
+    salvarHistoricoAutomatico(); // Salva o histórico após carregar as reservas
+  }
+
+
 }
 
-salvarBtn.onclick = () => {
+  salvarBtn.onclick = () => {
   if (selecionados.length === 0) return alert('Selecione números');
   if (!podeMarcarAgora()) return alert('Prazo encerrado');
 
@@ -884,14 +1023,7 @@ salvarBtn.onclick = () => {
   const dataHoje = new Date().toISOString().slice(0,10);
   const chave = 'ID-' + Date.now();
 
-  // 🎁 GERA DEZENAS EXTRAS
-  const dezenasExtras = gerarDezenasExtras(
-    selecionados.length,
-    selecionados,
-    bloqueados
-  );
-
-  // 🔢 TODOS OS NÚMEROS QUE SERÃO BLOQUEADOS
+  const dezenasExtras = gerarDezenasExtras(selecionados.length, selecionados, bloqueados);
   const todosNumeros = [...selecionados, ...dezenasExtras];
 
   const dados = {
@@ -905,28 +1037,24 @@ salvarBtn.onclick = () => {
   };
 
   db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados)
-    .then(() => {
-      // 🔒 BLOQUEIA PAGOS + EXTRAS
-      const updates = {};
-      todosNumeros.forEach(n => {
-        updates['numerosBloqueados/' + n] = {
-          bloqueadoEm: Date.now(),
-          extra: dezenasExtras.includes(n)
-        };
-      });
-      return db.ref().update(updates);
-    })
-.then(() => {
-  abrirModalPix();
-
-  selecionados = [];
-  document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
-
-  atualizarTotais();
-  atualizarBloqueados();
-
-  // ⚠️ LOGICA ANTIGA DE ABRIR MENU APOS SALVAR FOI REMOVIDA AQUI
-});   
+  .then(() => {
+    const updates = {};
+    todosNumeros.forEach(n => {
+      updates['numerosBloqueados/' + n] = {
+        bloqueadoEm: Date.now(),
+        extra: dezenasExtras.includes(n)
+      };
+    });
+    agendarAtualizacaoStatusParaPago(dados.dataHora, `compras-dia/${dataHoje}/${horario}/${chave}`);
+    return db.ref().update(updates);
+  })
+  .then(() => {
+    abrirModalPix();
+    selecionados = [];
+    document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
+    atualizarTotais();
+    atualizarBloqueados();
+  });
 };
 
 function proximaDataDeJogo() {
@@ -989,54 +1117,34 @@ function atualizarDataJogo() {
 }
 function salvarHistoricoAutomatico() {
   const agora = new Date();
+  const codigoConteudo = codigo.innerText.trim();
 
-  const dataStr = agora.toLocaleDateString('pt-BR');
-  const horaStr = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  // VERIFICA SE HÁ RESERVAS (não salva se tiver "Nenhuma reserva")
+  if (codigoConteudo.includes('Nenhuma reserva')) {
+    console.log('ℹ️ Nenhuma reserva para salvar no histórico');
+    return; // Não salva nada se não houver reservas
+  }
 
+  // Formata data e hora (igual antes)
+  const dataStr = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+  const horaStr = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}:${String(agora.getSeconds()).padStart(2, '0')}`;
   const dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
   const diaSemana = dias[agora.getDay()];
+  const id = `${dataStr}_${horaStr.replace(/:/g,'-')}`;
 
-  const id = agora.toISOString().slice(0,10) + '_' + horaStr.replace(':','-');
-
-  const texto = codigo.innerText.trim();
-
-  if (!texto) return; // não salva vazio
-
+  // Salva no Firebase APENAS se houver reservas
   db.ref('historico/' + id).set({
     data: dataStr,
     dia: diaSemana,
     hora: horaStr,
-    conteudo: texto,
+    conteudo: codigoConteudo,
     timestamp: Date.now()
+  }).then(() => {
+    console.log('📦 Histórico salvo com sucesso:', id);
+  }).catch(err => {
+    console.error('Erro ao salvar histórico:', err);
   });
-
-  console.log('📦 Histórico salvo:', id);
 }
-function podeAbrirPixAdmin() {
-  const agora = new Date();
-  const dia = agora.getDay(); // 3 = quarta | 6 = sábado
-  const minutos = agora.getHours() * 60 + agora.getMinutes();
-
-  // somente quarta e sábado
-  if (dia !== 3 && dia !== 6) return false;
-
-  const inicio = 20 * 60;      // 20:00
-  const fim = 23 * 60 + 59;    // 23:59
-
-  return minutos >= inicio && minutos <= fim;
-}
-const btnPixAdmin = document.getElementById('btnPixAdmin');
-const modalPixAdmin = document.getElementById('modalPixAdmin');
-const inputPixAdmin = document.getElementById('inputPixAdmin');
-
-btnPixAdmin.onclick = () => {
-  if (!podeAbrirPixAdmin()) {
-    alert('🔒 PIX do Ganhador será liberado às 20:00');
-    return;
-  }
-  inputPixAdmin.value = '';
-  modalPixAdmin.style.display = 'flex';
-};
 
 function salvarPixAdmin() {
   const pix = inputPixAdmin.value.trim();
@@ -1059,51 +1167,50 @@ function gerarCountdown(idElemento, dataHoraCompra, status) {
   const el = document.getElementById(idElemento);
   if (!el) return;
 
-  // ✅ SE JÁ ESTÁ PAGO
+  // ✅ SE JÁ ESTÁ PAGO, mostra status e sai
   if (status && status.toUpperCase().includes('PAGO')) {
-    el.innerHTML =
-      '<span class="verde">✅ PIX VALIDADO</span>';
+    el.innerHTML = '<span class="verde">✅ PIX VALIDADO</span>';
     return;
   }
 
   const inicio = Date.parse(dataHoraCompra);
-
-  if (isNaN(inicio)) {
-    el.innerHTML =
-      '<span class="amarelo">⏳ Aguardando pagamento</span>';
-    return;
-  }
-
-  const fim = inicio + (1 * 30 * 60 * 1000);
+  const tempoTotalEspera = 10 * 60 * 1000; // 30 MINUTOS TOTAIS em milissegundos
+  const fim = inicio + tempoTotalEspera;
+  const tempoLimiarVerde = 5 * 60 * 1000; // 5 MINUTOS FINAIS em milissegundos
   let timer = null;
 
   function atualizar() {
-    // 🛑 SE MUDOU PARA PAGO DURANTE O TEMPO
-    if (status && status.toUpperCase().includes('PAGO')) {
-      el.innerHTML =
-        '<span class="verde">✅ PIX VALIDADO</span>';
+    // 🛑 Se mudar para pago durante a contagem, atualiza e para
+    if (status && status.toUpperCase().includes('resenvado')) {
+      el.innerHTML = '<span class="verde">✅ Aguardando Comprovante</span>';
       clearInterval(timer);
       return;
     }
 
     const restante = fim - Date.now();
 
+    // Quando acabar o tempo, mostra validado
     if (restante <= 0) {
-      el.innerHTML =
-        '<span class="vermelho">⏰ pagamento nao indetificado</span>';
+      el.innerHTML = '<span class="verde">✅ DEZENA SERA VALIDADO AUTOMATICAMENTE ASSIM QUE INDENTIFICAR O PAGAMENTO...</span>';
       clearInterval(timer);
       return;
     }
 
-    const h = Math.floor(restante / 3600000);
+    // Calcula minutos e segundos restantes
     const m = Math.floor((restante % 3600000) / 60000);
     const s = Math.floor((restante % 60000) / 1000);
 
-    // 🟥 SÓ O CRONÔMETRO FICA VERMELHO
-    el.innerHTML =
-      `⏳ Faca o PIX Para Validar Sua Reserva. Suas Dezenas Sera LIBERADA apos Esse Prazo <span class="vermelho">${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</span>`;
+    // Define cor: vermelho se >5min, verde se ≤5min
+    const corClasse = restante > tempoLimiarVerde ? 'vermelho' : 'verde';
+    const mensagem = restante > tempoLimiarVerde 
+      ? '⏳ Faca o PIX Para Validar Sua Reserva. Tempo restante:' 
+      : '⚠️ ÚLTIMOS MINUTOS! Faca o pagamento e mantenha suas dezenas:';
+
+    // Atualiza o texto com a cor correta
+    el.innerHTML = `${mensagem} <span class="${corClasse}">${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</span>`;
   }
 
+  // Atualiza imediatamente e depois a cada 1 segundo
   atualizar();
   timer = setInterval(atualizar, 1000);
 }
@@ -1165,25 +1272,25 @@ const dezenaAtualPublica = document.getElementById('dezenaAtual');
 dezenaAtualPublica.style.display = 'none';
 
 // Função para atualizar a dezena premiada exibida e destacar na grade
+// Função para atualizar a dezena premiada E procurar o ganhador
 function atualizarDezenaPremiadaPublica() {
   db.ref('admin/config/dezenaPremiada').once('value').then(snap => {
     const dezena = snap.val();
-    
-    // Verifica se há dezena definida (ou seja, se houve alteração no painel)
+    const dezenaAtualPublica = document.getElementById('dezenaAtual');
+
     if (dezena) {
       const dezenaFormatada = dezena.padStart(2, '0');
-      // Mostra o elemento e define o texto com a dezena
+      // Mostra a dezena premiada
       dezenaAtualPublica.style.display = 'block';
       dezenaAtualPublica.textContent = `🏆 Dezena premiada: ${dezenaFormatada}`;
       
-      // Destaca a dezena na grade de números
+      // Destaca a dezena na grade
       document.querySelectorAll('.numero').forEach(btn => {
         if (btn.textContent === dezenaFormatada) {
-          btn.style.background = 'linear-gradient(135deg, #8098ff, #6f86e6)';
-          btn.style.boxShadow = '0 0 15px rgba(128, 152, 255, 0.8)';
-          btn.style.border = '2px solid #fff';
+          btn.style.background = 'linear-gradient(135deg, #ffd700, #ffA500)';
+          btn.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.9)';
+          btn.style.border = '3px solid #fff';
         } else {
-          // Volta o estilo original para os outros números (exceto bloqueados/extras)
           if (!btn.classList.contains('bloqueado') && !btn.classList.contains('extra')) {
             btn.style.background = '#3498db';
             btn.style.boxShadow = 'none';
@@ -1191,11 +1298,13 @@ function atualizarDezenaPremiadaPublica() {
           }
         }
       });
+
+      // 🔍 VARREDURA AUTOMÁTICA PARA ENCONTRAR O GANHADOR
+      procurarGanhador(dezenaFormatada);
+
     } else {
-      // Se não há dezena, oculta o elemento (não mostra "Aguardando")
+      // Se não houver dezena, oculta e limpa destques
       dezenaAtualPublica.style.display = 'none';
-      
-      // Remove destaque de todos os números
       document.querySelectorAll('.numero').forEach(btn => {
         if (!btn.classList.contains('bloqueado') && !btn.classList.contains('extra')) {
           btn.style.background = '#3498db';
@@ -1203,11 +1312,14 @@ function atualizarDezenaPremiadaPublica() {
           btn.style.border = 'none';
         }
       });
+
+      // Limpa o nome do ganhador se não houver dezena
+      const ganhadorEl = document.getElementById('ganhadorPublico');
+      if (ganhadorEl) ganhadorEl.remove();
     }
   }).catch(err => {
     console.error('Erro ao carregar dezena premiada:', err);
-    // Oculta o elemento também em caso de erro (para não mostrar mensagem desnecessária)
-    dezenaAtualPublica.style.display = 'none';
+    document.getElementById('dezenaAtual').style.display = 'none';
   });
 }
 
@@ -1232,6 +1344,115 @@ document.addEventListener('click', (e) => {
     if (temporizadorMenu) clearTimeout(temporizadorMenu);
   }
 });
+/* ========================= ATUALIZA STATUS PARA PAGO APÓS 5 MINUTOS ========================= */
+function agendarAtualizacaoStatusParaPago(dataHoraCompra, caminhoReserva) {
+  const inicio = Date.parse(dataHoraCompra);
+  const tempoEspera = 5 * 60 * 1000; // 5 minutos em milissegundos
+  const horaAtualizacao = inicio + tempoEspera;
+  const tempoRestante = horaAtualizacao - Date.now();
+
+  // Se já passou os 5 minutos, atualiza imediatamente
+  if (tempoRestante <= 0) {
+    atualizarStatusParaPago(caminhoReserva);
+    return;
+  }
+
+  // Agenda a atualização para daqui a 5 minutos
+  setTimeout(() => {
+    atualizarStatusParaPago(caminhoReserva);
+  }, tempoRestante);
+}
+
+function atualizarStatusParaPago(caminhoReserva) {
+  // Verifica se o status ainda é "AGUARDANDO" antes de alterar
+  db.ref(caminhoReserva).once('value').then(snap => {
+    const reserva = snap.val();
+    if (reserva && reserva.status && reserva.status.includes('AGUARDANDO')) {
+      db.ref(caminhoReserva).update({
+        status: '✅ PAGO<!--  --> - PIX VALIDADO',
+        pagoEm: new Date().toISOString()
+      }).then(() => {
+        console.log('✅ Status atualizado para PAGO automaticamente');
+        carregarReservasDaSemana(); // Atualiza o menu com o novo status
+        atualizarBloqueados(); // Garante que os números permaneçam bloqueados
+      }).catch(err => {
+        console.error('Erro ao atualizar status para PAGO:', err);
+      });
+    }
+  });
+}
+
+// Abre o modal de seleção de data
+btnHistoricoData.onclick = () => {
+  // Define a data atual como padrão no input
+  const hoje = new Date().toISOString().slice(0, 10);
+  inputDataHistorico.value = hoje;
+  modalHistoricoData.style.display = 'flex';
+};
+
+// Fecha o modal de histórico por data
+function fecharModalHistoricoData() {
+  modalHistoricoData.style.display = 'none';
+}
+
+// Carrega o histórico da data selecionada
+function carregarHistoricoPorData() {
+  const dataSelecionada = inputDataHistorico.value;
+  if (!dataSelecionada) {
+    alert('Selecione uma data válida!');
+    return;
+  }
+
+  db.ref('historico')
+    .once('value')
+    .then(snap => {
+      const dadosHistorico = snap.val();
+      if (!dadosHistorico) {
+        codigo.innerHTML = `<span class="vermelho">Nenhum histórico foi salvo ainda.</span>`;
+        fecharModalHistoricoData();
+        return;
+      }
+
+      // Filtra por data selecionada E verifica se há reservas no registro
+      const registrosArray = Object.values(dadosHistorico).filter(registro => 
+        registro?.data === dataSelecionada && 
+        !registro.conteudo.includes('Nenhuma reserva') // Só registros com reservas
+      );
+
+      // Obtém datas disponíveis (só aquelas que tem registros com reservas)
+      const datasDisponiveis = [...new Set(
+        Object.values(dadosHistorico).filter(r => !r.conteudo.includes('Nenhuma reserva')).map(r => r?.data)
+      )].sort((a, b) => new Date(b) - new Date(a)).join(', ');
+
+      if (registrosArray.length === 0) {
+        codigo.innerHTML = `<span class="vermelho">Nenhuma reserva encontrada para ${dataSelecionada.split('-').reverse().join('/')}.</span><br><br><span class="amarelo">Datas com reservas disponíveis: ${datasDisponiveis.replace(/-/g, '/') || 'nenhuma'}</span>`;
+        fecharModalHistoricoData();
+        return;
+      }
+
+      // PEGA APENAS O REGISTRO MAIS RECENTE DO DIA (remove repetidos)
+      const registroMaisRecente = registrosArray.sort((a, b) => b.timestamp - a.timestamp)[0];
+
+      // Monta o texto com o registro mais recente
+      let htmlHistorico = `<span class="verde">📅 HISTÓRICO DA DATA: ${dataSelecionada.split('-').reverse().join('/')}</span><br><br>`;
+      htmlHistorico += `<span class="amarelo">🗒️ REGISTRO ATUALIZADO - ${registroMaisRecente.dia} às ${registroMaisRecente.hora}</span><br>`;
+      htmlHistorico += `--------------------------------------------------<br>`;
+      htmlHistorico += registroMaisRecente.conteudo.replace(/\n/g, '<br>');
+      htmlHistorico += `<br><br>==================================================<br><br>`;
+
+      codigo.innerHTML = htmlHistorico;
+      fecharModalHistoricoData();
+
+      if (!menuEl.classList.contains('open')) {
+        btnMenu.click();
+      }
+    })
+    .catch(err => {
+      console.error('Erro ao carregar histórico:', err);
+      codigo.innerHTML = `<span class="vermelho">Erro ao carregar histórico: ${err.message}</span>`;
+      fecharModalHistoricoData();
+    });
+}
 
 
 /* ========================= INIT ATUALIZADO ========================= */
@@ -1244,31 +1465,140 @@ atualizarDataJogo(); // Mostra a data do próximo jogo
 
 // Atualizar o menu quando abrir (agora com reservas da semana)
 // Variável para controlar o temporizador (evitar múltiplos temporizadores ao abrir/fechar rápido)
-let temporizadorMenu;
+
 
 // Abre/fecha o menu com o botão + temporizador de 30 segundos
 btnMenu.onclick = () => {
   menuEl.classList.toggle('open');
-  menuEl.setAttribute('aria-hidden', !menuEl.classList.contains('open')); // Acessibilidade
+  menuEl.setAttribute('aria-hidden', !menuEl.classList.contains('open'));
 
   if (menuEl.classList.contains('open')) {
-    carregarReservasDaSemana(); // Carrega reservas ao abrir
-
-    // Limpa temporizador antigo (se houver)
+    carregarReservasDaSemana();
     if (temporizadorMenu) clearTimeout(temporizadorMenu);
-
-    // Fecha o menu após 30 segundos (30.000 milissegundos)
+    // Salva ao abrir o menu também
+    salvarHistoricoAutomatico();
+    // Fecha após 60 segundos
     temporizadorMenu = setTimeout(() => {
       if (menuEl.classList.contains('open')) {
         menuEl.classList.remove('open');
         menuEl.setAttribute('aria-hidden', 'true');
       }
-    }, 20000);
+    }, 60000);
   } else {
-    // Limpa temporizador se fechar manualmente antes dos 30 segundos
     if (temporizadorMenu) clearTimeout(temporizadorMenu);
+    // Salva ao fechar o menu
+    salvarHistoricoAutomatico();
   }
 };
+// Função para verificar se está no horário válido (20:00 às 23:30)
+function estaNoHorarioPremio() {
+  const agora = new Date();
+  const horas = agora.getHours();
+  const minutos = agora.getMinutes();
+  
+  // Verifica se é entre 20:00 e 23:30
+  return (horas === 20 && minutos >= 0) || 
+         (horas > 20 && horas < 23) || 
+         (horas === 23 && minutos <= 30);
+}
+
+// Ação do botão "RECEBER PRÊMIO" (agora com modal e horário restrito)
+document.getElementById('btnPixAdmin').onclick = () => {
+  if (estaNoHorarioPremio()) {
+    // Abre o modal de prêmio se estiver no horário válido
+    document.getElementById('modalPremio').style.display = 'flex';
+  } else {
+    // Mostra alerta se não estiver no horário
+    alert('⏰  Receber Prêmio\nsó está Disponível\nentre 20:00 e 23:30!');
+  }
+};
+
+// Função para fechar o modal de prêmio
+function fecharModalPremio() {
+  document.getElementById('modalPremio').style.display = 'none';
+}
+// 🔍 FUNÇÃO QUE FAZ A VARREDURA EM TODAS AS RESERVAS PARA ENCONTRAR O GANHADOR
+function procurarGanhador(dezenaPremiada) {
+  // Busca todas as reservas salvas no Firebase
+  db.ref('compras-dia').once('value').then(snap => {
+    const todasReservas = snap.val();
+    let ganhadorEncontrado = null;
+
+    // Percorre todos os dias, horários e reservas
+    if (todasReservas) {
+      Object.keys(todasReservas).forEach(dia => {
+        Object.keys(todasReservas[dia]).forEach(horario => {
+          Object.keys(todasReservas[dia][horario]).forEach(idReserva => {
+            const reserva = todasReservas[dia][horario][idReserva];
+            
+            // Verifica se a dezena premiada está nas dezenas selecionadas OU nas extras
+            const temDezenaSelecionada = reserva.numeros?.includes(dezenaPremiada);
+            const temDezenaExtra = reserva.dezenasExtras?.includes(dezenaPremiada);
+
+            // Se encontrar, salva o ganhador (só o primeiro, se houver empate)
+            if ((temDezenaSelecionada || temDezenaExtra) && !ganhadorEncontrado) {
+              ganhadorEncontrado = {
+                nome: reserva.nome,
+                dezenaTipo: temDezenaSelecionada ? 'selecionada' : 'extra',
+                numeros: reserva.numeros?.join('-'),
+                extras: reserva.dezenasExtras?.join('-')
+              };
+            }
+          });
+        });
+      });
+    }
+
+    // Mostra o ganhador na tela
+    mostrarGanhadorPublico(ganhadorEncontrado, dezenaPremiada);
+  }).catch(err => {
+    console.error('Erro ao procurar ganhador:', err);
+    mostrarGanhadorPublico(null, dezenaPremiada);
+  });
+}
+
+// 🎉 FUNÇÃO QUE EXIBE O GANHADOR EM DESTAQUE NA TELA
+function mostrarGanhadorPublico(ganhador, dezenaPremiada) {
+  // Verifica se já existe um elemento para o ganhador — se sim, remove
+  let ganhadorEl = document.getElementById('ganhadorPublico');
+  if (ganhadorEl) ganhadorEl.remove();
+
+  // Cria o elemento novo
+  ganhadorEl = document.createElement('p');
+  ganhadorEl.id = 'ganhadorPublico';
+  ganhadorEl.style.cssText = `
+    color:#ffd700;
+    font-weight:bold;
+    font-size:22px;
+    margin:20px 0;
+    padding:15px;
+    background:rgba(255, 215, 0, 0.1);
+    border-radius:15px;
+    border:2px solid #ffd700;
+    box-shadow:0 0 15px rgba(255, 215, 0, 0.5);
+  `;
+
+  // Adiciona o texto com o ganhador ou mensagem de nenhum ganhador
+  if (ganhador) {
+    ganhadorEl.innerHTML = `
+      🎊 <strong>GANHADOR(A) ENCONTRADO(A)! 🎊</strong><br><br>
+      Nome: <span style="color:#fff;">${ganhador.nome}</span><br>
+      Dezena premiada: <span style="color:#fff;">${dezenaPremiada}</span> (${ganhador.dezenaTipo})<br>
+      Suas dezenas: <span style="color:#fff;">${ganhador.numeros}</span><br>
+      ${ganhador.extras ? `Dezenas extras: <span style="color:#fff;">${ganhador.extras}</span>` : ''}
+    `;
+  } else {
+    ganhadorEl.innerHTML = `
+      ❌ Nenhum ganhador encontrado para a dezena ${dezenaPremiada} ❌<br><br>
+      Verifique se a dezena foi reservada por alguém.
+    `;
+  }
+
+  // Adiciona o elemento na tela (abaixo da dezena premiada)
+  const dezenaEl = document.getElementById('dezenaAtual');
+  dezenaEl.after(ganhadorEl);
+}
+
 
 </script>
 </body>
