@@ -12,68 +12,17 @@
 
   <style>
     /* ---------- GERAL ---------- */
-    :root {
-      --bg: #232;
-      --card: #111;
-      --accent: #8098ff;
-      --accent-dark: #6f86e6;
-      --green: #2ecc71;
-      --danger: #e74c3c;
-      --text: #fff;
-    }
-
-    *{box-sizing:border-box}
-    body {
-        font-family: Arial, sans-serif;
-        background: var(--bg);
-        color:var(--text);
-        margin:0;
-        padding-top: 50px;
-        text-align:center;
-    }
-
-    img.imagemIcone{
-    display:none;
-      width:100%;
-      height:70px;
-      margin:0;
-      top:0;
-      border-radius:10px;
-      object-fit:cover;
-    }
-
-    h1{
-        font-size:22px;
-        margin:8px 0;
-        
-    }
-
-    /* ---------- TOPO FIXO ---------- */
-    #topoWrapper {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background: linear-gradient(90deg,var(--accent),var(--accent-dark));
-        display:flex;
-        align-items:center;
-        padding:8px 10px;
-        gap:6px;
-        z-index:1000;
-        border-bottom:2px solid rgba(0,0,0,0.3);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-
-    #btnMenu {
-        
-        color:#fff;
-        font-size:16px;
-        border:none;
-        border-radius:8px;
-        cursor:pointer;
-        flex: 0 0 55px;
-        height:px;
-    }
+    :root {--bg: #232;--card: #111;--accent: #8098ff;--accent-dark: #6f86e6; --green: #2ecc71;--danger: #e74c3c;--text: #fff; }
+*{box-sizing:border-box}
+body {font-family: Arial, sans-serif;background: var(--bg);color:var(--text);margin:0;padding-top: 50px;text-align:center;}
+img.imagemIcone{display:none; width:100%;
+height:70px; margin:0;top:0;border-radius:10px;object-fit:cover;  }
+h1{font-size:22px;margin:8px 0; }
+/* ---------- TOPO FIXO ---------- */
+#topoWrapper {position: fixed;top: 0;left: 0;width: 100%;background:linear-gradient(90deg,var(--accent),var(--accent-dark));display:flex;
+align-items:center;padding:8px 10px;gap:6px;
+z-index:1000;border-bottom:2px solid rgba(0,0,0,0.3);box-shadow: 0 4px 8px rgba(0,0,0,0.2); }#btnMenu {color:#fff;
+font-size:16px;border:none;border-radius:8px; cursor:pointer;flex: 0 0 55px;height:px;}
 
     #topoInputs {
         display:flex;
@@ -288,6 +237,79 @@
   border: 2px solid #fff3b0;
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.95);
 }
+
+#modalPacote {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 25000;
+}
+#modalPacote.show { display: flex; }
+
+#modalPacoteBox {
+  background: #111;
+  color: #fff;
+  width: 90%;
+  max-width: 350px;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(128, 152, 255, 0.5);
+  position: relative;
+}
+
+#btnFecharModal {
+  position: absolute;
+  top: 10px; right: 10px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+#modalPacoteBox h3 {
+  margin-top: 0;
+  color: #8098ff;
+}
+
+#modalPacoteBox p {
+  margin: 15px 0;
+  font-size: 16px;
+}
+
+#valorPacote {
+  color: #2ecc71;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+#btnPacoteContainer {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.btnPacote {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btnPacote:hover { transform: scale(1.05); }
+
+#btnMais10 { background: #2ecc71; color: #000; }
+#btnMenos10 { background: #e74c3c; color: #fff; }
+
   </style>
 </head>
 <body>
@@ -360,7 +382,7 @@
 </div>
     <img class="imagemIcone"     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg">
         <h1>
-  RIFA da SORTE CENTENA</br>
+  <strong style="color:white;border-bottom:3px solid #ff00f1; margin:0 30px;">RIFA da SORTE CENTENA </strong></br>
   <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin:0 30px;">
     1.00
   </strong> 
@@ -460,14 +482,8 @@
   ">
     RECEBER PRÊMIO
   </button>
-  
-  
-
-    
-    <div class="visualizador" id="codigo">Nenhuma reserva carregada</div>
-    
+    <div class="visualizador" id="codigo">Nenhuma reserva carregada</div> 
   </div>
-
   <!-- Conteúdo principal -->
 <div style="display:flex;justify-content:space-between;align-items:center; flex-wrap:wrap; width:95%;box-sizing:border-box;margin-bottom:12px;    ">
 
@@ -516,6 +532,19 @@
     </div>
   </div>
 
+<div id="modalPacote">
+  <div id="modalPacoteBox">
+    <button id="btnFecharModal">×</button>
+    <h3>Quer adicionar mais números?</h3>
+    <p>Adicione 10 números com <strong>10% de desconto</strong> (paga R$9,00 por 10!)</p>
+    <p>Valor total atual: <span id="valorPacote">R$ 0,00</span></p>
+    <div id="btnPacoteContainer">
+      <button id="btnMais10" class="btnPacote">+10 Números</button>
+      <button id="btnMenos10" class="btnPacote">-10 Números</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ========================= FIREBASE CONFIG ========================= */
 const firebaseConfig = {
@@ -546,6 +575,12 @@ let ultimaDataComDados = null;
 const modalNome = document.getElementById('modalNome');
 const inputNome = document.getElementById('inputNome');
 const btnContinuar = document.getElementById('btnContinuar');
+// Elementos do modal de pacote
+const modalPacote = document.getElementById('modalPacote');
+const btnFecharModal = document.getElementById('btnFecharModal');
+const btnMais10 = document.getElementById('btnMais10');
+const btnMenos10 = document.getElementById('btnMenos10');
+const valorPacoteSpan = document.getElementById('valorPacote');
 let jogoEncerrado = false;
 let selecionados = [];
 let bloqueados = new Set();
@@ -672,7 +707,7 @@ function atualizarBloqueados() {
 
 /* ========================= TEXTAREA (NUNCA LIMPA AUTOMÁTICO) ========================= */
 function gerarDezenasExtras(qtd, jaSelecionados, jaBloqueados) {
-  const extrasQtd = Math.floor(qtd / 10);
+  const extrasQtd = Math.floor(qtd / 20);
   if (extrasQtd === 0) return [];
 
   let extras = [];
@@ -695,12 +730,24 @@ function gerarDezenasExtras(qtd, jaSelecionados, jaBloqueados) {
 
   return extras;
 }
+// -------------------------- FUNÇÃO DE CÁLCULO DE DESCONTO COMPARTILHADA (MANTER EM CIMA DO CÓDIGO) --------------------------
+const VALOR_UNITARIO = 1.00;
+const VALOR_PACOTE_10 = 9.00; // 10% de desconto
+
+function calcularValorTotal(qtdNumeros) {
+  if (qtdNumeros <= 0) return 0.00;
+  const totalPacotes = Math.floor(qtdNumeros / 10);
+  const totalIndividuais = qtdNumeros % 10;
+  return (totalPacotes * VALOR_PACOTE_10) + (totalIndividuais * VALOR_UNITARIO);
+}
+
+// -------------------------- ALTERAÇÕES NA FUNÇÃO QUE GERA O TEXTO DO TEXTAREA (textoNumerosBloqueados) --------------------------
 function textoNumerosBloqueados(callback) {
   db.ref('numerosBloqueados').once('value').then(snap => {
     const dados = snap.val() || {};
     const porNome = {};
 
-    // Agrupa por nome
+    // Agrupa por nome e conta quantidade total de números por pessoa
     Object.keys(dados).forEach(num => {
       const item = dados[num];
       const nome = item.nome?.trim();
@@ -723,6 +770,8 @@ function textoNumerosBloqueados(callback) {
     Object.keys(porNome).forEach(nome => {
       const dadosNome = porNome[nome];
       const numeros = dadosNome.numeros.sort().join('-');
+      const qtdTotal = dadosNome.numeros.length; // Quantidade total de números da pessoa
+      const valorTotal = calcularValorTotal(qtdTotal); // Usa a função de desconto
 
       let classeStatus =
         dadosNome.status.includes('PAGO') ? 'verde' :
@@ -730,7 +779,9 @@ function textoNumerosBloqueados(callback) {
         'amarelo';
 
       texto += `Nome:<span class="verde"> ${nome}</span>\n`;
-      texto +=  `Numero: ${numeros}\n`;
+      texto += `Números: ${numeros}\n`;
+      texto += `Quantidade total: ${qtdTotal}\n`;
+      texto += `Valor total: R$ ${valorTotal.toFixed(2).replace('.', ',')}\n`; // Valor com desconto
       texto += `Status :<span class="${classeStatus}">${dadosNome.status}</span>\n`;
       texto += '-----------------------------\n';
     });
@@ -739,26 +790,22 @@ function textoNumerosBloqueados(callback) {
   });
 }
 
-/* ========================= EXIBIR APENAS A PARTE RELEVANTE DA SEMANA NO TEXTAREA ========================= */
+// -------------------------- ALTERAÇÕES NA FUNÇÃO QUE ATUALIZA O TEXTAREA COM RESERVAS DA SEMANA --------------------------
 function atualizarTextareaReservasSemana(todasReservas) {
   textoNumerosBloqueados(textoBloq => {
     let html = textoBloq.replace(/\n/g, '<br>');
     html += cabecalhoDataJogo().replace(/\n/g, '<br>');
     const hoje = new Date();
-    const diaAtual = hoje.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+    const diaAtual = hoje.getDay();
     const inicioSemana = getInicioDaSemana();
     const fimSemana = getFimDaSemana();
 
-    // Define qual parte exibir com base no dia atual
+    // Define qual parte exibir (mesma lógica antiga)
     let tituloParte, diasParte, descricaoParte;
     if (diaAtual === 0 || (diaAtual >= 1 && diaAtual <= 4)) {
-      // Domingo OU Seg a Quinta: exibir Seg a Quar
-      tituloParte = '';
       descricaoParte = `Segunda (${inicioSemana.split('-').reverse().join('/')}) a Quarta`;
       diasParte = dia => dia >= 1 && dia <= 3;
     } else if (diaAtual >= 5 && diaAtual <= 6) {
-      // Sexta ou Sábado: exibir Quin a Sáb
-      tituloParte = '';
       descricaoParte = `Quinta a Sábado (${fimSemana.split('-').reverse().join('/')})`;
       diasParte = dia => dia >= 4 && dia <= 6;
     }
@@ -771,17 +818,12 @@ function atualizarTextareaReservasSemana(todasReservas) {
       return;
     }
 
-    // Ordena os dias carregados
     const diasOrdenados = Object.keys(todasReservas).sort();
 
-    // Exibe cada dia da parte relevante
     diasOrdenados.forEach(dataStr => {
       const dadosDia = todasReservas[dataStr];
       const dataBR = dataStr.split('-').reverse().join('/');
       const diaSemana = new Date(dataStr).toLocaleDateString('pt-BR', { weekday: 'long' });
-
-      html += ``;
-      
 
       const horariosOrdenados = Object.keys(dadosDia).sort();
       horariosOrdenados.forEach(horario => {
@@ -790,8 +832,8 @@ function atualizarTextareaReservasSemana(todasReservas) {
         for (const k in dadosDia[horario]) {
           const d = dadosDia[horario][k];
           const countdownId = `countdown-${dataStr}-${horario}-${k}`.replace(/[^a-zA-Z0-9-_]/g, '');
-          const qtd = d.numeros.length;
-          const valor = (qtd * 1).toFixed(2).replace('.', ',');
+          const qtdTotal = d.numeros.length; // Quantidade total de números da reserva
+          const valorTotal = calcularValorTotal(qtdTotal); // Usa a função de desconto
 
           let status = d.status || 'AGUARDANDO';
           if (status.toUpperCase().includes('PAGO')) status = '✅ PAGO';
@@ -804,9 +846,9 @@ function atualizarTextareaReservasSemana(todasReservas) {
           let extrasTxt = d.dezenasExtras && d.dezenasExtras.length ? `<br></br><strong>🎁 CENTENA extra:</strong> ${d.dezenasExtras.join('-')}` : '';
 
           html += `</br>Nome: <span class="verde">${d.nome}</span><br>
-Quantidade: ${qtd}</br>
-Centenas Escolhida : ${d.numeros.join('-')} ${extrasTxt}<br>
-Valor a pagar: R$ ${valor}<br>
+Quantidade: ${qtdTotal}</br>
+Centenas Escolhidas : ${d.numeros.join('-')} ${extrasTxt}<br>
+Valor a pagar: R$ ${valorTotal.toFixed(2).replace('.', ',')}<br> <!-- Valor com desconto -->
 Status: <span class="${corStatus}">${status}</span>
 Resultado: <span class="${corResultado}">${resultado}</span><br>
 <div id="${countdownId}" class="amarelo"></div><br>
@@ -824,7 +866,6 @@ Resultado: <span class="${corResultado}">${resultado}</span><br>
     codigo.innerHTML = html;
   });
 }
-
 
 /* ========================= CARREGAR APENAS RESERVAS DA PARTE RELEVANTE DA SEMANA + APENAS DIAS COM RESERVAS ========================= */
 function carregarReservasDaSemana() {
@@ -1035,7 +1076,7 @@ const inputPixAdmin = document.getElementById('inputPixAdmin');
 
 btnPixAdmin.onclick = () => {
   if (!podeAbrirPixAdmin()) {
-    alert('🔒 PIX do Ganhador será liberado às 20:00');
+    alert('🔒 PIX do Ganhador Será Liberado às 20:00 e Sabado');
     return;
   }
   inputPixAdmin.value = '';
@@ -1273,7 +1314,136 @@ btnMenu.onclick = () => {
     if (temporizadorMenu) clearTimeout(temporizadorMenu);
   }
 };
+// Contador de números marcados para exibir o modal a cada 3
+let contadorMarcacoes = 0;
+// Valores base
 
+
+
+// FUNÇÃO CORRIGIDA: Calcula valor total com desconto para pacotes de 10
+function calcularValorTotal(qtdNumeros) {
+  if (qtdNumeros <= 0) return 0.00;
+  
+  // Total de pacotes de 10 e números individuais restantes
+  const totalPacotes = Math.floor(qtdNumeros / 10);
+  const totalIndividuais = qtdNumeros % 10;
+  
+  // Valor total = (pacotes * R$9) + (individuais * R$1)
+  return (totalPacotes * VALOR_PACOTE_10) + (totalIndividuais * VALOR_UNITARIO);
+}
+
+// Atualiza o valor exibido no modal
+function atualizarValorModal() {
+  const qtdAtual = selecionados.length;
+  const valorTotal = calcularValorTotal(qtdAtual);
+  valorPacoteSpan.textContent = valorTotal.toFixed(2).replace('.', ',');
+}
+
+// Atualiza os totais gerais (da página) com o desconto correto
+function atualizarTotais() {
+  const qtdAtual = selecionados.length;
+  const valorTotal = calcularValorTotal(qtdAtual);
+  
+  // Atualiza os spans da página (ajusta os IDs se forem diferentes na sua base)
+  document.getElementById('totalPagar').textContent = valorTotal.toFixed(2).replace('.', ',');
+  document.getElementById('totalReceber').textContent = (VALOR_UNITARIO * 650).toFixed(2).replace('.', ',');
+}
+
+// Abre o modal (chamado a cada 3 números marcados)
+function abrirModalPacote() {
+  atualizarValorModal();
+  modalPacote.classList.add('show');
+}
+
+// Fecha o modal (só no X)
+function fecharModalPacote() {
+  modalPacote.classList.remove('show');
+}
+
+// Seleciona 10 números disponíveis aleatórios (com desconto garantido)
+function adicionar10Numeros() {
+  let numerosAdicionados = 0;
+  const todosNumeros = Array.from({length: 1000}, (_, i) => i.toString().padStart(3, '0'));
+
+  while (numerosAdicionados < 10 && todosNumeros.length > 0) {
+    const indiceAleatorio = Math.floor(Math.random() * todosNumeros.length);
+    const num = todosNumeros[indiceAleatorio];
+    const btn = document.querySelector(`.numero[data-num="${num}"]`);
+
+    if (btn && !btn.classList.contains('bloqueado') && !btn.classList.contains('marcado')) {
+      btn.classList.add('marcado');
+      selecionados.push(num);
+      numerosAdicionados++;
+    }
+
+    todosNumeros.splice(indiceAleatorio, 1);
+  }
+
+  atualizarTotais();
+  atualizarValorModal(); // Atualiza valor no modal (não fecha)
+}
+
+// Desmarca os últimos 10 números selecionados
+function remover10Numeros() {
+  const qtdARemover = Math.min(10, selecionados.length);
+  const ultimos10 = selecionados.splice(-qtdARemover);
+
+  ultimos10.forEach(num => {
+    const btn = document.querySelector(`.numero[data-num="${num}"]`);
+    if (btn) btn.classList.remove('marcado');
+  });
+
+  atualizarTotais();
+  atualizarValorModal(); // Atualiza valor no modal (não fecha)
+}
+
+// Atualiza o contador de marcacoes e abre o modal a cada 5
+function atualizarContadorMarcacoes() {
+  contadorMarcacoes++;
+  if (contadorMarcacoes % 5 === 0) {
+    abrirModalPacote();
+  }
+}
+
+// Função de marcação manual com atualização de desconto
+function toggleNumero(btn, num) {
+  if (btn.classList.contains('bloqueado') || btn.classList.contains('extra') || !podeMarcarAgora()) {
+    return;
+  }
+
+  if (btn.classList.contains('marcado')) {
+    btn.classList.remove('marcado');
+    selecionados = selecionados.filter(n => n !== num);
+    contadorMarcacoes--;
+  } else {
+    btn.classList.add('marcado');
+    selecionados.push(num);
+    atualizarContadorMarcacoes();
+  }
+
+  atualizarTotais();
+  if (modalPacote.classList.contains('show')) {
+    atualizarValorModal();
+  }
+}
+
+// Adiciona data-num aos botões de número (ao criar eles)
+for (let i = 0; i < 1000; i++) {
+  let num = i.toString().padStart(3, '0');
+  let btn = document.createElement('button');
+  btn.textContent = num;
+  btn.className = 'numero';
+  btn.setAttribute('data-num', num);
+  btn.addEventListener('click', () => toggleNumero(btn, num));
+  document.getElementById('numeros').appendChild(btn);
+}
+
+// Eventos do modal
+btnFecharModal.addEventListener('click', fecharModalPacote);
+btnMais10.addEventListener('click', adicionar10Numeros);
+btnMenos10.addEventListener('click', remover10Numeros);
+
+// Desativa fechamento ao clicar fora
 </script>
 </body>
-</html> 
+</html>
