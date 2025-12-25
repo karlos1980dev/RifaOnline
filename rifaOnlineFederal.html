@@ -1502,21 +1502,45 @@ function estaNoHorarioPremio() {
          (horas === 23 && minutos <= 30);
 }
 
-// Ação do botão "RECEBER PRÊMIO" (agora com modal e horário restrito)
+// // Variável global para guardar o horário do último alerta exibido (inicialmente vazio)
+let ultimoHorarioAlertaPremio = null;
+// Tempo mínimo entre alertas (1 hora em milissegundos)
+const TEMPO_MINIMO_ENTRE_ALERTAS = 3600000;
+
+// Ação do botão "RECEBER PRÊMIO" (agora com bloqueio de 1 hora por clique)
 document.getElementById('btnPixAdmin').onclick = () => {
   if (estaNoHorarioPremio()) {
     // Abre o modal de prêmio se estiver no horário válido
     document.getElementById('modalPremio').style.display = 'flex';
+    // Reseta o horário do último alerta (pois o usuário já pode usar a funcionalidade)
+    ultimoHorarioAlertaPremio = null;
   } else {
-    // Mostra alerta se não estiver no horário
-    alert('⏰  Receber Prêmio\nsó está Disponível\nentre 20:00 e 23:30!');
+    const agora = Date.now();
+    
+    // Verifica se já passou pelo menos 1 hora do último alerta (ou se é o primeiro clique)
+    if (!ultimoHorarioAlertaPremio || (agora - ultimoHorarioAlertaPremio) >= TEMPO_MINIMO_ENTRE_ALERTAS) {
+      // Exibe o alerta
+         alert('⏰  Receber Prêmio ⏰\nsó Está Disponível Entre  QUARTA E SABADO 20:00 e 23:30! retorne aqui faca a Solicitacao');
+      // Atualiza o horário do último alerta para o momento atual
+      ultimoHorarioAlertaPremio = agora;
+      console.log('⚠️ Alerta exibido — próximo só pode aparecer após 1 hora');
+    } else {
+      // Calcula o tempo restante até que o alerta possa aparecer novamente
+      const tempoRestanteMs = TEMPO_MINIMO_ENTRE_ALERTAS - (agora - ultimoHorarioAlertaPremio);
+      const tempoRestanteMin = Math.ceil(tempoRestanteMs / 60000);
+      // (Opcional) Mostra uma mensagem pequena no console (não incomoda o usuário com outro alerta)
+      console.log(`⌛ Aguardando ${tempoRestanteMin} minuto(s) para exibir o alerta novamente`);
+      // Se quiser, pode mostrar um alerta menor com o tempo restante — mas eu recomendo não, para não incomodar
+      // alert(`Aguarde mais ${tempoRestanteMin} minuto(s) para ver essa mensagem novamente`);
+    }
   }
 };
 
-// Função para fechar o modal de prêmio
+// Função para fechar o modal de prêmio (sem alterações)
 function fecharModalPremio() {
   document.getElementById('modalPremio').style.display = 'none';
 }
+
 // 🔍 FUNÇÃO QUE FAZ A VARREDURA EM TODAS AS RESERVAS PARA ENCONTRAR O GANHADOR
 function procurarGanhador(dezenaPremiada) {
   // Busca todas as reservas salvas no Firebase
@@ -1544,7 +1568,7 @@ function procurarGanhador(dezenaPremiada) {
                 extras: reserva.dezenasExtras?.join('-')
               };
             }
-          });
+          })          ;
         });
       });
     }
