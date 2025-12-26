@@ -3,314 +3,185 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rifa da Sorte 1 pra 70</title>
-  <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg" type="image/jpg">
-<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg" type="image/jpg">
+  <title>raffle between friends</title>
+  <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/centenasabado.jpg" type="image/jpg">
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/centenasabado.jpg" type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-
-  <style>
-    /* ---------- GERAL ---------- */
-    :root {
-      --bg: #232;
-      --card: #111;
-      --accent: #8098ff;
-      --accent-dark: #6f86e6;
-      --green: #2ecc71;
-      --danger: #e74c3c;
-      --text: #fff;
-    }
-
-    *{box-sizing:border-box}
-    body {
-        font-family: Arial, sans-serif;
-        background: var(--bg);
-        color:var(--text);
-        margin:0;
-        padding-top: 80px;
-        text-align:center;
-    }
-
-    img.imagemIcone{
-    display:none;
-      width:100%;
-      height:70px;
-      margin:0;
-      top:0;
-      border-radius:10px;
-      object-fit:cover;
-    }
-
-    h1{
-        font-size:22px;
-        margin:8px 0;
-    }
-
-    /* ---------- TOPO FIXO ---------- */
-    #topoWrapper {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background: linear-gradient(90deg,var(--accent),var(--accent-dark));
-        display:flex;
-        align-items:center;
-        padding:8px 10px;
-        gap:14px;
-        z-index:1000;
-        border-bottom:2px solid rgba(0,0,0,0.3);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-
-    #btnMenu {
-        background:#40f5ff;
-        color:#fff;
-        font-size:20px;
-        border:none;
-        border-radius:8px;
-        cursor:pointer;
-        flex: 0 0 55px;
-        height:px;
-    }
-
-    #topoInputs {
-        display:flex;
-        align-items:center;
-        gap:12px;
-        width:100%;
-    }
-
-    #topoInputs input,
-    #topoInputs select,
-    #salvar {
-        flex: 1;
-        padding:6px;
-        font-size:14px;
-        border-radius:8px;
-        border:none;
-        text-align:center;
-        background:#222;
-        color:#fff;
-    }
-
-    #salvar {
-        background: var(--green);
-        cursor:pointer;
-        height:30px;
-        padding:8px;
-        font-size:16px;
-        flex: 1;
-        font-weight:700;
-    }
-
-    #nomeBox {
-      display:flex;
-      align-items:center;
-      gap:8px;
-      margin-left:6px;
-      color:#fff;
-      font-weight:700;
-    }
-
-    #btnEditarNome {
-      background:transparent;
-      border:1px solid rgba(255,255,255,0.2);
-      color:#fff;
-      padding:6px 8px;
-      border-radius:8px;
-      cursor:pointer;
-    }
-
-    @media (max-width: 420px) {
-        #btnMenu { flex: 0 0 45px; }
-        #salvar { font-size:12px; padding:6px; }
-    }
-
-    /* ---------- MENU LATERAL ---------- */
-    #menu {
-        position: fixed;
-        top: 60px;
-        margin:0px;
-        left: -150%;
-        width: 85%;
-        max-width:420px;
-        height: 80%;
-        background:var(--card);
-        color:#fff;
-        padding:14px;
-        transition:0.28s;
-        overflow-y:auto;
-        z-index:9999;
-        box-shadow: 6px 6px 30px rgba(0,0,0,0.6);
-        border-radius: 8px;
-    }
-    #menu.open { left:0; }
-
-    #menu h3 { margin-top:0; }
-
-#menu textarea {
-    display: block;
-    width: calc(100% - 0px);  /* largura total, sem deslocar */
-    max-width: 100%;
-    height: 350px;
-
-    background: #000;
-    color: #0f0;
-    border: 1px solid #0f0;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 16px;
-    resize: none;
-    box-sizing: border-box;
-    overflow-y: auto;
-
-    /* 🟢 DEIXA COLADO NA ESQUERDA */
-    margin-left: 0;
-    transform: translateX(0);    /* zera o deslocamento */
-    filter: none;                /* remove a sombra que jogava para o lado */
-}
-    /* ---------- NUMEROS ---------- */
-    #conteudo { display:flex; padding:12px; max-width:1000px; margin: 0 auto; }
-
-    #numeros {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      gap: 6px;
-      width: 100%;
-      padding: 5px;
-      box-sizing: border-box;
-    }
-
-    .numero {
-      aspect-ratio: 1 / 1;
-      width: 100%;
-      border-radius: 8px;
-      background: #3498db;
-      color: #fff;
-      border: none;
-      font-weight: bold;
-      font-size: clamp(10px, 2.8vw, 18px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor:pointer;
-      user-select:none;
-    }
-
-    .numero:active { transform: scale(.98); }
-    .marcado { background:#27ae60 !important; }
-    .bloqueado { background:#777 !important; color:#ccc; cursor:not-allowed; }
-
-    #rodapeInfo { margin-top:12px; color:gold; font-weight:bold; }
-
-    /* ---------- MODAL NOME ---------- */
-    #modalNome {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.75);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 20000;
-    }
-
-    #modalNome.show { display:flex; }
-
-    #modalBox {
-        background: #fff;
-        color: #000;
-        width: 92%;
-        max-width:420px;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    }
-
-    #modalBox input {
-        width: 100%;
-        padding: 12px;
-        font-size: 16px;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        border:1px solid #ddd;
-    }
-
-    #modalBox button {
-        background: #27ae60;
-        color: #fff;
-        padding: 10px 20px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
-        font-weight: bold;
-    }
-
-    .pequeno { font-size:13px; color:#ccc; margin-top:10px; }
-.visualizador {
-  width: 100%;
-  height: 250px;
-  background: #111;
-  color: #fff;
-  padding: 10px;
-  border-radius: 6px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  font-family: monospace;
-  border: 1px solid #444;
-}
-.visualizador .verde {
-  color: #00ff00;
-  font-weight: bold;
-}
-  </style>
-</head>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<link rel="stylesheet" type="text/css" href="style.css" media="screen" />
 <body>
+     
+    <!-- MODAL PIX -->
+<!-- MODAL PIX -->
+<div id="modalPix" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:30000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  ">
+    <h2>💰 Pagamento via PIX</h2>
+<p><strong>Valor a pagar: R$ <span id="valorPix">0,00</span></strong></p>
+    <p>Copie a chave PIX abaixo:</p>
+
+    <div id="pixChave" style="
+      background:#f1f1f1;
+      padding:12px;
+      border-radius:8px;
+      font-weight:bold;
+      word-break:break-all;
+    ">
+      71992290058
+    </div>
+
+    <button onclick="copiarPix()" style="
+      margin-top:10px;
+      background:#27ae60;
+      color:#fff;
+      padding:10px;
+      width:100%;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+    ">
+      📋 Copiar PIX
+    </button>
+
+  <p id="pixMsg" style="color:green;display:none;"><b>✅ PIX COPIADO!</br>FAÇA O PAGAMANTO e BOA SORTE...</p></b>
+
+
+    <button onclick="fecharModalPix()" style="display:none;
+      margin-top:10px;
+      background:#ccc;
+      padding:8px;
+      width:100%;
+      border:none;
+      border-radius:8px;
+    ">
+      Fechar
+    </button>
+    <footer>
+    <p>todos os direitos reservado</br>
+    Newtech</p>
+</footer>
+  </div>
+</div>
     <img class="imagemIcone"     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg">
         <h1>
-  Rifa da Sorte </br>
-  <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin:0 20px;">
-    1.00
+  <strong style="color:white;border-bottom:3px solid #ff00f1; margin:0 30px;">RIFA da SORTE CENTENA </strong></br>
+  <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin:0 30px;">
+    1.50
   </strong> 
-  X 
+  GANHA
   <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin-left:20px;">
-    70.00
+   1000.00
   </strong>
 </h1>
 
   <div id="topoWrapper" role="banner" aria-label="Topo">
-    <button id="btnMenu" aria-label="Abrir menu" title="Abrir menu">☰</button>
+    <button style="color:#fff;background:#000000;font-weight:bold;padding:4px 14px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">☰VER</button>
 
     <div id="topoInputs" role="form" aria-label="Formulário topo">
-      <input style="width:90px" type="number" id="valor" placeholder="R$" min="0" step="0.01" aria-label="Valor">
-      <select id="horarios" style="width:120px" aria-label="Horário">
-        <option value="" disabled selected>HORÁRIO</option>
-        <option value="10:00">10:00</option>
-        <option value="12:00">12:00</option>
-        <option value="15:00">15:00</option>
-        <option value="19:00">19:00</option>
-        <option value="21:00">21:00</option>
+      <input style="width:70px;font-weight:bold;" type="number" id="valor" value="1.50" readonly>
+      <select id="horarios" style="font-weight:bold;width:120px" aria-label="Horário" disablet>
+        <option value="20:00" readonly>FEDERAL</option>    
       </select>
-      <button id="salvar" title="Salvar reserva">Salvar</button>
+      <button id="salvar" title="Salvar reserva">SALVAR</button>
     </div>
 
-    <div id="nomeBox" style="margin-left:10px;">
+    <div id="nomeBox" style="margin-left:10px; background:black; color:white; padding:0px 10px;border-radius:10px;" >
       <span id="nomeExibicao" aria-live="polite">Bem-vindo</span>
       <button id="btnEditarNome" title="Alterar nome">Editar</button>
     </div>
   </div>
+<div id="modalPixAdmin" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  ">
+    <h2>🔐 Definir PIX</h2>
 
+    <input id="inputPixAdmin" type="text" placeholder="Digite a chave PIX"
+      style="
+        width:100%;
+        padding:12px;
+        font-size:16px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        margin-bottom:10px;
+      "
+    >
+
+    <button onclick="salvarPixAdmin()" style="
+      width:100%;
+      padding:10px;
+      background:#27ae60;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      font-weight:bold;
+    ">
+      💾 Salvar PIX
+    </button>
+
+    <button onclick="fecharPixAdmin()" style="
+      width:100%;
+      margin-top:8px;
+      padding:8px;
+      background:#ccc;
+      border:none;
+      border-radius:8px;
+    ">
+      Cancelar
+    </button>
+  </div>
+</div>
   <!-- MENU LATERAL -->
   
-  <div id="menu" aria-hidden="true">
-    <h3>Reservas do dia</h3>
-    <textarea  contenteditable="false" class="visualizador" id="codigo" readonly>Nenhuma reserva carregada.</textarea>
-    
+ <div id="menu" aria-hidden="true">
+  <button id="btnPixAdmin" style="
+    width:100%;
+    text-align:center;
+    padding:10px;
+    margin-bottom:10px;
+    background:#27ae60;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+    RECEBER PRÊMIO
+  </button>
+    <div class="visualizador" id="codigo">Nenhuma reserva carregada</div> 
   </div>
-
   <!-- Conteúdo principal -->
 <div style="display:flex;justify-content:space-between;align-items:center; flex-wrap:wrap; width:95%;box-sizing:border-box;margin-bottom:12px;    ">
 
@@ -319,13 +190,29 @@
     </div>
 
     <div style="flex:1; min-width:120px; text-align:right;">
-        <strong>Recebe: R$ <span id="totalReceber">0,00</span></strong>
+                <strong>Recebe: R$ <span id="totalReceber">0,00</span></strong>
     </div>
     
     
   </div>
+<p id="dataJogo" style="color:gold;font-weight:bold;"></p>
+  
+     
+<!-- ADICIONE ESTA LINHA A-->
+<p id="dezenaAtual" style="
+  color:#7bff55;
+  font-weight:bold;
+  font-size:18px;
+  margin:15px 0;
+  padding:10px;
+  background:rgba(128, 152, 255, 0.1);
+  border-radius:10px;
+  display:block;
+">🏆 Dezena premiada: Aguardando</p>
+</div>
+
 <div id="numeros" aria-label="Números da rifa"></div>
-<p id="rodapeInfo">JOGUE COM RESPONSABILIDADE</p>
+<p id="rodapeInfo">SORTE E SUA A GARANTIA E NOSSA </br>JOGUE COM RESPONSABILIDADE</p>
 
   <!-- MODAL PARA PEDIR O NOME -->
   <div id="modalNome" role="dialog" aria-modal="true" aria-labelledby="tituloModal">
@@ -335,466 +222,22 @@
         <div style="display:flex; gap:8px; justify-content:center;">
           <button id="btnContinuar">Continuar</button>
         </div>
-        <div class="pequeno">O nome será salvo localmente e será enviado com a sua reserva.</div>
+        <div class="pequeno">O nome será salvo com a sua reserva.</div>
     </div>
   </div>
 
-<script>
-/* ========================= FIREBASE CONFIG ========================= */
-const firebaseConfig = {
-  };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-/* ========================= ELEMENTOS ========================= */
-const numerosDiv = document.getElementById('numeros');
-const valorInput = document.getElementById('valor');
-const codigoTextarea = document.getElementById('codigo');
-const horariosSelect = document.getElementById('horarios');
-const totalPagarSpan = document.getElementById('totalPagar');
-const totalReceberSpan = document.getElementById('totalReceber');
-const menuEl = document.getElementById('menu');
-const btnMenu = document.getElementById('btnMenu');
-const salvarBtn = document.getElementById('salvar');
-const nomeExibicao = document.getElementById('nomeExibicao');
-const btnEditarNome = document.getElementById('btnEditarNome');
-
-const modalNome = document.getElementById('modalNome');
-const inputNome = document.getElementById('inputNome');
-const btnContinuar = document.getElementById('btnContinuar');
-
-let selecionados = [];
-let bloqueados = new Set();
-let dataAtualReservas = new Date().toISOString().slice(0,10);
-
-/* Usado para liberar seleção local após 30 minutos (quando usuário marca) */
-let horarioDaJogada = null;
-
-/* ========================= CRIA 00-99 ========================= */
-for (let i = 0; i < 100; i++) {
-  let num = i.toString().padStart(2, '0');
-  let btn = document.createElement('button');
-  btn.textContent = num;
-  btn.className = 'numero';
-  btn.addEventListener('click', () => toggleNumero(btn, num));
-  numerosDiv.appendChild(btn);
-}
-
-/* ========================= MODAL NOME ========================= */
-function abrirModalNome() {
-  modalNome.classList.add('show');
-  inputNome.value = localStorage.getItem('nomeJogador') || '';
-  setTimeout(() => inputNome.focus(), 100);
-}
-function fecharModalNome() {
-  modalNome.classList.remove('show');
-}
-function exibirNome() {
-  const n = localStorage.getItem('nomeJogador') || null;
-  nomeExibicao.textContent = n ? n : "Bem-vindo";
-}
-function garantirNome() {
-  const nomeSalvo = localStorage.getItem('nomeJogador');
-  if (!nomeSalvo || nomeSalvo.trim() === '') abrirModalNome();
-  else exibirNome();
-}
-btnContinuar.addEventListener('click', () => {
-  let v = inputNome.value.trim();
-  if (!v) {
-    alert('Digite um nome válido.');
-    inputNome.focus();
-    return;
-  }
-  localStorage.setItem('nomeJogador', v);
-  fecharModalNome();
-  exibirNome();
-});
-btnEditarNome.addEventListener('click', abrirModalNome);
-
-/* ========================= MENU ========================= */
-btnMenu.addEventListener('click', toggleMenu);
-function toggleMenu(){
-  menuEl.classList.toggle('open');
-  if (menuEl.classList.contains('open')) carregarReservasDoDia(dataAtualReservas);
-}
-
-/* ========================= SELEÇÃO DE NÚMEROS ========================= */
-function toggleNumero(btn, num){
-
-  // ⛔ Bloqueia clique se horário já passou
-  const horarioSelecionado = horariosSelect.value;
-  const agora = new Date();
-  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-
-  if (!horarioSelecionado) {
-    alert("Selecione um horário antes de marcar!");
-    return;
-  }
-
-  const [h, m] = horarioSelecionado.split(":").map(Number);
-  const minutosHorario = h * 60 + m;
-
-  if (minutosHorario <= minutosAgora) {
-    alert("Este horário já passou. Escolha outro horário.");
-    horariosSelect.selectedIndex = 0;
-    return;
-  }
-
-  // Se número está bloqueado, impede
-  if(btn.classList.contains("bloqueado")) return;
-
-  // Alterna marcação normalmente
-  if(btn.classList.contains("marcado")){
-    btn.classList.remove("marcado");
-    selecionados = selecionados.filter(n => n !== num);
-  } else {
-    btn.classList.add("marcado");
-    selecionados.push(num);
-
-    if (!horarioDaJogada) horarioDaJogada = Date.now();
-  }
-
-  atualizarTotais();
-}
-/* ========================= TOTAIS ========================= */
-function atualizarTotais() {
-  let raw = valorInput.value || "0";
-  let v = parseFloat(String(raw).replace(",", "."));
-  if (isNaN(v) || v <= 0) v = 0;
-
-  let qtd = selecionados.length;
-  totalPagarSpan.textContent = (v * qtd).toFixed(2).replace(".", ",");
-  totalReceberSpan.textContent = (v * 70).toFixed(2).replace(".", ",");
-}
-valorInput.addEventListener('input', atualizarTotais);
-
-/* ========================= BLOQUEADOS (Firebase -> UI) ========================= */
-function atualizarBloqueados() {
-  db.ref('numerosBloqueados').once('value').then(snapshot => {
-    const dados = snapshot.val() || {};
-    bloqueados = new Set(Object.keys(dados));
-    atualizarBotoes();
-  }).catch(err => {
-    console.error("Erro ao buscar bloqueados:", err);
-  });
-}
-
-function atualizarBotoes() {
-  document.querySelectorAll('.numero').forEach(btn => {
-    const n = btn.textContent;
-
-    if (bloqueados.has(n)) {
-      btn.classList.add('bloqueado');
-      btn.disabled = true;
-      btn.classList.remove('marcado');
-      selecionados = selecionados.filter(x => x !== n);
-    } else {
-      btn.classList.remove('bloqueado');
-      btn.disabled = false;
-    }
-  });
-
-  atualizarTotais();
-}
-
-/* ========================= RESERVAS DO DIA (display) ========================= */
-function atualizarTextareaReservas(dadosPorHorario) {
-  if (!dadosPorHorario || Object.keys(dadosPorHorario).length === 0) {
-    codigoTextarea.value = "Nenhuma reserva para hoje.";
-    return;
-  }
-
-  let texto = "";
-
-  for (let horario of Object.keys(dadosPorHorario).sort()) {
-    texto += `\n[ HORARIO ] => ${horario}\n\n`;
-
-    for (let key in dadosPorHorario[horario]) {
-      const d = dadosPorHorario[horario][key];
-
-      const numeros = Array.isArray(d.numeros) ? d.numeros.join("-") : "";
-      const nome = d.nome || "Sem nome";
-      const valor = d.valorUnitario
-        ? "R$ " + Number(d.valorUnitario).toFixed(2).replace(".", ",")
-        : "";
-
-      // STATUS
-      let statusTexto = "⏳ AGUARDANDO";
-      if (d.status === "pagou") statusTexto = "✅ PAGOU";
-      if (d.status === "cancelou") statusTexto = "❌ CANCELOU";
-
-      // RESULTADO
-      let resultadoTexto = "⏳ AGUARDANDO";
-      if (d.resultado === "ganhou") resultadoTexto = "🟢 GANHOU";
-      if (d.resultado === "perdeu") resultadoTexto = "🔴 PERDEU";
-
-      texto +=
-`${nome} - ${numeros} ${valor}
-STATUS: ${statusTexto}
-RESULTADO: ${resultadoTexto}
--------------------------\n`;
-    }
-  }
-
-  codigoTextarea.value = texto;
-}
-
-
-function carregarReservasDoDia(data) {
-  db.ref(`compras-dia/${data}`).once('value').then(snapshot => {
-    atualizarTextareaReservas(snapshot.val() || {});
-  }).catch(err => {
-    console.error("Erro ao carregar reservas do dia:", err);
-    codigoTextarea.value = "Erro ao carregar reservas.";
-  });
-}
-
-/* ========================= HORÁRIOS DISPONÍVEIS (marca próximo e bloqueia passado visualmente) ========================= */
-function getHoraAtual() {
-  const now = new Date();
-  return `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-}
-
-function atualizarHorariosDisponiveis() {
-  const agora = new Date();
-  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-
-  let encontrouProximo = false;
-
-  [...horariosSelect.options].forEach(opt => {
-    if (!opt.value) return; // ignorar placeholder
-
-    const [h, m] = opt.value.split(":").map(Number);
-    const minutosOpt = h * 60 + m;
-
-    if (minutosOpt <= minutosAgora) {
-      // horário passado → bloqueia (apenas visual)
-      opt.disabled = true;
-      opt.style.color = "#777";
-      opt.style.background = "transparent";
-    } else {
-      // horário futuro → disponível
-      opt.disabled = false;
-      opt.style.color = "#fff";
-      opt.style.background = "transparent";
-
-      // marca o próximo horário disponível automaticamente
-      if (!encontrouProximo) {
-        opt.selected = true;
-        encontrouProximo = true;
-      } else {
-        opt.selected = false;
-      }
-    }
-  });
-
-  // se não encontrou nenhum futuro, volta placeholder
-  if (!encontrouProximo) {
-    horariosSelect.selectedIndex = 0;
-  }
-}
-
-/* ========================= LIBERAR APÓS 30 MIN (local) ========================= */
-function liberarApos30Min() {
-  if (!horarioDaJogada) return;
-
-  const agora = Date.now();
-  const limite = horarioDaJogada + (30 * 60 * 1000); // 30 minutos
-
-  if (agora >= limite) {
-    // limpar marcações locais
-    document.querySelectorAll(".numero.marcado").forEach(btn =>
-      btn.classList.remove("marcado")
-    );
-
-    selecionados = [];
-    atualizarTotais();
-
-    horarioDaJogada = null;
-    console.log("✔ Números liberados (local) após 30 minutos");
-  }
-}
-
-/* ========================= LIBERAR APÓS 30 MIN (Firebase + UI) ========================= */
-function liberarApos30MinFirebase() {
-  const agora = Date.now();
-  const limite = 30 * 60 * 1000;
-
-  db.ref("numerosBloqueados").once("value").then(snapshot => {
-    const dados = snapshot.val() || {};
-    let remover = [];
-
-    for (let num in dados) {
-      const info = dados[num];
-      if (!info || !info.bloqueadoEm) continue;
-
-      if (agora - info.bloqueadoEm >= limite) {
-        remover.push(num);
-      }
-    }
-
-    if (remover.length === 0) return;
-
-    // remover do Firebase (cria array de promessas)
-    let promessas = remover.map(num => db.ref("numerosBloqueados/" + num).remove());
-
-    Promise.all(promessas).then(() => {
-      // Atualiza UI: desbloqueia botões
-      remover.forEach(num => {
-        let btn = [...document.querySelectorAll(".numero")].find(b => b.textContent === num);
-        if (btn) {
-          btn.classList.remove("bloqueado");
-          btn.classList.remove("marcado");
-          btn.disabled = false;
-        }
-        selecionados = selecionados.filter(x => x !== num);
-      });
-
-      atualizarTotais();
-      // atualiza cache local de bloqueados
-      atualizarBloqueados();
-      console.log("✔ Liberados no Firebase e UI (após 30min):", remover);
-    }).catch(err => {
-      console.error("Erro ao remover bloqueados expirados:", err);
-    });
-  }).catch(err => {
-    console.error("Erro ao ler numerosBloqueados:", err);
-  });
-}
-
-/* ========================= GERAR CÓDIGO SIMPLES ========================= */
-function gerarCodigoSimples() {
-  const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  return (
-    "RIFA-" +
-    letras[Math.floor(Math.random() * letras.length)] +
-    letras[Math.floor(Math.random() * letras.length)] +
-    Math.floor(100 + Math.random() * 900)
-  );
-}
-
-/* ========================= SALVAR + ENVIAR WHATSAPP ========================= */
-salvarBtn.addEventListener('click', () => {
-  if (selecionados.length === 0) return alert("Selecione pelo menos um número!");
-  const horario = horariosSelect.value;
-  if (!horario) return alert("Selecione um horário!");
-
-  let v = parseFloat((valorInput.value || "0").replace(",", "."));
-  if (isNaN(v) || v <= 0) return alert("Digite um valor maior que zero!");
-
-  const nome = localStorage.getItem("nomeJogador") || "Sem nome";
-
-  // horário real da jogada
-  const tempoAgora = Date.now();
-
-  // Verificar conflito (último snapshot)
-  db.ref('numerosBloqueados').once('value').then(snap => {
-    const dados = snap.val() || {};
-    const conflito = selecionados.find(n => dados[n]);
-
-    if (conflito) {
-      alert(`O número ${conflito} já está reservado.`);
-      atualizarBloqueados();
-      return;
-    }
-
-    const chave = "ID-" + Date.now();
-    const codigoSimples = gerarCodigoSimples();
-    const dataHoje = new Date().toISOString().slice(0,10);
-    const dataHora = new Date().toLocaleString();
-    const valorPago = Number((v * selecionados.length).toFixed(2));
-    const aReceber = Number((valorPago * 70).toFixed(2));
-
-  const dadosFinal = {
-  nome,
-  numeros: [...selecionados],
-  dataHora,
-  codigo: codigoSimples,
-  horarioEscolhido: horario,
-  valorUnitario: v,
-  quantidade: selecionados.length,
-  valorPago,
-  aReceber,
-  status: "aguardando",
-  resultado: "aguardando"
-};
-
-    // Promessas para salvar a compra e bloquear números
-    let promises = [
-      db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dadosFinal)
-    ];
-
-    selecionados.forEach(n => {
-      promises.push(
-        db.ref("numerosBloqueados/" + n).set({
-          bloqueadoEm: tempoAgora
-        })
-      );
-    });
-
-    // Executa todas as gravações
-    Promise.all(promises).then(() => {
-      alert("Reserva salva!");
-      atualizarBloqueados();
-      carregarReservasDoDia(dataHoje);
-
-      // --- ENVIO PARA WHATSAPP ---
-      const telefoneDestino = "5571992290058"; // ajuste se necessário
-
-      const mensagem =
-`🍀 *Rifa Online*
-Código do jogo: ${codigoSimples}
-Nome: ${nome}
-*BOA SORTE !!*`;
-
-      // Abre o WhatsApp em nova aba/janela
-      window.open(
-        `https://wa.me/${telefoneDestino}?text=${encodeURIComponent(mensagem)}`,
-        "_blank"
-      );
-      // -----------------------------
-
-      // LIMPAR TELA + reset horarioDaJogada
-      selecionados = [];
-      document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
-      atualizarTotais();
-      horariosSelect.selectedIndex = 0;
-      horarioDaJogada = null;
-    }).catch(err => {
-      console.error("Erro ao salvar reserva:", err);
-      alert("Erro ao salvar. Tente novamente.");
-    });
-  }).catch(err => {
-    console.error("Erro ao verificar bloqueios:", err);
-    alert("Erro de verificação. Tente novamente.");
-  });
-});
-
-/* ========================= INICIALIZAÇÕES ========================= */
-garantirNome();
-atualizarBloqueados();
-carregarReservasDoDia(dataAtualReservas);
-atualizarHorariosDisponiveis();
-exibirNome();
-
-/* AUTO-VERIFICAÇÕES AGENDADAS */
-setInterval(liberarApos30Min, 30000);            // libera local a cada 30s (se passou 30min)
-setInterval(liberarApos30MinFirebase, 20000);    // verifica e remove expirados no Firebase a cada 20s
-setInterval(atualizarHorariosDisponiveis, 60000);// atualiza horários a cada minuto
-/* ========================= LIMPAR TEXTAREA APÓS 00:00 ========================= */
-function limparTextareaMeiaNoite() {
-  const agora = new Date();
-  const horas = agora.getHours();
-  const minutos = agora.getMinutes();
-
-  // Quando for exatamente 00:00
-  if (horas === 0 && minutos === 0) {
-    codigoTextarea.value = "Nenhuma reserva carregada.";
-  }
-}
-
-// verifica a cada 20 segundos
-setInterval(limparTextareaMeiaNoite, 20000);
-</script>
+<div id="modalPacote">
+  <div id="modalPacoteBox">
+    <button id="btnFecharModal">×</button>
+    <h3>Quer adicionar mais cotas?</h3>
+    <p>Adicione +10 cotas com </br><strong style="color:gold">10% de desconto</strong></br> (paga R$13,50 por 10 cotas!)</p>
+    <p>Valor total atual: <span id="valorPacote">R$ 0,00</span></p>
+    <div id="btnPacoteContainer">
+      <button id="btnMais10" class="btnPacote">+10 Números</button>
+      <button id="btnMenos10" class="btnPacote">-10 Números</button>
+    </div>
+  </div>
+</div>
+<script src="firetime.js<!--  -->"></script>
+<script src="script.js"></script>
 </body>
-</html>   
