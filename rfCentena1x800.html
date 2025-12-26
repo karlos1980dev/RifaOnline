@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>raffle between friends 1x650</title>
+  <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/centenasabado.jpg" type="image/jpg">
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/centenasabado.jpg" type="image/jpg">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+  <style>
+    /* ---------- GERAL ---------- */
+    :root {--bg: #232;--card: #111;--accent: #8098ff;--accent-dark: #6f86e6; --green: #2ecc71;--danger: #e74c3c;--text: #fff; }
+*{box-sizing:border-box}
+body {font-family: Arial, sans-serif;background: var(--bg);color:var(--text);margin:0;padding-top: 50px;text-align:center;}
+img.imagemIcone{display:none; width:100%;
+height:70px; margin:0;top:0;border-radius:10px;object-fit:cover;  }
+h1{font-size:22px;margin:8px 0; }
+/* ---------- TOPO FIXO ---------- */
+#topoWrapper {position: fixed;top: 0;left: 0;width: 100%;background:linear-gradient(90deg,var(--accent),var(--accent-dark));display:flex;
+align-items:center;padding:8px 10px;gap:6px;
+z-index:1000;border-bottom:2px solid rgba(0,0,0,0.3);box-shadow: 0 4px 8px rgba(0,0,0,0.2); }#btnMenu {color:#fff;
+font-size:16px;border:none;border-radius:8px; cursor:pointer;flex: 0 0 55px;height:px;}
+
+    #topoInputs {
+        display:flex;
+        align-items:center;
+        gap:6px;
+        width:100%;
+    }
+
+    #topoInputs input,
+    #topoInputs select,
+    #salvar {
+        flex: 1;
+        padding:6px;
+        font-size:13px;
+        border-radius:8px;
+        border:none;
+        text-align:center;
+        background:#222;
+        color:#fff;
+    }
+
+    #salvar {
+        background: var(--green);
+        color:#000000;
+        cursor:pointer;
+        height:30px;
+        padding:8px;
+        font-size:16px;
+        flex: 1;
+        font-weight:700;
+    }
+
+    #nomeBox {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-left:6px;
+      color:#fff;
+      font-weight:700;
+    }
+
+    #btnEditarNome {
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.2);
+      color:#fff;
+      padding:6px 8px;
+      border-radius:8px;
+      cursor:pointer;
+    }
+
+    @media (max-width: 420px) {
+        #btnMenu { flex: 0 0 45px; }
+        #salvar { font-size:12px; padding:6px; }
+    }
+
+    /* ---------- MENU LATERAL ---------- */
+    #menu {
+        position: fixed;
+        top: 60px;
+        margin:0px;
+        left: -150%;
+        width: 85%;
+        max-width:420px;
+        height: 80%;
+        background:var(--card);
+        color:#fff;
+        padding:14px;
+        transition:0.28s;
+        overflow-y:auto;
+        z-index:9999;
+        box-shadow: 6px 6px 30px rgba(0,0,0,0.6);
+        border-radius: 8px;
+    }
+    #menu.open { left:0; }
+
+    #menu h3 { margin-top:0; }
+
+#menu textarea {
+    display: block;
+    width: calc(100% - 0px);  /* largura total, sem deslocar */
+    max-width: 100%;
+    height: 350px;
+
+    background: #000;
+    color: #0f0;
+    border: 1px solid #0f0;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 16px;
+    resize: none;
+    box-sizing: border-box;
+    overflow-y: auto;
+
+    /* 🟢 DEIXA COLADO NA ESQUERDA */
+    margin-left: 0;
+    transform: translateX(0);    /* zera o deslocamento */
+    filter: none;                /* remove a sombra que jogava para o lado */
+}
+    /* ---------- NUMEROS ---------- */
+    #conteudo { display:flex; padding:12px; max-width:1000px; margin: 0 auto; }
+
+    #numeros {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 6px;
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+
+    .numero {
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      border-radius: 8px;
+      background: #3498db;
+      color: #fff;
+      border: none;
+      font-weight: bold;
+      font-size: clamp(10px, 2.8vw, 18px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .numero:active { transform: scale(.98); }
+    .marcado { background:#27ae60 !important; }
+    .bloqueado { background:#777 !important; color:#ccc; cursor:not-allowed; }
+
+    #rodapeInfo { margin-top:12px; color:gold; font-weight:bold; }
+
+    /* ---------- MODAL NOME ---------- */
+    #modalNome {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.75);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 20000;
+    }
+
+    #modalNome.show { display:flex; }
+
+    #modalBox {
+        background: #fff;
+        color: #000;
+        width: 92%;
+        max-width:420px;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    #modalBox input {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        border:1px solid #ddd;
+    }
+
+    #modalBox button {
+        background: #27ae60;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .pequeno { font-size:13px; color:#ccc; margin-top:10px; }
+.visualizador {
+  width: 100%;
+  height: 350px;
+  background: #111;
+  color: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: monospace;
+  border: 1px solid #444;
+}
+.verde { color:#00ff00; font-weight:bold; }
+.amarelo { color:gold; font-weight:bold; }
+.vermelho { color:#ff4d4d; font-weight:bold; }
+/* FORÇA ALINHAMENTO À ESQUERDA NO MENU */
+#menu,
+#menu * {
+  text-align: left;
+}
+#nomeExibicao {
+  color: #2ecc71; /* verde */
+}
+.numero.extra {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #000;
+  font-weight: bold;
+  border: 2px solid #fff3b0;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.9);
+}
+.numero.bloqueado.extra {
+  background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+  color: #000 !important;
+  border: 2px solid #fff3b0;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.95);
+}
+
+#modalPacote {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 25000;
+}
+#modalPacote.show { display: flex; }
+
+#modalPacoteBox {
+  background: #111;
+  color: #fff;
+  width: 90%;
+  max-width: 350px;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(128, 152, 255, 0.5);
+  position: relative;
+}
+
+#btnFecharModal {
+  position: absolute;
+  top: 10px; right: 10px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+#modalPacoteBox h3 {
+  margin-top: 0;
+  color: #8098ff;
+}
+
+#modalPacoteBox p {
+  margin: 15px 0;
+  font-size: 16px;
+}
+
+#valorPacote {
+  color: #2ecc71;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+#btnPacoteContainer {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.btnPacote {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btnPacote:hover { transform: scale(1.05); }
+
+#btnMais10 { background: #2ecc71; color: #000; }
+#btnMenos10 { background: #e74c3c; color: #fff; }
+
+  </style>
+</head>
+<body>
+     
+    <!-- MODAL PIX -->
+<!-- MODAL PIX -->
+<div id="modalPix" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:30000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  ">
+    <h2>💰 Pagamento via PIX</h2>
+<p><strong>Valor a pagar: R$ <span id="valorPix">0,00</span></strong></p>
+    <p>Copie a chave PIX abaixo:</p>
+
+    <div id="pixChave" style="
+      background:#f1f1f1;
+      padding:12px;
+      border-radius:8px;
+      font-weight:bold;
+      word-break:break-all;
+    ">
+      71992290058
+    </div>
+
+    <button onclick="copiarPix()" style="
+      margin-top:10px;
+      background:#27ae60;
+      color:#fff;
+      padding:10px;
+      width:100%;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+    ">
+      📋 Copiar PIX
+    </button>
+
+  <p id="pixMsg" style="color:green;display:none;"><b>✅ PIX COPIADO!</br>FAÇA O PAGAMANTO e BOA SORTE...</p></b>
+
+
+    <button onclick="fecharModalPix()" style="display:none;
+      margin-top:10px;
+      background:#ccc;
+      padding:8px;
+      width:100%;
+      border:none;
+      border-radius:8px;
+    ">
+      Fechar
+    </button>
+    <footer>
+    <p>todos os direitos reservado</br>
+    Newtech</p>
+</footer>
+  </div>
+</div>
+    <img class="imagemIcone"     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg">
+        <h1>
+  <strong style="color:white;border-bottom:3px solid #ff00f1; margin:0 30px;">RIFA da SORTE CENTENA </strong></br>
+  <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin:0 30px;">
+    1.00
+  </strong> 
+  GANHA
+  <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin-left:20px;">
+   650.00
+  </strong>
+</h1>
+
+  <div id="topoWrapper" role="banner" aria-label="Topo">
+    <button style="color:#fff;background:#000000;font-weight:bold;padding:4px 14px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">☰VER</button>
+
+    <div id="topoInputs" role="form" aria-label="Formulário topo">
+      <input style="width:70px;font-weight:bold;" type="number" id="valor" value="1.00" readonly>
+      <select id="horarios" style="font-weight:bold;width:120px" aria-label="Horário" disablet>
+        <option value="20:00" readonly>FEDERAL</option>    
+      </select>
+      <button id="salvar" title="Salvar reserva">SALVAR</button>
+    </div>
+
+    <div id="nomeBox" style="margin-left:10px; background:black; color:white; padding:0px 10px;border-radius:10px;" >
+      <span id="nomeExibicao" aria-live="polite">Bem-vindo</span>
+      <button id="btnEditarNome" title="Alterar nome">Editar</button>
+    </div>
+  </div>
+<div id="modalPixAdmin" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  ">
+    <h2>🔐 Definir PIX</h2>
+
+    <input id="inputPixAdmin" type="text" placeholder="Digite a chave PIX"
+      style="
+        width:100%;
+        padding:12px;
+        font-size:16px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        margin-bottom:10px;
+      "
+    >
+
+    <button onclick="salvarPixAdmin()" style="
+      width:100%;
+      padding:10px;
+      background:#27ae60;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      font-weight:bold;
+    ">
+      💾 Salvar PIX
+    </button>
+
+    <button onclick="fecharPixAdmin()" style="
+      width:100%;
+      margin-top:8px;
+      padding:8px;
+      background:#ccc;
+      border:none;
+      border-radius:8px;
+    ">
+      Cancelar
+    </button>
+  </div>
+</div>
+  <!-- MENU LATERAL -->
+  
+ <div id="menu" aria-hidden="true">
+  <button id="btnPixAdmin" style="
+    width:100%;
+    text-align:center;
+    padding:10px;
+    margin-bottom:10px;
+    background:#27ae60;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+    RECEBER PRÊMIO
+  </button>
+    <div class="visualizador" id="codigo">Nenhuma reserva carregada</div> 
+  </div>
+  <!-- Conteúdo principal -->
+<div style="display:flex;justify-content:space-between;align-items:center; flex-wrap:wrap; width:95%;box-sizing:border-box;margin-bottom:12px;    ">
+
+    <div style="flex:1; min-width:120px;">
+        <strong>Pagar: R$ <span id="totalPagar">0,00</span></strong>
+    </div>
+
+    <div style="flex:1; min-width:120px; text-align:right;">
+                <strong>Recebe: R$ <span id="totalReceber">0,00</span></strong>
+    </div>
+    
+    
+  </div>
+<p id="dataJogo" style="color:gold;font-weight:bold;"></p>
+  
+     
+<!-- ADICIONE ESTA LINHA A-->
+<p id="dezenaAtual" style="
+  color:#7bff55;
+  font-weight:bold;
+  font-size:18px;
+  margin:15px 0;
+  padding:10px;
+  background:rgba(128, 152, 255, 0.1);
+  border-radius:10px;
+  display:block;
+">🏆 Dezena premiada: Aguardando</p>
+</div>
+
+
+<div id="numeros" aria-label="Números da rifa"></div>
+
+      
+<div id="numeros" aria-label="Números da rifa"></div>
+<p id="rodapeInfo">SORTE E SUA A GARANTIA E NOSSA </br>JOGUE COM RESPONSABILIDADE</p>
+
+  <!-- MODAL PARA PEDIR O NOME -->
+  <div id="modalNome" role="dialog" aria-modal="true" aria-labelledby="tituloModal">
+    <div id="modalBox">
+        <h2 id="tituloModal">Digite seu nome para continuar</h2>
+        <input type="text" id="inputNome" placeholder="Seu nome">
+        <div style="display:flex; gap:8px; justify-content:center;">
+          <button id="btnContinuar">Continuar</button>
+        </div>
+        <div class="pequeno">O nome será salvo com a sua reserva.</div>
+    </div>
+  </div>
+
+<div id="modalPacote">
+  <div id="modalPacoteBox">
+    <button id="btnFecharModal">×</button>
+    <h3>Quer adicionar mais números?</h3>
+    <p>Adicione 10 números com <strong>10% de desconto</strong> (paga R$9,00 por 10!)</p>
+    <p>Valor total atual: <span id="valorPacote">R$ 0,00</span></p>
+    <div id="btnPacoteContainer">
+      <button id="btnMais10" class="btnPacote">+10 Números</button>
+      <button id="btnMenos10" class="btnPacote">-10 Números</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========================= FIREBASE CONFIG ========================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain: "rifa-782a3.firebaseapp.com",
+  databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId: "rifa-782a3",
+  storageBucket: "rifa-782a3.firebasestorage.app",
+  messagingSenderId: "88068598855",
+  appId: "1:88068598855:web:a230a06db76a4bbc125562"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ========================= ELEMENTOS ========================= */
+const numerosDiv = document.getElementById('numeros');
+const valorInput = document.getElementById('valor');
+const codigo = document.getElementById('codigo');
+const horariosSelect = document.getElementById('horarios');
+const totalPagarSpan = document.getElementById('totalPagar');
+const totalReceberSpan = document.getElementById('totalReceber');
+const menuEl = document.getElementById('menu');
+const btnMenu = document.getElementById('btnMenu');
+const salvarBtn = document.getElementById('salvar');
+const nomeExibicao = document.getElementById('nomeExibicao');
+const btnEditarNome = document.getElementById('btnEditarNome');
+let ultimaDataComDados = null;
+const modalNome = document.getElementById('modalNome');
+const inputNome = document.getElementById('inputNome');
+const btnContinuar = document.getElementById('btnContinuar');
+// Elementos do modal de pacote
+const modalPacote = document.getElementById('modalPacote');
+const btnFecharModal = document.getElementById('btnFecharModal');
+const btnMais10 = document.getElementById('btnMais10');
+const btnMenos10 = document.getElementById('btnMenos10');
+const valorPacoteSpan = document.getElementById('valorPacote');
+let jogoEncerrado = false;
+let selecionados = [];
+let bloqueados = new Set();
+
+/* ========================= CALCULAR INÍCIO E FIM DA SEMANA ATUAL ========================= */
+function getInicioDaSemana() {
+  const hoje = new Date();
+  const diaSemana = hoje.getDay(); // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
+  const diasParaInicio = diaSemana === 0 ? -6 : 1 - diaSemana; // Semana começa na Segunda
+  const inicio = new Date(hoje);
+  inicio.setDate(hoje.getDate() + diasParaInicio);
+  return inicio.toISOString().slice(0, 10); // Formato: YYYY-MM-DD
+}
+
+function getFimDaSemana() {
+  const inicio = new Date(getInicioDaSemana());
+  inicio.setDate(inicio.getDate() + 6); // Semana termina na Sábado
+  return inicio.toISOString().slice(0, 10);
+}
+
+/* ========================= REGRAS DE DIA/HORA ========================= */
+function podeMarcarAgora() {
+  const agora = new Date();
+  const dia = agora.getDay(); // 0=dom, 3=qua, 6=sab
+  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+
+  if (dia === 6) {
+    return minutosAgora < (20 * 60); // quarta e sábado até 20:00
+  }
+
+  return true; // domingo, segunda, terça, quarta (antes de 20h) e quinta liberados 24h
+}
+
+
+/* ========================= MODAL NOME ========================= */
+function abrirModalNome() {
+  modalNome.classList.add('show');
+  inputNome.value = localStorage.getItem('nomeJogador') || '';
+  setTimeout(() => inputNome.focus(), 100);
+}
+function fecharModalNome() { modalNome.classList.remove('show'); }
+function exibirNome() {
+  const n = localStorage.getItem('nomeJogador');
+  nomeExibicao.textContent = n ? n : 'Bem-vindo';
+}
+function garantirNome() {
+  const nome = localStorage.getItem('nomeJogador');
+  if (!nome) abrirModalNome(); else exibirNome();
+}
+btnContinuar.onclick = () => {
+  const v = inputNome.value.trim();
+  if (!v) return alert('Digite um nome válido');
+  localStorage.setItem('nomeJogador', v);
+  fecharModalNome();
+  exibirNome();
+};
+btnEditarNome.onclick = abrirModalNome;
+
+/* ========================= SELEÇÃO ========================= */
+function toggleNumero(btn, num) {
+  if (btn.classList.contains('bloqueado')) return;
+  if (btn.classList.contains('extra')) return; // 🔒 BLOQUEIA EXTRA
+  if (!podeMarcarAgora()) return alert('Marcações encerradas por hoje');
+
+  if (btn.classList.contains('marcado')) {
+    btn.classList.remove('marcado');
+    selecionados = selecionados.filter(n => n !== num);
+  } else {
+    btn.classList.add('marcado');
+    selecionados.push(num);
+  }
+
+  atualizarTotais();
+}
+
+/* ========================= TOTAIS ========================= */
+function atualizarTotais() {
+  const v = 1.00;
+  const qtd = selecionados.length;
+  totalPagarSpan.textContent = (v * qtd).toFixed(2).replace('.', ',');
+  totalReceberSpan.textContent = (v * 650).toFixed(2).replace('.', ',');
+}
+
+/* ========================= BLOQUEADOS ========================= */
+function atualizarBloqueados() {
+  db.ref('numerosBloqueados').once('value').then(snap => {
+    const dados = snap.val() || {};
+    bloqueados = new Set(Object.keys(dados));
+
+    document.querySelectorAll('.numero').forEach(btn => {
+      const n = btn.textContent;
+      const info = dados[n];
+
+      btn.classList.remove('extra');
+
+      if (info) {
+        btn.classList.add('bloqueado');
+        btn.disabled = true;
+
+        if (info.extra) {
+          btn.classList.add('extra'); // 🎁
+        }
+
+        btn.classList.remove('marcado');
+        selecionados = selecionados.filter(x => x !== n);
+      } else {
+        btn.classList.remove('bloqueado');
+        btn.disabled = false;
+      }
+    });
+
+    atualizarTotais();
+  });
+}
+
+/* ========================= TEXTAREA (NUNCA LIMPA AUTOMÁTICO) ========================= */
+function gerarDezenasExtras(qtd, jaSelecionados, jaBloqueados) {
+  const extrasQtd = Math.floor(qtd / 20);
+  if (extrasQtd === 0) return [];
+
+  let extras = [];
+  let tentativas = 0;
+
+  while (extras.length < extrasQtd && tentativas < 500) {
+    const n = Math.floor(Math.random() * 100)
+      .toString()
+      .padStart(3, '0');
+
+    if (
+      !jaSelecionados.includes(n) &&
+      !jaBloqueados.has(n) &&
+      !extras.includes(n)
+    ) {
+      extras.push(n);
+    }
+    tentativas++;
+  }
+
+  return extras;
+}
+// -------------------------- FUNÇÃO DE CÁLCULO DE DESCONTO COMPARTILHADA (MANTER EM CIMA DO CÓDIGO) --------------------------
+const VALOR_UNITARIO = 1.00;
+const VALOR_PACOTE_10 = 9.00; // 10% de desconto
+
+function calcularValorTotal(qtdNumeros) {
+  if (qtdNumeros <= 0) return 0.00;
+  const totalPacotes = Math.floor(qtdNumeros / 10);
+  const totalIndividuais = qtdNumeros % 10;
+  return (totalPacotes * VALOR_PACOTE_10) + (totalIndividuais * VALOR_UNITARIO);
+}
+
+// -------------------------- ALTERAÇÕES NA FUNÇÃO QUE GERA O TEXTO DO TEXTAREA (textoNumerosBloqueados) --------------------------
+function textoNumerosBloqueados(callback) {
+  db.ref('numerosBloqueados').once('value').then(snap => {
+    const dados = snap.val() || {};
+    const porNome = {};
+
+    // Agrupa por nome e conta quantidade total de números por pessoa
+    Object.keys(dados).forEach(num => {
+      const item = dados[num];
+      const nome = item.nome?.trim();
+      if (!nome) return;
+
+      const status = item.status || '⏳ AGUARDANDO';
+
+      if (!porNome[nome]) {
+        porNome[nome] = {
+          status,
+          numeros: []
+        };
+      }
+
+      porNome[nome].numeros.push(num);
+    });
+
+    let texto = '';
+
+    Object.keys(porNome).forEach(nome => {
+      const dadosNome = porNome[nome];
+      const numeros = dadosNome.numeros.sort().join('-');
+      const qtdTotal = dadosNome.numeros.length; // Quantidade total de números da pessoa
+      const valorTotal = calcularValorTotal(qtdTotal); // Usa a função de desconto
+
+      let classeStatus =
+        dadosNome.status.includes('PAGO') ? 'verde' :
+        dadosNome.status.includes('CANCEL') ? 'vermelho' :
+        'amarelo';
+
+      texto += `Nome:<span class="verde"> ${nome}</span>\n`;
+      texto += `Números: ${numeros}\n`;
+      texto += `Quantidade total: ${qtdTotal}\n`;
+      texto += `Valor total: R$ ${valorTotal.toFixed(2).replace('.', ',')}\n`; // Valor com desconto
+      texto += `Status :<span class="${classeStatus}">${dadosNome.status}</span>\n`;
+      texto += '-----------------------------\n';
+    });
+
+    callback(texto);
+  });
+}
+
+// -------------------------- ALTERAÇÕES NA FUNÇÃO QUE ATUALIZA O TEXTAREA COM RESERVAS DA SEMANA --------------------------
+function atualizarTextareaReservasSemana(todasReservas) {
+  textoNumerosBloqueados(textoBloq => {
+    let html = textoBloq.replace(/\n/g, '<br>');
+    html += cabecalhoDataJogo().replace(/\n/g, '<br>');
+    const hoje = new Date();
+    const diaAtual = hoje.getDay();
+    const inicioSemana = getInicioDaSemana();
+    const fimSemana = getFimDaSemana();
+
+    // Define qual parte exibir (mesma lógica antiga)
+    let tituloParte, diasParte, descricaoParte;
+    if (diaAtual === 0 || (diaAtual >= 1 && diaAtual <= 4)) {
+      descricaoParte = `Segunda (${inicioSemana.split('-').reverse().join('/')}) a Quarta`;
+      diasParte = dia => dia >= 1 && dia <= 3;
+    } else if (diaAtual >= 5 && diaAtual <= 6) {
+      descricaoParte = `Quinta a Sábado (${fimSemana.split('-').reverse().join('/')})`;
+      diasParte = dia => dia >= 4 && dia <= 6;
+    }
+  
+    html += '------------------------------<br>';
+
+    if (!todasReservas || Object.keys(todasReservas).length === 0) {
+      html += 'Nenhuma reserva nessa etapa.<br><br>';
+      codigo.innerHTML = html;
+      return;
+    }
+
+    const diasOrdenados = Object.keys(todasReservas).sort();
+
+    diasOrdenados.forEach(dataStr => {
+      const dadosDia = todasReservas[dataStr];
+      const dataBR = dataStr.split('-').reverse().join('/');
+      const diaSemana = new Date(dataStr).toLocaleDateString('pt-BR', { weekday: 'long' });
+
+      const horariosOrdenados = Object.keys(dadosDia).sort();
+      horariosOrdenados.forEach(horario => {
+        html += `<br><strong>[ HORÁRIO ] => ${horario}</strong><br>`;
+
+        for (const k in dadosDia[horario]) {
+          const d = dadosDia[horario][k];
+          const countdownId = `countdown-${dataStr}-${horario}-${k}`.replace(/[^a-zA-Z0-9-_]/g, '');
+          const qtdTotal = d.numeros.length; // Quantidade total de números da reserva
+          const valorTotal = calcularValorTotal(qtdTotal); // Usa a função de desconto
+
+          let status = d.status || 'AGUARDANDO';
+          if (status.toUpperCase().includes('PAGO')) status = '✅ PAGO';
+
+          const resultado = d.resultado || 'AGUARDANDO';
+
+          const corStatus = status.includes('VALIDADO') || status.includes('PAGO') ? 'verde' : status.includes('CANCELADO') ? 'vermelho' : 'amarelo';
+          const corResultado = resultado.includes('GANHOU') ? 'verde' : resultado.includes('PERDEU') ? 'vermelho' : 'amarelo';
+
+          let extrasTxt = d.dezenasExtras && d.dezenasExtras.length ? `<br></br><strong>🎁 CENTENA extra:</strong> ${d.dezenasExtras.join('-')}` : '';
+
+          html += `</br>Nome: <span class="verde">${d.nome}</span><br>
+Quantidade: ${qtdTotal}</br>
+Centenas Escolhidas : ${d.numeros.join('-')} ${extrasTxt}<br>
+Valor a pagar: R$ ${valorTotal.toFixed(2).replace('.', ',')}<br> <!-- Valor com desconto -->
+Status: <span class="${corStatus}">${status}</span>
+Resultado: <span class="${corResultado}">${resultado}</span><br>
+<div id="${countdownId}" class="amarelo"></div><br>
+---------------------------<br>
+`;
+
+          setTimeout(() => {
+            const el = document.getElementById(countdownId);
+            if (el) gerarCountdown(countdownId, d.dataHora, d.status);
+          }, 50);
+        }
+      });
+    });
+
+    codigo.innerHTML = html;
+  });
+}
+
+/* ========================= CARREGAR APENAS RESERVAS DA PARTE RELEVANTE DA SEMANA + APENAS DIAS COM RESERVAS ========================= */
+function carregarReservasDaSemana() {
+  const inicioSemana = getInicioDaSemana();
+  const fimSemana = getFimDaSemana();
+  const todasReservas = {};
+  const hoje = new Date();
+  const diaAtual = hoje.getDay(); // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab
+  const dataAtualHoje = hoje.toISOString().slice(0, 10); // Data de hoje no formato AAAA-MM-DD
+
+  // Define quais dias CARREGAR com base no dia atual (inclusive se hoje for Quarta)
+  let diasParaCarregar = [];
+  const dataPercorrer = new Date(inicioSemana);
+
+  while (dataPercorrer.toISOString().slice(0, 10) <= fimSemana) {
+    const dataStr = dataPercorrer.toISOString().slice(0, 10);
+    const diaDaSemana = new Date(dataStr).getDay();
+
+    // Regra ajustada:
+    // - Até Quarta-feira (inclusive): carrega Dom, Seg, Ter, Qua
+    // - A partir de Quinta-feira: carrega Qui, Sex, Sab
+    const ehAntesOuQuarta = new Date(dataStr) <= new Date(dataAtualHoje) || diaDaSemana === 3;
+    if (ehAntesOuQuarta) {
+      if (diaDaSemana === 0 || diaDaSemana >= 1 && diaDaSemana <= 6) {
+        diasParaCarregar.push(dataStr);
+      }
+    } else {
+      if (diaDaSemana >= 0 && diaDaSemana <= 6) {
+        diasParaCarregar.push(dataStr);
+      }
+    }
+
+    dataPercorrer.setDate(dataPercorrer.getDate() + 1);
+  }
+
+  // Carrega apenas os dias selecionados E só mantém aqueles que tem reservas
+  let diasCarregados = 0;
+  diasParaCarregar.forEach(dataStr => {
+    db.ref(`compras-dia/${dataStr}`).once('value').then(snap => {
+      const dadosDia = snap.val();
+      // Só adiciona o dia se houver pelo menos uma reserva nele
+      if (dadosDia && Object.keys(dadosDia).length > 0) {
+        todasReservas[dataStr] = dadosDia;
+      }
+      diasCarregados++;
+
+      // Quando terminar de carregar, exibe os dias com reservas
+      if (diasCarregados === diasParaCarregar.length) {
+        atualizarTextareaReservasSemana(todasReservas);
+      }
+    });
+  });
+}
+
+salvarBtn.onclick = () => {
+  if (selecionados.length === 0) return alert('Selecione números');
+  if (!podeMarcarAgora()) return alert('Prazo encerrado');
+
+  const nome = localStorage.getItem('nomeJogador') || 'Sem nome';
+  const horario = horariosSelect.value;
+  const dataHoje = new Date().toISOString().slice(0,10);
+  const chave = 'ID-' + Date.now();
+
+  // 🎁 GERA DEZENAS EXTRAS
+  const dezenasExtras = gerarDezenasExtras(
+    selecionados.length,
+    selecionados,
+    bloqueados
+  );
+
+  // 🔢 TODOS OS NÚMEROS QUE SERÃO BLOQUEADOS
+  const todosNumeros = [...selecionados, ...dezenasExtras];
+
+  const dados = {
+    nome,
+    numeros: [...selecionados],
+    dezenasExtras,
+    horario,
+    status: '⏳ AGUARDANDO',
+    resultado: '⏳ AGUARDANDO',
+    dataHora: new Date().toISOString()
+  };
+
+  db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados)
+    .then(() => {
+      // 🔒 BLOQUEIA PAGOS + EXTRAS
+      const updates = {};
+      todosNumeros.forEach(n => {
+        updates['numerosBloqueados/' + n] = {
+          bloqueadoEm: Date.now(),
+          extra: dezenasExtras.includes(n)
+        };
+      });
+      return db.ref().update(updates);
+    })
+.then(() => {
+  abrirModalPix();
+
+  selecionados = [];
+  document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
+
+  atualizarTotais();
+  atualizarBloqueados();
+
+  // ⚠️ LOGICA ANTIGA DE ABRIR MENU APOS SALVAR FOI REMOVIDA AQUI
+});   
+};
+
+function proximaDataDeJogo() {
+  const hoje = new Date();
+  const d = hoje.getDay();
+  let alvo = d <= 6 ? 6 : 6;
+  let add = alvo - d;
+  if (add < 0) add += 7;
+  const data = new Date(hoje);
+  data.setDate(hoje.getDate() + add);
+  return data;
+}
+function cabecalhoDataJogo() {
+  const d = proximaDataDeJogo();
+  return `📅 DATA DO JOGO: ${d.toLocaleDateString('pt-BR')}\n==========================\n\n`;
+}
+        
+        
+function abrirModalPix() {
+ document.getElementById('valorPix').textContent = totalPagarSpan.textContent;
+
+ document.getElementById("modalPix").style.display = "flex";
+  document.getElementById("pixMsg").style.display = "none";
+}
+
+function fecharModalPix() {
+  document.getElementById("modalPix").style.display = "none";
+}
+
+function copiarPix() {
+  const chave = document.getElementById("pixChave").innerText;
+  navigator.clipboard.writeText(chave).then(() => {
+    document.getElementById("pixMsg").style.display = "block";
+
+    // ✅ NOVO: ABRE O MENU AO COPIAR O PIX
+    if (!menuEl.classList.contains('open')) {
+      btnMenu.click(); // Simula clique no botão "VER" para abrir
+    } else {
+      carregarReservasDaSemana(); // Atualiza se já estiver aberto
+    }
+
+    // Fecha o modal após 3,5 segundos
+    setTimeout(() => {
+      fecharModalPix();
+    }, 3500);
+  });
+}
+
+/* ========================= CORREÇÃO DA DATA DO JOGO ========================= */
+function formatarDataBR(data) {
+  return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function atualizarDataJogo() {
+  const dataJogo = proximaDataDeJogo();
+  const diaSemana = dataJogo.toLocaleDateString('pt-BR', { weekday: 'long' });
+  const el = document.getElementById("dataJogo");
+  
+  el.innerHTML = `📅 Próximo jogo: <strong>${diaSemana}</strong> - ${formatarDataBR(dataJogo)}`;
+}
+function salvarHistoricoAutomatico() {
+  const agora = new Date();
+
+  const dataStr = agora.toLocaleDateString('pt-BR');
+  const horaStr = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+  const dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  const diaSemana = dias[agora.getDay()];
+
+  const id = agora.toISOString().slice(0,10) + '_' + horaStr.replace(':','-');
+
+  const texto = codigo.innerText.trim();
+
+  if (!texto) return; // não salva vazio
+
+  db.ref('historico/' + id).set({
+    data: dataStr,
+    dia: diaSemana,
+    hora: horaStr,
+    conteudo: texto,
+    timestamp: Date.now()
+  });
+
+  console.log('📦 Histórico salvo:', id);
+}
+function podeAbrirPixAdmin() {
+  const agora = new Date();
+  const dia = agora.getDay(); // 3 = quarta | 6 = sábado
+  const minutos = agora.getHours() * 60 + agora.getMinutes();
+
+  // somente quarta e sábado
+  if (dia !== 6 && dia !== 6) return false;
+
+  const inicio = 20 * 60;      // 20:00
+  const fim = 23 * 60 + 59;    // 23:59
+
+  return minutos >= inicio && minutos <= fim;
+}
+const btnPixAdmin = document.getElementById('btnPixAdmin');
+const modalPixAdmin = document.getElementById('modalPixAdmin');
+const inputPixAdmin = document.getElementById('inputPixAdmin');
+
+btnPixAdmin.onclick = () => {
+  if (!podeAbrirPixAdmin()) {
+    alert('🔒 PIX do Ganhador Será Liberado às 20:00 e Sabado');
+    return;
+  }
+  inputPixAdmin.value = '';
+  modalPixAdmin.style.display = 'flex';
+};
+
+function salvarPixAdmin() {
+  const pix = inputPixAdmin.value.trim();
+  if (!pix) {
+    alert('Digite um PIX válido');
+    return;
+  }
+
+  db.ref('admin/config/pix').set({
+    chave: pix,
+    atualizadoEm: Date.now()
+  }).then(() => {
+    alert('✅ PIX salvo (AGUARDE ATE 30 MINUTOS PARA RECEBER O VALOR )');
+    fecharPixAdmin();
+  });
+}
+
+
+function gerarCountdown(idElemento, dataHoraCompra, status) {
+  const el = document.getElementById(idElemento);
+  if (!el) return;
+
+  // ✅ SE JÁ ESTÁ PAGO
+  if (status && status.toUpperCase().includes('PAGO')) {
+    el.innerHTML =
+      '<span class="verde">✅ PIX VALIDADO</span>';
+    return;
+  }
+
+  const inicio = Date.parse(dataHoraCompra);
+
+  if (isNaN(inicio)) {
+    el.innerHTML =
+      '<span class="amarelo">⏳ Aguardando pagamento</span>';
+    return;
+  }
+
+  const fim = inicio + (1 * 30 * 60 * 1000);
+  let timer = null;
+
+  function atualizar() {
+    // 🛑 SE MUDOU PARA PAGO DURANTE O TEMPO
+    if (status && status.toUpperCase().includes('PAGO')) {
+      el.innerHTML =
+        '<span class="verde">✅ PIX VALIDADO</span>';
+      clearInterval(timer);
+      return;
+    }
+
+    const restante = fim - Date.now();
+
+    if (restante <= 0) {
+      el.innerHTML =
+        '<span class="vermelho">⏰ pagamento nao indetificado</span>';
+      clearInterval(timer);
+      return;
+    }
+
+    const h = Math.floor(restante / 3600000);
+    const m = Math.floor((restante % 3600000) / 60000);
+    const s = Math.floor((restante % 60000) / 1000);
+
+    // 🟥 SÓ O CRONÔMETRO FICA VERMELHO
+    el.innerHTML =
+      `⏳ Faca o PIX Para Validar Sua Reserva. Suas Dezenas Sera LIBERADA apos Esse Prazo <span class="vermelho">${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</span>`;
+  }
+
+  atualizar();
+  timer = setInterval(atualizar, 1000);
+}
+
+function podeVirarPerdeuAutomatico() {
+  const agora = new Date();
+  const dia = agora.getDay(); // 0=Dom, 3=Qua, 6=Sáb
+  const h = agora.getHours();
+  const m = agora.getMinutes();
+
+  // somente quarta (3) e sábado (6)
+  if (dia !== 6) return false;
+
+  // após 20:30
+  return h > 20 || (h === 20 && m >= 30);
+}
+function atualizarResultadosAutomaticamente() {
+  if (!podeVirarPerdeuAutomatico()) return;
+
+  const hoje = new Date().toISOString().slice(0,10);
+
+  db.ref(`compras-dia/${hoje}`).once('value').then(snap => {
+    const dados = snap.val();
+    if (!dados) return;
+
+    const updates = {};
+
+    Object.keys(dados).forEach(horario => {
+      Object.keys(dados[horario]).forEach(id => {
+        const item = dados[horario][id];
+
+        if (
+          item.resultado &&
+          item.resultado.includes('AGUARDANDO')
+        ) {
+          updates[
+            `compras-dia/${hoje}/${horario}/${id}/resultado`
+          ] = '❌ PERDEU';
+        }
+      });
+    });
+
+    if (Object.keys(updates).length > 0) {
+      db.ref().update(updates).then(() => {
+        console.log('⏰ Resultados mudaram para PERDEU (Qua/Sáb 20:30)');
+carregarReservasDaSemana(); // ✅ AGORA CARREGA A SEMANA
+
+      });
+    }
+  });
+}
+function fecharPixAdmin() {
+  document.getElementById('modalPixAdmin').style.display = 'none';
+}
+/* ========================= DEZENA PREMIADA PÚBLICA ========================= */
+const dezenaAtualPublica = document.getElementById('dezenaAtual');
+
+// Oculta o elemento POR PADRÃO (antes de carregar dados)
+dezenaAtualPublica.style.display = 'none';
+
+// Função para atualizar a dezena premiada exibida e destacar na grade
+function atualizarDezenaPremiadaPublica() {
+  db.ref('admin/config/dezenaPremiada').once('value').then(snap => {
+    const dezena = snap.val();
+    
+    // Verifica se há dezena definida (ou seja, se houve alteração no painel)
+    if (dezena) {
+      const dezenaFormatada = dezena.padStart(2, '0');
+      // Mostra o elemento e define o texto com a dezena
+      dezenaAtualPublica.style.display = 'block';
+      dezenaAtualPublica.textContent = `🏆 Dezena premiada: ${dezenaFormatada}`;
+      
+      // Destaca a dezena na grade de números
+      document.querySelectorAll('.numero').forEach(btn => {
+        if (btn.textContent === dezenaFormatada) {
+          btn.style.background = 'linear-gradient(135deg, #8098ff, #6f86e6)';
+          btn.style.boxShadow = '0 0 15px rgba(128, 152, 255, 0.8)';
+          btn.style.border = '2px solid #fff';
+        } else {
+          // Volta o estilo original para os outros números (exceto bloqueados/extras)
+          if (!btn.classList.contains('bloqueado') && !btn.classList.contains('extra')) {
+            btn.style.background = '#3498db';
+            btn.style.boxShadow = 'none';
+            btn.style.border = 'none';
+          }
+        }
+      });
+    } else {
+      // Se não há dezena, oculta o elemento (não mostra "Aguardando")
+      dezenaAtualPublica.style.display = 'none';
+      
+      // Remove destaque de todos os números
+      document.querySelectorAll('.numero').forEach(btn => {
+        if (!btn.classList.contains('bloqueado') && !btn.classList.contains('extra')) {
+          btn.style.background = '#3498db';
+          btn.style.boxShadow = 'none';
+          btn.style.border = 'none';
+        }
+      });
+    }
+  }).catch(err => {
+    console.error('Erro ao carregar dezena premiada:', err);
+    // Oculta o elemento também em caso de erro (para não mostrar mensagem desnecessária)
+    dezenaAtualPublica.style.display = 'none';
+  });
+}
+
+// Atualiza a dezena quando a página carrega (mas fica oculta se não houver dezena)
+atualizarDezenaPremiadaPublica();
+
+// Atualiza automaticamente QUANDO O PAINEL ADMIN ALTERAR a dezena no Firebase
+db.ref('admin/config/dezenaPremiada').on('value', () => {
+  atualizarDezenaPremiadaPublica();
+});
+// Fecha o menu ao clicar fora dele
+document.addEventListener('click', (e) => {
+  // Verifica se o menu está aberto E se o clique não foi no botão ou no próprio menu
+  if (
+    menuEl.classList.contains('open') &&
+    !btnMenu.contains(e.target) &&
+    !menuEl.contains(e.target)
+  ) {
+    menuEl.classList.remove('open');
+    menuEl.setAttribute('aria-hidden', 'true');
+    // Limpa temporizador se fechar ao clicar fora
+    if (temporizadorMenu) clearTimeout(temporizadorMenu);
+  }
+});
+
+
+/* ========================= INIT ATUALIZADO ========================= */
+garantirNome();
+exibirNome();
+carregarReservasDaSemana(); // AGORA CARREGA TODA A SEMANA
+atualizarResultadosAutomaticamente();
+atualizarBloqueados();
+atualizarDataJogo(); // Mostra a data do próximo jogo
+
+// Atualizar o menu quando abrir (agora com reservas da semana)
+// Variável para controlar o temporizador (evitar múltiplos temporizadores ao abrir/fechar rápido)
+let temporizadorMenu;
+
+// Abre/fecha o menu com o botão + temporizador de 30 segundos
+btnMenu.onclick = () => {
+  menuEl.classList.toggle('open');
+  menuEl.setAttribute('aria-hidden', !menuEl.classList.contains('open')); // Acessibilidade
+
+  if (menuEl.classList.contains('open')) {
+    carregarReservasDaSemana(); // Carrega reservas ao abrir
+
+    // Limpa temporizador antigo (se houver)
+    if (temporizadorMenu) clearTimeout(temporizadorMenu);
+
+    // Fecha o menu após 30 segundos (30.000 milissegundos)
+    temporizadorMenu = setTimeout(() => {
+      if (menuEl.classList.contains('open')) {
+        menuEl.classList.remove('open');
+        menuEl.setAttribute('aria-hidden', 'true');
+      }
+    }, 20000);
+  } else {
+    // Limpa temporizador se fechar manualmente antes dos 30 segundos
+    if (temporizadorMenu) clearTimeout(temporizadorMenu);
+  }
+};
+// Contador de números marcados para exibir o modal a cada 3
+let contadorMarcacoes = 0;
+// Valores base
+
+
+
+// FUNÇÃO CORRIGIDA: Calcula valor total com desconto para pacotes de 10
+function calcularValorTotal(qtdNumeros) {
+  if (qtdNumeros <= 0) return 0.00;
+  
+  // Total de pacotes de 10 e números individuais restantes
+  const totalPacotes = Math.floor(qtdNumeros / 10);
+  const totalIndividuais = qtdNumeros % 10;
+  
+  // Valor total = (pacotes * R$9) + (individuais * R$1)
+  return (totalPacotes * VALOR_PACOTE_10) + (totalIndividuais * VALOR_UNITARIO);
+}
+
+// Atualiza o valor exibido no modal
+function atualizarValorModal() {
+  const qtdAtual = selecionados.length;
+  const valorTotal = calcularValorTotal(qtdAtual);
+  valorPacoteSpan.textContent = valorTotal.toFixed(2).replace('.', ',');
+}
+
+// Atualiza os totais gerais (da página) com o desconto correto
+function atualizarTotais() {
+  const qtdAtual = selecionados.length;
+  const valorTotal = calcularValorTotal(qtdAtual);
+  
+  // Atualiza os spans da página (ajusta os IDs se forem diferentes na sua base)
+  document.getElementById('totalPagar').textContent = valorTotal.toFixed(2).replace('.', ',');
+  document.getElementById('totalReceber').textContent = (VALOR_UNITARIO * 650).toFixed(2).replace('.', ',');
+}
+
+// Abre o modal (chamado a cada 3 números marcados)
+function abrirModalPacote() {
+  atualizarValorModal();
+  modalPacote.classList.add('show');
+}
+
+// Fecha o modal (só no X)
+function fecharModalPacote() {
+  modalPacote.classList.remove('show');
+}
+
+// Seleciona 10 números disponíveis aleatórios (com desconto garantido)
+function adicionar10Numeros() {
+  let numerosAdicionados = 0;
+  const todosNumeros = Array.from({length: 1000}, (_, i) => i.toString().padStart(3, '0'));
+
+  while (numerosAdicionados < 10 && todosNumeros.length > 0) {
+    const indiceAleatorio = Math.floor(Math.random() * todosNumeros.length);
+    const num = todosNumeros[indiceAleatorio];
+    const btn = document.querySelector(`.numero[data-num="${num}"]`);
+
+    if (btn && !btn.classList.contains('bloqueado') && !btn.classList.contains('marcado')) {
+      btn.classList.add('marcado');
+      selecionados.push(num);
+      numerosAdicionados++;
+    }
+
+    todosNumeros.splice(indiceAleatorio, 1);
+  }
+
+  atualizarTotais();
+  atualizarValorModal(); // Atualiza valor no modal (não fecha)
+}
+
+// Desmarca os últimos 10 números selecionados
+function remover10Numeros() {
+  const qtdARemover = Math.min(10, selecionados.length);
+  const ultimos10 = selecionados.splice(-qtdARemover);
+
+  ultimos10.forEach(num => {
+    const btn = document.querySelector(`.numero[data-num="${num}"]`);
+    if (btn) btn.classList.remove('marcado');
+  });
+
+  atualizarTotais();
+  atualizarValorModal(); // Atualiza valor no modal (não fecha)
+}
+
+// Atualiza o contador de marcacoes e abre o modal a cada 5
+function atualizarContadorMarcacoes() {
+  contadorMarcacoes++;
+  if (contadorMarcacoes % 5 === 0) {
+    abrirModalPacote();
+  }
+}
+
+// Função de marcação manual com atualização de desconto
+function toggleNumero(btn, num) {
+  if (btn.classList.contains('bloqueado') || btn.classList.contains('extra') || !podeMarcarAgora()) {
+    return;
+  }
+
+  if (btn.classList.contains('marcado')) {
+    btn.classList.remove('marcado');
+    selecionados = selecionados.filter(n => n !== num);
+    contadorMarcacoes--;
+  } else {
+    btn.classList.add('marcado');
+    selecionados.push(num);
+    atualizarContadorMarcacoes();
+  }
+
+  atualizarTotais();
+  if (modalPacote.classList.contains('show')) {
+    atualizarValorModal();
+  }
+}
+
+// Adiciona data-num aos botões de número (ao criar eles)
+for (let i = 0; i < 1000; i++) {
+  let num = i.toString().padStart(3, '0');
+  let btn = document.createElement('button');
+  btn.textContent = num;
+  btn.className = 'numero';
+  btn.setAttribute('data-num', num);
+  btn.addEventListener('click', () => toggleNumero(btn, num));
+  document.getElementById('numeros').appendChild(btn);
+}
+
+// Eventos do modal
+btnFecharModal.addEventListener('click', fecharModalPacote);
+btnMais10.addEventListener('click', adicionar10Numeros);
+btnMenos10.addEventListener('click', remover10Numeros);
+
+// Desativa fechamento ao clicar fora
+</script>
+</body>
+</html> 
