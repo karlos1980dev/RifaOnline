@@ -145,7 +145,7 @@ function gerarDezenasExtras(qtd, jaSelecionados, jaBloqueados) {
   let tentativas = 0;
 
   while (extras.length < extrasQtd && tentativas < 999) {
-    const n = Math.floor(Math.random() * 100)
+    const n = Math.floor(Math.random() * 1000)
       .toString()
       .padStart(3, '0');
 
@@ -525,7 +525,7 @@ function salvarPixAdmin() {
     chave: pix,
     atualizadoEm: Date.now()
   }).then(() => {
-    alert('✅ PIX salvo (AGUARDE ATE 30 MINUTOS PARA RECEBER O VALOR )');
+    alert('✅ PIX salvo (AGUARDE ATE 60 MINUTOS PARA RECEBER O VALOR )');
     fecharPixAdmin();
   });
 }
@@ -557,7 +557,7 @@ function gerarCountdown(idElemento, dataHoraCompra, status) {
     // 🛑 SE MUDOU PARA PAGO DURANTE O TEMPO
     if (status && status.toUpperCase().includes('PAGO')) {
       el.innerHTML =
-        '<span class="verde">✅ PIX VALIDADO</span>';
+        '<span class="verde">✅ PIX VALIDANDO...</span>';
       clearInterval(timer);
       return;
     }
