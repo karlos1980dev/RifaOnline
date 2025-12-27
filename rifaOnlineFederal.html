@@ -876,14 +876,12 @@ function atualizarTextareaReservasSemana(todasReservas) {
     const fimSemana = getFimDaSemana();
 
     // Define qual parte exibir com base no dia atual
-    let tituloParte, diasParte, descricaoParte;
+    let tituloParte, descricaoParte, diasParte;
     if (diaAtual === 0 || (diaAtual >= 1 && diaAtual <= 4)) {
-      // Domingo OU Seg a Quinta: exibir Seg a Quar
       tituloParte = '';
       descricaoParte = `Segunda (${inicioSemana.split('-').reverse().join('/')}) a Quarta`;
       diasParte = dia => dia >= 1 && dia <= 3;
     } else if (diaAtual >= 5 && diaAtual <= 6) {
-      // Sexta ou Sábado: exibir Quin a Sáb
       tituloParte = '';
       descricaoParte = `Quinta a Sábado (${fimSemana.split('-').reverse().join('/')})`;
       diasParte = dia => dia >= 4 && dia <= 6;
@@ -893,8 +891,7 @@ function atualizarTextareaReservasSemana(todasReservas) {
 
     if (!todasReservas || Object.keys(todasReservas).length === 0) {
       html += 'Nenhuma reserva nessa etapa.<br><br>';
-      codigo.innerHTML = html;
-      // ADICIONEI A LINHA AQUI TAMBÉM (caso não haja reservas, ainda assim salva o histórico)
+      codigo.innerHTML = html; // ATUALIZA O TEXTarea ANTES DE SALVAR
       salvarHistoricoAutomatico();
       return;
     }
@@ -909,7 +906,6 @@ function atualizarTextareaReservasSemana(todasReservas) {
       const diaSemana = new Date(dataStr).toLocaleDateString('pt-BR', { weekday: 'long' });
 
       html += ``;
-      
 
       const horariosOrdenados = Object.keys(dadosDia).sort();
       horariosOrdenados.forEach(horario => {
@@ -949,8 +945,7 @@ Resultado: <span class="${corResultado}">${resultado}</span><br>
       });
     });
 
-    codigo.innerHTML = html;
-    // LINHA CORRETA AQUI (DENTRO DO BLOCO textoNumerosBloqueados)
+    codigo.innerHTML = html; // ATUALIZA O TEXTarea ANTES DE SALVAR
     salvarHistoricoAutomatico();
   });
 }
@@ -960,32 +955,13 @@ function carregarReservasDaSemana() {
   const inicioSemana = getInicioDaSemana();
   const fimSemana = getFimDaSemana();
   const todasReservas = {};
-  const hoje = new Date();
-  const diaAtual = hoje.getDay(); // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab
-  const dataAtualHoje = hoje.toISOString().slice(0, 10); // Data de hoje no formato AAAA-MM-DD
-
-  // Define quais dias CARREGAR com base no dia atual (inclusive se hoje for Quarta)
-  let diasParaCarregar = [];
   const dataPercorrer = new Date(inicioSemana);
+  let diasParaCarregar = [];
 
+  // Percorre todos os dias da semana
   while (dataPercorrer.toISOString().slice(0, 10) <= fimSemana) {
     const dataStr = dataPercorrer.toISOString().slice(0, 10);
-    const diaDaSemana = new Date(dataStr).getDay();
-
-    // Regra ajustada:
-    // - Até Quarta-feira (inclusive): carrega Dom, Seg, Ter, Qua
-    // - A partir de Quinta-feira: carrega Qui, Sex, Sab
-    const ehAntesOuQuarta = new Date(dataStr) <= new Date(dataAtualHoje) || diaDaSemana === 3;
-    if (ehAntesOuQuarta) {
-      if (diaDaSemana === 0 || diaDaSemana >= 1 && diaDaSemana <= 3) {
-        diasParaCarregar.push(dataStr);
-      }
-    } else {
-      if (diaDaSemana >= 4 && diaDaSemana <= 6) {
-        diasParaCarregar.push(dataStr);
-      }
-    }
-
+    diasParaCarregar.push(dataStr);
     dataPercorrer.setDate(dataPercorrer.getDate() + 1);
   }
 
@@ -994,26 +970,19 @@ function carregarReservasDaSemana() {
   diasParaCarregar.forEach(dataStr => {
     db.ref(`compras-dia/${dataStr}`).once('value').then(snap => {
       const dadosDia = snap.val();
-      // Só adiciona o dia se houver pelo menos uma reserva nele
       if (dadosDia && Object.keys(dadosDia).length > 0) {
         todasReservas[dataStr] = dadosDia;
       }
       diasCarregados++;
 
-      // Quando terminar de carregar, exibe os dias com reservas
       if (diasCarregados === diasParaCarregar.length) {
         atualizarTextareaReservasSemana(todasReservas);
       }
     });
   });
-  if (diasCarregados === diasParaCarregar.length) {
-    atualizarTextareaReservasSemana(todasReservas);
-    salvarHistoricoAutomatico(); // Salva o histórico após carregar as reservas
-  }
-
-
 }
 
+  
   salvarBtn.onclick = () => {
   if (selecionados.length === 0) return alert('Selecione números');
   if (!podeMarcarAgora()) return alert('Prazo encerrado');
@@ -1520,7 +1489,7 @@ document.getElementById('btnPixAdmin').onclick = () => {
     // Verifica se já passou pelo menos 1 hora do último alerta (ou se é o primeiro clique)
     if (!ultimoHorarioAlertaPremio || (agora - ultimoHorarioAlertaPremio) >= TEMPO_MINIMO_ENTRE_ALERTAS) {
       // Exibe o alerta
-         alert('⏰  Receber Prêmio ⏰\nsó Está Disponível Entre  QUARTA E SABADO 20:00 e 23:30! retorne aqui faca a Solicitacao');
+         alert('⏰  Receber Prêmio Parabens⏰\nSó Está Disponível Entre QUARTA E SABADO 20:00 ate 23:30 Faca Sua Solicitacao! Retorne Aqui');
       // Atualiza o horário do último alerta para o momento atual
       ultimoHorarioAlertaPremio = agora;
       console.log('⚠️ Alerta exibido — próximo só pode aparecer após 1 hora');
@@ -1622,8 +1591,6 @@ function mostrarGanhadorPublico(ganhador, dezenaPremiada) {
   const dezenaEl = document.getElementById('dezenaAtual');
   dezenaEl.after(ganhadorEl);
 }
-
-
 </script>
 </body>
 </html> 
