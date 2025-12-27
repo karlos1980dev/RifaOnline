@@ -598,16 +598,25 @@ function getFimDaSemana() {
 }
 
 /* ========================= REGRAS DE DIA/HORA ========================= */
+// SUBSTITUA a função podeMarcarAgora() por essa:
 function podeMarcarAgora() {
   const agora = new Date();
-  const dia = agora.getDay(); // 0=dom, 3=qua, 6=sab
-  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-
-  if (dia === 6) {
-    return minutosAgora < (20 * 60); // quarta e sábado até 20:00
+  const ultimoSabadoMes = proximaDataDeJogo();
+  
+  // Verifica se hoje é o último sábado do mês
+  const hojeEhUltimoSabado = (
+    agora.getDate() === ultimoSabadoMes.getDate() &&
+    agora.getMonth() === ultimoSabadoMes.getMonth() &&
+    agora.getFullYear() === ultimoSabadoMes.getFullYear()
+  );
+  
+  if (hojeEhUltimoSabado) {
+    const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+    return minutosAgora < (20 * 60); // Apenas até 20:00 no último sábado
   }
-
-  return true; // domingo, segunda, terça, quarta (antes de 20h) e quinta liberados 24h
+  
+  // Em outros dias, marcações estão liberadas
+  return true;
 }
 
 
@@ -961,22 +970,38 @@ salvarBtn.onclick = () => {
 });   
 };
 
+// SUBSTITUA a função proximaDataDeJogo() por essa:
+// FUNÇÃO CORRIGIDA: Calcula o último sábado do mês (sem erro no ajuste de dias)
 function proximaDataDeJogo() {
   const hoje = new Date();
-  const d = hoje.getDay();
-  let alvo = d <= 6 ? 6 : 6;
-  let add = alvo - d;
-  if (add < 0) add += 7;
-  const data = new Date(hoje);
-  data.setDate(hoje.getDate() + add);
-  return data;
+  let mesAtual = hoje.getMonth();
+  let anoAtual = hoje.getFullYear();
+
+  // Verifica se o último sábado do mês atual já passou — se sim, usa o próximo mês
+  const ultimoDiaDoMes = new Date(anoAtual, mesAtual + 1, 0);
+  const diaSemanaUltimoDia = ultimoDiaDoMes.getDay(); // 0 = dom, 6 = sab
+
+  // Calcula o último sábado: se o último dia não for sábado, subtrai os dias necessários
+  const ultimoSabado = new Date(ultimoDiaDoMes);
+  ultimoSabado.setDate(ultimoDiaDoMes.getDate() - ((diaSemanaUltimoDia + 1) % 7));
+
+  // Se o último sábado já passou, pega o do próximo mês
+  if (ultimoSabado < hoje) {
+    mesAtual++;
+    if (mesAtual > 11) {
+      mesAtual = 0;
+      anoAtual++;
+    }
+    const ultimoDiaProximoMes = new Date(anoAtual, mesAtual + 1, 0);
+    const diaSemanaProximo = ultimoDiaProximoMes.getDay();
+    const ultimoSabadoProximo = new Date(ultimoDiaProximoMes);
+    ultimoSabadoProximo.setDate(ultimoDiaProximoMes.getDate() - ((diaSemanaProximo + 1) % 7));
+    return ultimoSabadoProximo;
+  }
+
+  return ultimoSabado;
 }
-function cabecalhoDataJogo() {
-  const d = proximaDataDeJogo();
-  return `📅 DATA DO JOGO: ${d.toLocaleDateString('pt-BR')}\n==========================\n\n`;
-}
-        
-        
+
 function abrirModalPix() {
  document.getElementById('valorPix').textContent = totalPagarSpan.textContent;
 
@@ -1044,19 +1069,22 @@ function salvarHistoricoAutomatico() {
 
   console.log('📦 Histórico salvo:', id);
 }
+// SUBSTITUA a função podeAbrirPixAdmin() por essa:
 function podeAbrirPixAdmin() {
   const agora = new Date();
-  const dia = agora.getDay(); // 3 = quarta | 6 = sábado
-  const minutos = agora.getHours() * 60 + agora.getMinutes();
-
-  // somente quarta e sábado
-  if (dia !== 6 && dia !== 6) return false;
-
-  const inicio = 20 * 60;      // 20:00
-  const fim = 23 * 60 + 59;    // 23:59
-
-  return minutos >= inicio && minutos <= fim;
+  const ultimoSabadoMes = proximaDataDeJogo();
+  
+  // Verifica se hoje é o último sábado do mês e já passou das 20:00
+  const hojeEhUltimoSabadoEapos20h = (
+    agora.getDate() === ultimoSabadoMes.getDate() &&
+    agora.getMonth() === ultimoSabadoMes.getMonth() &&
+    agora.getFullYear() === ultimoSabadoMes.getFullYear() &&
+    (agora.getHours() > 20 || (agora.getHours() === 20 && agora.getMinutes() >= 0))
+  );
+  
+  return hojeEhUltimoSabadoEapos20h;
 }
+
 const btnPixAdmin = document.getElementById('btnPixAdmin');
 const modalPixAdmin = document.getElementById('modalPixAdmin');
 const inputPixAdmin = document.getElementById('inputPixAdmin');
@@ -1140,18 +1168,22 @@ function gerarCountdown(idElemento, dataHoraCompra, status) {
   timer = setInterval(atualizar, 1000);
 }
 
+// SUBSTITUA a função podeVirarPerdeuAutomatico() por essa:
 function podeVirarPerdeuAutomatico() {
   const agora = new Date();
-  const dia = agora.getDay(); // 0=Dom, 3=Qua, 6=Sáb
-  const h = agora.getHours();
-  const m = agora.getMinutes();
-
-  // somente quarta (3) e sábado (6)
-  if (dia !== 6) return false;
-
-  // após 20:30
-  return h > 20 || (h === 20 && m >= 30);
+  const ultimoSabadoMes = proximaDataDeJogo();
+  
+  // Verifica se hoje é o último sábado do mês e já passou das 20:30
+  const hojeEhUltimoSabadoEapos20h30 = (
+    agora.getDate() === ultimoSabadoMes.getDate() &&
+    agora.getMonth() === ultimoSabadoMes.getMonth() &&
+    agora.getFullYear() === ultimoSabadoMes.getFullYear() &&
+    (agora.getHours() > 20 || (agora.getHours() === 20 && agora.getMinutes() >= 30))
+  );
+  
+  return hojeEhUltimoSabadoEapos20h30;
 }
+
 function atualizarResultadosAutomaticamente() {
   if (!podeVirarPerdeuAutomatico()) return;
 
@@ -1429,6 +1461,38 @@ for (let i = 0; i < 1000; i++) {
 btnFecharModal.addEventListener('click', fecharModalPacote);
 btnMais10.addEventListener('click', adicionar10Numeros);
 btnMenos10.addEventListener('click', remover10Numeros);
+
+/* ========================= FUNÇÃO CABECALHO DATA JOGO (CORRIGIDA) ========================= */
+function cabecalhoDataJogo() {
+  const dataJogo = proximaDataDeJogo(); // Usa a função do último sábado do mês
+  return `📅 DATA DO JOGO: ${dataJogo.toLocaleDateString('pt-BR')}\n==========================\n\n`;
+}
+
+/* ========================= TEXTAREA (NUNCA LIMPA AUTOMÁTICO) ========================= */
+function gerarDezenasExtras(qtd, jaSelecionados, jaBloqueados) {
+  const extrasQtd = Math.floor(qtd / 20);
+  if (extrasQtd === 0) return [];
+
+  let extras = [];
+  let tentativas = 0;
+
+  while (extras.length < extrasQtd && tentativas < 999) {
+    const n = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0');
+
+    if (
+      !jaSelecionados.includes(n) &&
+      !jaBloqueados.has(n) &&
+      !extras.includes(n)
+    ) {
+      extras.push(n);
+    }
+    tentativas++;
+  }
+
+  return extras;
+}
 
 // Desativa fechamento ao clicar fora
 </script>
