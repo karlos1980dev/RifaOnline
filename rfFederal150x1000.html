@@ -826,7 +826,7 @@ function atualizarTextareaReservasSemana(todasReservas) {
         html += `<br><strong>[ HORÁRIO ] => ${horario}</strong><br>`;
 
         for (const k in dadosDia[horario]) {
-          const d = dadosDia[horario][k];
+          const d = dadosDia[horario][k]; // AQUI É ONDE d É DEFINIDA
           const countdownId = `countdown-${dataStr}-${horario}-${k}`.replace(/[^a-zA-Z0-9-_]/g, '');
           const qtdTotal = d.numeros.length; // Quantidade total de números da reserva
           const valorTotal = calcularValorTotal(qtdTotal); // Usa a função de desconto
@@ -841,6 +841,7 @@ function atualizarTextareaReservasSemana(todasReservas) {
 
           let extrasTxt = d.dezenasExtras && d.dezenasExtras.length ? `<br></br><strong>🎁 CENTENA extra:</strong> ${d.dezenasExtras.join('-')}` : '';
 
+          // ESSA É A VERSÃO CORRETA DO CÓDIGO (DENTRO DO LOOP)
           html += `</br>Nome: <span class="verde">${d.nome}</span><br>
 Quantidade: ${qtdTotal}</br>
 Centenas Escolhidas : ${d.numeros.join('-')} ${extrasTxt}<br>
@@ -942,7 +943,9 @@ salvarBtn.onclick = () => {
     horario,
     status: '⏳ AGUARDANDO',
     resultado: '⏳ AGUARDANDO',
-    dataHora: new Date().toISOString()
+    dataHora: new Date().toISOString(),
+    convidadoPor: convidadoPor // NOVO: RASTREAMENTO - Adiciona quem convidou
+    
   };
 
   db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados)
@@ -1091,7 +1094,7 @@ const inputPixAdmin = document.getElementById('inputPixAdmin');
 
 btnPixAdmin.onclick = () => {
   if (!podeAbrirPixAdmin()) {
-    alert('🔒 PIX do Ganhador Será Liberado às 20:00 e Sabado');
+    alert('🔒 PIX do Ganhador Será Liberado às 20:30 do ultimo Sabado do Mes</>');
     return;
   }
   inputPixAdmin.value = '';
@@ -1493,6 +1496,14 @@ function gerarDezenasExtras(qtd, jaSelecionados, jaBloqueados) {
 
   return extras;
 }
+// NOVO: RASTREAMENTO DE CONVIDADOS - Lê o parâmetro do link
+// CÓDIGO DA RIFA PRINCIPAL - DEVE TER ESSA FUNÇÃO
+function getConvidadoDoLink() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('convidado')?.trim() || 'Nenhum';
+}
+const convidadoPor = getConvidadoDoLink(); // VARIÁVEL GLOBAL
+
 </script>
 </body>
 </html>
