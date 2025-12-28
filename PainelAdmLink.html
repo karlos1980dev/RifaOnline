@@ -1,0 +1,464 @@
+<!-- PAINEL COM DIV DE EXIBIÇÃO DOS DADOS -->
+<div style="
+  font-family: Arial, sans-serif;
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 0 15px;
+  background: #111;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+">
+  <h2 style="
+    color: #fff;
+    text-align: center;
+    border-bottom: 2px solid #8098ff;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-size: 18px;
+  ">
+    🔗 GERADOR DE LINKS + CONTADOR DE INDICAÇÕES
+  </h2>
+
+  <!-- AREA PRINCIPAL: DIV DE EXIBIÇÃO DOS DADOS -->
+  <div style="
+    background: #222;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #8098ff;
+  ">
+    <h3 style="
+      color: #8098ff;
+      text-align: center;
+      margin-top: 0;
+      font-size: 16px;
+    ">
+      📊 DETALHES DAS INDICAÇÕES
+    </h3>
+
+    <!-- RESUMO GERAL (NOVO: DADOS RÁPIDOS) -->
+    <div style="
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+      justify-content: center;
+    ">
+      <div style="
+        background: #333;
+        padding: 10px 15px;
+        border-radius: 8px;
+        min-width: 120px;
+        text-align: center;
+      ">
+        <p style="color: #ccc; margin: 0; font-size: 13px;">Total Indicadores</p>
+        <p id="totalIndicadores" style="color: #2ecc71; margin: 5px 0 0 0; font-weight: bold;">0</p>
+      </div>
+      <div style="
+        background: #333;
+        padding: 10px 15px;
+        border-radius: 8px;
+        min-width: 120px;
+        text-align: center;
+      ">
+        <p style="color: #ccc; margin: 0; font-size: 13px;">Total Indicados</p>
+        <p id="totalIndicados" style="color: #2ecc71; margin: 5px 0 0 0; font-weight: bold;">0</p>
+      </div>
+      <div style="
+        background: #333;
+        padding: 10px 15px;
+        border-radius: 8px;
+        min-width: 120px;
+        text-align: center;
+      ">
+        <p style="color: #ccc; margin: 0; font-size: 13px;">Total Centenas</p>
+        <p id="totalCentenas" style="color: #2ecc71; margin: 5px 0 0 0; font-weight: bold;">0</p>
+      </div>
+      <div style="
+        background: #333;
+        padding: 10px 15px;
+        border-radius: 8px;
+        min-width: 120px;
+        text-align: center;
+      ">
+        <p style="color: #ccc; margin: 0; font-size: 13px;">Valor Total</p>
+        <p id="valorTotalArrecadado" style="color: #2ecc71; margin: 5px 0 0 0; font-weight: bold;">R$ 0,00</p>
+      </div>
+    </div>
+
+    <!-- DIV ONDE OS DADOS VÃO APARECER (CLARA E ORGANIZADA) -->
+    <div 
+      id="divDadosFirebase" 
+      style="
+        margin: 15px 0;
+        padding: 15px;
+        background: #f8f9fa;
+        color: #212529;
+        border-radius: 8px;
+        max-height: 250px;
+        overflow-y: auto;
+        font-size: 15px;
+        line-height: 1.6;
+        border: 2px solid #495057;
+        scrollbar-width: thin;
+        scrollbar-color: #8098ff #ddd;
+      "
+    >
+      <p style="text-align: center; margin: 0;">Carregando dados do Firebase...</p>
+    </div>
+
+    <!-- Botão para atualizar manualmente -->
+    <button 
+      id="btnAtualizar"
+      style="
+        display: block;
+        margin: 0 auto;
+        background: #2ecc71;
+        color: #000;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s;
+      "
+    >
+      🔄 ATUALIZAR DADOS
+    </button>
+    <p style="color: #ccc; text-align: center; margin: 8px 0 0 0; font-size: 12px;">
+      Atualiza automaticamente a cada 30 segundos
+    </p>
+  </div>
+
+  <!-- GERADOR DE LINKS -->
+  <div style="
+    background: #222;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #2ecc71;
+  ">
+    <p style="color: #ccc; text-align: center; margin-bottom: 15px; font-size: 14px;">
+      Digite seu nome para criar um link de indicação!
+    </p>
+
+    <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+      <input type="text" id="inputNome" placeholder="Seu nome completo" style="
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+        background: #333;
+        color: #fff;
+        min-width: 200px;
+        font-size: 14px;
+      ">
+      <button id="btnGerarLink" style="
+        background: #2ecc71;
+        color: #000;
+        border: none;
+        padding: 0 20px;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s;
+        min-width: 100px;
+      ">
+        GERAR
+      </button>
+    </div>
+
+    <!-- ALERTA DE NOME SALVO (NOVO) -->
+    <div id="alertaNomeSalvo" style="
+      display: none;
+      background: #27ae60;
+      color: #fff;
+      padding: 8px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 13px;
+    ">
+      ✅ Nome salvo com sucesso!
+    </div>
+
+    <div id="areaLink" style="
+      display: none;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #444;
+    ">
+      <p style="color:#8098ff; text-align:center; margin-bottom:10px; font-size:14px;">SEU LINK DE INDICAÇÃO:</p>
+      <div style="
+        background:#1a1a1a;
+        padding:12px;
+        border-radius:8px;
+        margin-bottom:10px;
+        border: 1px solid #444;
+      ">
+        <span id="linkGerado" style="color:#fff; word-break:break-all; font-size:13px;"></span>
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button id="btnCopiar" style="
+          background:#8098ff;
+          color:#000;
+          border:none;
+          padding:8px 15px;
+          border-radius:6px;
+          font-weight:bold;
+          cursor: pointer;
+          transition: background 0.2s;
+        ">
+          📋 COPIAR LINK
+        </button>
+        <button id="btnSalvarNome" style="
+          background:#2ecc71;
+          color:#000;
+          border:none;
+          padding:8px 15px;
+          border-radius:6px;
+          font-weight:bold;
+          cursor: pointer;
+          transition: background 0.2s;
+        ">
+          💾 SALVAR NOME
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS DO FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<!-- JAVASCRIPT PARA EXIBIR OS DADOS NA DIV -->
+<script>
+// CONFIGURAÇÃO DO FIREBASE (já existente, mantida para completude)
+const firebaseConfig = {
+  apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain: "rifa-782a3.firebaseapp.com",
+  databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId: "rifa-782a3",
+  storageBucket: "rifa-782a3.firebasestorage.app",
+  messagingSenderId: "88068598855",
+  appId: "1:88068598855:web:a230a06db76a4bbc125562"
+};
+
+// INICIALIZA FIREBASE (já existente, mantida)
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// VALOR UNITÁRIO DA CENTENA (igual ao da rifa principal)
+const VALOR_UNITARIO = 1.50;
+
+// PEGA ELEMENTOS DA TELA (já existente, mantida)
+const divDados = document.getElementById('divDadosFirebase');
+const btnAtualizar = document.getElementById('btnAtualizar');
+const inputNome = document.getElementById('inputNome');
+const btnGerarLink = document.getElementById('btnGerarLink');
+const areaLink = document.getElementById('areaLink');
+const linkGerado = document.getElementById('linkGerado');
+const btnCopiar = document.getElementById('btnCopiar');
+const btnSalvarNome = document.getElementById('btnSalvarNome');
+const alertaNomeSalvo = document.getElementById('alertaNomeSalvo');
+const totalIndicadoresEl = document.getElementById('totalIndicadores');
+const totalIndicadosEl = document.getElementById('totalIndicados');
+const totalCentenasEl = document.getElementById('totalCentenas');
+const valorTotalArrecadadoEl = document.getElementById('valorTotalArrecadado');
+
+// CARREGA NOME SALVO NO LOCALSTORAGE (já existente, mantida)
+window.addEventListener('load', () => {
+  const nomeSalvo = localStorage.getItem('nomeIndicador');
+  if (nomeSalvo) {
+    inputNome.value = nomeSalvo;
+  }
+});
+
+// FUNÇÃO PARA CARREGAR E MOSTRAR DADOS NA DIV (COMPLETADA E AJUSTADA)
+function carregarEExibirDados() {
+  divDados.innerHTML = '<p style="text-align:center;margin:0;">Carregando dados...</p>';
+
+  // Usa "once" com ordenação para melhor performance
+  db.ref('compras-dia')
+    .orderByChild('dataHora')
+    .once('value')
+    .then(snapshot => {
+      const indicacoesPorIndicador = {}; // Agrupa por indicador (melhor para resumo)
+      const indicadosUnicos = new Set(); // Evita contar o mesmo indicado mais de vez
+
+      snapshot.forEach(dataSnap => {
+        dataSnap.forEach(horaSnap => {
+          horaSnap.forEach(reservaSnap => {
+            const r = reservaSnap.val() || {};
+
+            // Valida dados (evita bugs com registros incompletos)
+            if (!r.convidadoPor || !r.nome || !Array.isArray(r.numeros) || r.numeros.length === 0) {
+              return;
+            }
+
+            const indicador = r.convidadoPor.trim();
+            const indicado = r.nome.trim();
+            const quantidadeCentenas = r.numeros.length;
+            const valorReserva = r.valorTotal || (quantidadeCentenas * VALOR_UNITARIO); // Usa valor já calculado ou calcula
+
+            // Cria objeto do indicador se não existir
+            if (!indicacoesPorIndicador[indicador]) {
+              indicacoesPorIndicador[indicador] = {
+                totalIndicados: 0,
+                totalCentenas: 0,
+                totalValor: 0,
+                indicados: new Set() // Evita contar o mesmo indicado mais de vez
+              };
+            }
+
+            // Atualiza dados do indicador
+            if (!indicacoesPorIndicador[indicador].indicados.has(indicado)) {
+              indicacoesPorIndicador[indicador].indicados.add(indicado);
+              indicacoesPorIndicador[indicador].totalIndicados++;
+              indicadosUnicos.add(indicado);
+            }
+            indicacoesPorIndicador[indicador].totalCentenas += quantidadeCentenas;
+            indicacoesPorIndicador[indicador].totalValor += valorReserva;
+          });
+        });
+      });
+
+      // CALCULA RESUMO GERAL (já existente, mantido)
+      const totalIndicadores = Object.keys(indicacoesPorIndicador).length;
+      const totalIndicados = indicadosUnicos.size;
+      let totalCentenas = 0;
+      let valorTotalArrecadado = 0;
+
+      Object.values(indicacoesPorIndicador).forEach(dados => {
+        totalCentenas += dados.totalCentenas;
+        valorTotalArrecadado += dados.totalValor;
+      });
+
+      // ATUALIZA RESUMO NA TELA (já existente, mantido)
+      totalIndicadoresEl.textContent = totalIndicadores;
+      totalIndicadosEl.textContent = totalIndicados;
+      totalCentenasEl.textContent = totalCentenas;
+      valorTotalArrecadadoEl.textContent = `R$ ${valorTotalArrecadado.toFixed(2).replace('.', ',')}`;
+
+      // ORGANIZA INDICADORES POR TOTAL DE CENTENAS (MAIOR PARA MENOR)
+      const listaIndicadores = Object.entries(indicacoesPorIndicador)
+        .sort((a, b) => b[1].totalCentenas - a[1].totalCentenas);
+
+      let html = '';
+
+      if (listaIndicadores.length === 0) {
+        html = `
+          <p style="text-align:center;margin:0;color:#6c757d;">
+            Nenhuma indicação registrada ainda
+          </p>
+        `;
+      } else {
+        // --- RESTANTE DO BLOCO QUE FALTAVA ---
+        listaIndicadores.forEach(([indicador, dados], indice) => {
+          // Converte Set de indicados em array para exibição
+          const listaIndicados = Array.from(dados.indicados).join(', ');
+
+          html += `
+            <div style="
+              padding:10px;
+              margin:6px 0;
+              background:#f1f3f5;
+              border-radius:6px;
+              border-left: 4px solid #8098ff;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            ">
+              <span style="color:#8098ff;font-weight:bold;">${indice + 1}º Melhor Indicador</span><br>
+              <strong>Indicador:</strong> ${indicador}<br>
+              <strong>Indicados únicos:</strong> ${dados.totalIndicados} (${listaIndicados})<br>
+              <strong>Centenas vendidas:</strong> ${dados.totalCentenas}<br>
+              <strong>Valor total arrecadado:</strong> R$ ${dados.totalValor.toFixed(2).replace('.', ',')}
+            </div>
+          `;
+        });
+      }
+
+      // Atualiza a div com o HTML gerado
+      divDados.innerHTML = html;
+
+    })
+    .catch(err => {
+      divDados.innerHTML =
+        `<p style="text-align:center;margin:0;color:#dc3545;">
+          Erro ao carregar dados: ${err.message.slice(0, 50)}...
+        </p>`;
+      console.error('Erro ao carregar indicacoes:', err);
+    });
+}
+
+// --- EVENTOS DOS BOTÕES (COMPLETADOS E AJUSTADOS) ---
+// Botão de atualizar dados
+btnAtualizar.addEventListener('click', () => {
+  btnAtualizar.style.background = '#27ae60'; // Feedback visual
+  carregarEExibirDados();
+  setTimeout(() => {
+    btnAtualizar.style.background = '#2ecc71'; // Volta cor original
+  }, 800);
+});
+
+// Botão de gerar link
+btnGerarLink.addEventListener('click', () => {
+  const nome = inputNome.value.trim();
+  if (!nome) {
+    inputNome.style.border = '2px solid #e74c3c'; // Feedback visual
+    setTimeout(() => inputNome.style.border = 'none', 2000);
+    return alert('Por favor, digite seu nome completo!');
+  }
+
+  // Gera link com nome codificado (evita erros com acentos e espaços)
+  const urlBase = 'https://mjonline.netlify.app/';
+  const link = `${urlBase}?convidado=${encodeURIComponent(nome)}`;
+  
+  // Atualiza tela com o link
+  linkGerado.textContent = link;
+  areaLink.style.display = 'block';
+  areaLink.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+
+// Botão de copiar link
+btnCopiar.addEventListener('click', () => {
+  const link = linkGerado.textContent;
+  if (!link) return alert('Nenhum link gerado ainda!');
+
+  navigator.clipboard.writeText(link)
+    .then(() => {
+      btnCopiar.style.background = '#6f86e6'; // Feedback visual
+      alert('✅ Link copiado para área de transferência!');
+      setTimeout(() => btnCopiar.style.background = '#8098ff', 800);
+    })
+    .catch(() => {
+      btnCopiar.style.background = '#e74c3c';
+      alert('❌ Erro ao copiar link. Tente manualmente!');
+      setTimeout(() => btnCopiar.style.background = '#8098ff', 800);
+    });
+});
+
+// Botão de salvar nome no localStorage
+btnSalvarNome.addEventListener('click', () => {
+  const nome = inputNome.value.trim();
+  if (!nome) return alert('Digite seu nome antes de salvar!');
+
+  localStorage.setItem('nomeIndicador', nome);
+  alertaNomeSalvo.style.display = 'block';
+  
+  // Fecha alerta após 3 segundos
+  setTimeout(() => {
+    alertaNomeSalvo.style.display = 'none';
+  }, 3000);
+
+  // Feedback visual no botão
+  btnSalvarNome.style.background = '#27ae60';
+  setTimeout(() => btnSalvarNome.style.background = '#2ecc71', 800);
+});
+
+// --- CARREGA DADOS INICIAL E ATUALIZAÇÃO AUTOMÁTICA (já existente, mantido) ---
+carregarEExibirDados();
+setInterval(carregarEExibirDados, 30000); // Atualiza a cada 30 segundos
+</script>
+</body>
+</html>
