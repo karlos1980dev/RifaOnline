@@ -220,17 +220,6 @@
 
     #modalNome.show { display:flex; }
 
-    #modalBox {
-        background: #fff;
-        color: #000;
-        width: 92%;
-        max-width:420px;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    }
-
     #modalBox input {
         width: 100%;
         padding: 12px;
@@ -288,6 +277,79 @@
   border: 2px solid #fff3b0;
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.95);
 }
+
+#modalPacote {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 25000;
+}
+#modalPacote.show { display: flex; }
+
+#modalPacoteBox {
+  background: #111;
+  color: #fff;
+  width: 90%;
+  max-width: 350px;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(128, 152, 255, 0.5);
+  position: relative;
+}
+
+#btnFecharModal {
+  position: absolute;
+  top: 10px; right: 10px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+#modalPacoteBox h3 {
+  margin-top: 0;
+  color: #8098ff;
+}
+
+#modalPacoteBox p {
+  margin: 15px 0;
+  font-size: 16px;
+}
+
+#valorPacote {
+  color: #2ecc71;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+#btnPacoteContainer {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.btnPacote {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btnPacote:hover { transform: scale(1.05); }
+
+#btnMais10 { background: #2ecc71; color: #000; }
+#btnMenos10 { background: #e74c3c; color: #fff; }
+
   </style>
 </head>
 <body>
@@ -635,6 +697,18 @@
         <div class="pequeno">O nome será salvo com a sua reserva.</div>
     </div>
   </div>
+<div id="modalPacote">
+  <div id="modalPacoteBox">
+    <button id="btnFecharModal">×</button>
+    <h3>Quer adicionar mais cotas?</h3>
+    <p>Adicione 10 cotas com </br><strong style="color:gold">10% de desconto</strong></br> ( paga R$ 9,00 a cada 10 cotas! )</p>
+    <p>Valor total atual: <span id="valorPacote">R$ 0,00</span></p>
+    <div id="btnPacoteContainer">
+      <button id="btnMais10" class="btnPacote">+10 Números</button>
+      <button id="btnMenos10" class="btnPacote">-10 Números</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ========================= FIREBASE CONFIG ========================= */
@@ -675,6 +749,21 @@ const modalHistoricoData = document.getElementById('modalHistoricoData');
 const inputDataHistorico = document.getElementById('inputDataHistorico');
 // TEMPORIZADOR DO MENU
 let temporizadorMenu;
+const modalPacote = document.getElementById('modalPacote');
+const btnFecharModal = document.getElementById('btnFecharModal');
+const btnMais10 = document.getElementById('btnMais10');
+const btnMenos10 = document.getElementById('btnMenos10');
+const valorPacoteSpan = document.getElementById('valorPacote');
+let contadorMarcacoes = 0;
+// valor de cada número da rifa
+let valorNumero = 1.00;
+const numerosArray = Array.from(numeros);
+
+
+
+
+window.valorNumero = valorNumero;
+
 
 /* ========================= CALCULAR INÍCIO E FIM DA SEMANA ATUAL ========================= */
 function getInicioDaSemana() {
@@ -741,8 +830,9 @@ btnEditarNome.onclick = abrirModalNome;
 
 /* ========================= SELEÇÃO ========================= */
 function toggleNumero(btn, num) {
+
   if (btn.classList.contains('bloqueado')) return;
-  if (btn.classList.contains('extra')) return; // 🔒 BLOQUEIA EXTRA
+  if (btn.classList.contains('extra')) return;
   if (!podeMarcarAgora()) return alert('Marcações encerradas por hoje');
 
   if (btn.classList.contains('marcado')) {
@@ -751,11 +841,18 @@ function toggleNumero(btn, num) {
   } else {
     btn.classList.add('marcado');
     selecionados.push(num);
+
+    // 🔹 Contador de marcações
+    contadorMarcacoes++;
+
+    // 🔹 Abre o modal ao marcar 5 números
+    if (contadorMarcacoes === 5) {
+      abrirModalPacote();
+    }
   }
 
   atualizarTotais();
 }
-
 /* ========================= TOTAIS ========================= */
 function atualizarTotais() {
   const v = 1.00;
@@ -925,7 +1022,7 @@ function atualizarTextareaReservasSemana(todasReservas) {
           const corStatus = status.includes('VALIDADO') || status.includes('PAGO') ? 'verde' : status.includes('CANCELADO') ? 'vermelho' : 'amarelo';
           const corResultado = resultado.includes('GANHOU') ? 'verde' : resultado.includes('PERDEU') ? 'vermelho' : 'amarelo';
 
-          let extrasTxt = d.dezenasExtras && d.dezenasExtras.length ? `<br><strong>🎁 Dzn extra:</strong> ${d.dezenasExtras.join('-')}` : '';
+          let extrasTxt = d.dezenasExtras && d.dezenasExtras.length ? `<br></br><strong>🎁 Dzn extra:</strong> ${d.dezenasExtras.join('-')}` : '';
 
           html += `</br>Nome: <span class="verde">${d.nome}</span><br>
 Quantidade: ${qtd}</br>
@@ -1065,10 +1162,10 @@ function copiarPix() {
       carregarReservasDaSemana(); // Atualiza se já estiver aberto
     }
 
-    // Fecha o modal após 3,5 segundos
+    // Fecha o modal após 1,5 segundos
     setTimeout(() => {
       fecharModalPix();
-    }, 3500);
+    }, 1000);
   });
 }
 
@@ -1591,6 +1688,353 @@ function mostrarGanhadorPublico(ganhador, dezenaPremiada) {
   const dezenaEl = document.getElementById('dezenaAtual');
   dezenaEl.after(ganhadorEl);
 }
+btnFecharModal.addEventListener('click', fecharModalPacote);
+btnMais10.addEventListener('click', adicionar10Numeros);
+btnMenos10.addEventListener('click', remover10Numeros);
+function atualizarContadorMarcacoes() {
+  contadorMarcacoes++;
+  if (contadorMarcacoes % 5 === 0) {
+    abrirModalPacote();
+  }
+}
+function fecharModalPacote() {
+  modalPacote.classList.remove('show');
+}
+function abrirModalPacote() {
+  valorPacoteSpan.textContent = 
+    `R$ ${(selecionados.length * 1.00).toFixed(2)}`;
+    
+  modalPacote.classList.add("show");
+}
+function atualizarValorModal() {
+  const qtdAtual = selecionados.length;
+  const valorTotal = calcularValorTotal(qtdAtual);
+  valorPacoteSpan.textContent = valorTotal.toFixed(2).replace('.', ',');
+}
+function adicionar10Numeros() {
+
+  let disponiveis = [];
+
+  document.querySelectorAll(".numero").forEach(btn => {
+    if (
+      !btn.classList.contains("bloqueado") &&
+      !btn.classList.contains("extra") &&
+      !btn.classList.contains("marcado")
+    ) {
+      disponiveis.push(btn.textContent);
+    }
+  });
+
+  // garante que existam números livres
+  if (disponiveis.length < 10) {
+    alert("Não há números suficientes disponíveis para adicionar 10.");
+    return;
+  }
+
+  // escolhe 10 aleatórios
+  disponiveis = disponiveis.sort(() => Math.random() - 0.5).slice(0, 10);
+
+  disponiveis.forEach(n => {
+    const btn = [...document.querySelectorAll(".numero")]
+      .find(x => x.textContent === n);
+
+    btn.classList.add("marcado");
+    selecionados.push(n);
+  });
+
+  atualizarTotais();
+  atualizarValorPacote();
+}
+function remover10Numeros() {
+
+  if (selecionados.length < 10) {
+    alert("Você não tem 10 números marcados ainda.");
+    return;
+  }
+
+  // remove os últimos 10 selecionados
+  const removidos = selecionados.splice(-10);
+
+  removidos.forEach(n => {
+    const btn = [...document.querySelectorAll(".numero")]
+      .find(x => x.textContent === n);
+
+    if (btn) btn.classList.remove("marcado");
+  });
+
+  atualizarTotais();
+  atualizarValorPacote();
+}
+function atualizarValorPacote() {
+  valorPacoteSpan.textContent =
+    `R$ ${(selecionados.length * 1.00).toFixed(2)}`;
+}
+function adicionar10Numeros() {
+  let numerosAdicionados = 0;
+  const todosNumeros = Array.from({length: 1000}, (_, i) => i.toString().padStart(3, '0'));
+
+  while (numerosAdicionados < 10 && todosNumeros.length > 0) {
+    const indiceAleatorio = Math.floor(Math.random() * todosNumeros.length);
+    const num = todosNumeros[indiceAleatorio];
+    const btn = document.querySelector(`.numero[data-num="${num}"]`);
+
+    if (btn && !btn.classList.contains('bloqueado') && !btn.classList.contains('marcado')) {
+      btn.classList.add('marcado');
+      selecionados.push(num);
+      numerosAdicionados++;
+    }
+
+    todosNumeros.splice(indiceAleatorio, 1);
+  }
+
+  atualizarTotais();
+  atualizarValorModal(); // Atualiza valor no modal (não fecha)
+}
+function calcularValorTotal() {
+  let quantidadeSelecionada = selecionados.length;
+  let valor = quantidadeSelecionada * valorNumero;
+
+  document.getElementById("totalPagar").textContent =
+    valor.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+
+  return valor;
+}
+
+const VALOR_COTA = valorNumero; // já existe no seu sistema
+
+let pacotes10 = 0; // contador de pacotes aplicados
+
+btnMais10.onclick = () => {
+
+  // adiciona 10 números
+  for (let i = 0; i < 10; i++) {
+    selecionados.push("auto");
+  }
+
+  pacotes10++; // incrementa quantidade de pacotes
+  atualizarValores();
+};
+
+btnMenos10.onclick = () => {
+
+  if (pacotes10 > 0) {
+    // remove 10 números
+    selecionados.splice(-10);
+    pacotes10--;
+  }
+
+  atualizarValores();
+};
+
+function atualizarValores() {
+
+  let qtd = selecionados.length;
+
+  // valor normal sem desconto
+  let totalNormal = qtd * VALOR_COTA;
+
+  // aplica 10% somente nos pacotes de 10
+  let valorPacotesComDesconto = pacotes10 * (10 * VALOR_COTA * 0.9);
+
+  // restante sem desconto
+  let restantes = qtd - (pacotes10 * 10);
+  let valorRestante = restantes * VALOR_COTA;
+
+  let total = valorPacotesComDesconto + valorRestante;
+
+  // mostra valor no modal do pacote
+  valorPacote.textContent = total.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+
+  // atualiza valor a pagar na tela
+  document.getElementById("totalPagar").textContent =
+    total.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+
+  // também no PIX
+  document.getElementById("valorPix").textContent =
+    total.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+}
+
+
+function getNumerosDisponiveis() {
+
+  return [...document.querySelectorAll(".numero")]
+    .filter(btn =>
+      !btn.classList.contains("bloqueado") &&
+      !btn.classList.contains("extra") &&
+      !btn.classList.contains("marcado")
+    )
+    .map(btn => btn.textContent);
+}
+btnMais10.onclick = () => {
+
+  const disponiveis = getNumerosDisponiveis();
+
+  console.log("Disponíveis:", disponiveis);
+
+  // impede ultrapassar o limite real
+  if (disponiveis.length < 10) {
+    alert(
+      `⚠ Restam apenas ${disponiveis.length} números disponíveis.\n` +
+      `O pacote só pode ser aplicado quando houver 10 livres.`
+    );
+    return;
+  }
+
+  // adiciona somente os 10 primeiros realmente livres
+  const pacote = disponiveis.slice(0, 10);
+
+  pacote.forEach(num => {
+    const btn = [...document.querySelectorAll(".numero")]
+      .find(b => b.textContent === num);
+
+    if (btn) {
+      btn.classList.add("marcado");
+    }
+  });
+
+  selecionados.push(...pacote);
+
+  atualizarTotais();
+};
+// torna visível para chamadas inline
+window.calcularValorTotal = calcularValorTotal;
+/* ========================= PACOTE 10 + ALEGORIA ========================= */
+
+const VALOR_UNITARIO = 1.00;
+const VALOR_PACOTE_10 = 9.00; // 10% OFF
+let extrasGeradosPacote = [];
+
+/* retorna somente números disponíveis */
+function getNumerosDisponiveis() {
+  return Array.from(document.querySelectorAll('.numero'))
+    .filter(btn =>
+      !btn.classList.contains('bloqueado') &&
+      !btn.classList.contains('extra') &&
+      !btn.classList.contains('marcado')
+    )
+    .map(btn => btn.textContent);
+}
+
+/* calcula valor aplicado — pacote + individuais */
+function calcularValorComPacote(qtd) {
+
+  const pacotes = Math.floor(qtd / 10);
+  const individuais = qtd % 10;
+
+  return (pacotes * VALOR_PACOTE_10) + (individuais * VALOR_UNITARIO);
+}
+
+/* atualiza valor no modal */
+function atualizarValorModalPacote() {
+  const qtd = selecionados.length;
+  const total = calcularValorComPacote(qtd);
+
+  valorPacoteSpan.textContent = total.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2
+  });
+}
+
+/* atualiza os totais da tela */
+function atualizarTotaisComPacote() {
+  const qtd = selecionados.length;
+  const total = calcularValorComPacote(qtd);
+
+  totalPagarSpan.textContent = total.toFixed(2).replace(".", ",");
+
+  // valor fixo de 80,00
+  totalReceberSpan.textContent = (80).toFixed(2).replace(".", ",");
+}
+/* abre modal após 5 marcações */
+function abrirModalPacote() {
+  atualizarValorModalPacote();
+  modalPacote.classList.add("show");
+}
+
+btnFecharModal.onclick = () => {
+  modalPacote.classList.remove("show");
+};
+
+/* ========================= BOTÃO +10 ========================= */
+btnMais10.onclick = () => {
+
+  const disponiveis = getNumerosDisponiveis();
+
+  if (disponiveis.length < 10) {
+    alert(
+      `⚠ Restam apenas ${disponiveis.length} números livres.\n` +
+      `É preciso ter pelo menos 10 disponíveis para aplicar o pacote.`
+    );
+    return;
+  }
+
+  // embaralha a lista de números livres
+  const sorteados = embaralhar([...disponiveis]).slice(0, 10);
+
+  sorteados.forEach(n => {
+
+    const btn = Array.from(document.querySelectorAll('.numero'))
+      .find(b => b.textContent === n);
+
+    if (btn) {
+      btn.classList.add("marcado");
+    }
+
+    selecionados.push(n);
+  });
+
+  atualizarValorModalPacote();
+  atualizarTotaisComPacote();
+};
+
+/* ========================= BOTÃO −10 (remove pacote aplicado) ========================= */
+btnMenos10.onclick = () => {
+
+  if (selecionados.length < 10) {
+    alert("⚠ Nenhum pacote completo para remover.");
+    return;
+  }
+
+  const remover = selecionados.slice(-10);
+
+  remover.forEach(n => {
+    const btn = Array.from(document.querySelectorAll('.numero'))
+      .find(b => b.textContent === n);
+
+    if (btn) btn.classList.remove("marcado");
+  });
+
+  selecionados = selecionados.slice(0, -10);
+
+  atualizarValorModalPacote();
+  atualizarTotaisComPacote();
+};
+
+/* ========================= INTEGRAÇÃO AO MARCAR / DESMARCAR ========================= */
+function onSelecionarNumeroPacote() {
+  atualizarValorModalPacote();
+  atualizarTotaisComPacote();
+}
+function embaralhar(lista) {
+  for (let i = lista.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [lista[i], lista[j]] = [lista[j], lista[i]];
+  }
+  return lista;
+}
+/* força uso da nova função total */
+atualizarTotais = atualizarTotaisComPacote;
 </script>
 </body>
 </html> 
