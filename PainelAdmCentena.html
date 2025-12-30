@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>painel bloquea Numero</title>
+  <title>Painel Bloquea Número</title>
   <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
-<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
+  <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/fdsabado.jpg" type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
   <style>
     body {
@@ -17,15 +17,18 @@
       color: #fff;
       text-align: center;
       padding: 20px;
+      margin: 0;
+      box-sizing: border-box;
     }
     h1 {
       margin-bottom: 20px;
+      font-size: 1.6rem;
     }
     #grid-numeros {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 5px;
-      max-width: 360px;
+      grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+      gap: 8px;
+      max-width: 480px;
       margin: 0 auto 20px auto;
     }
     .item-numero {
@@ -34,34 +37,83 @@
       border-radius: 8px;
       box-shadow: 0 0 6px #000;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      justify-content: center;
       align-items: center;
+      gap: 4px;
     }
     .numero-texto {
-      font-size: 1.4rem;
+      font-size: 1.2rem;
       font-weight: bold;
     }
-    .bloqueado {
-      background: #c0392b;
-      color: #fff;
-      padding: 6px 12px;
+    .status-pago {
+      color: #f1c40f;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    .status-aguardando {
+      color: #3498db;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    .nome-bloqueio {
+      font-size: 0.8rem;
+      color: #ccc;
+      text-align: center;
+      word-wrap: break-word;
+      max-width: 75px;
+    }
+    .btn-acao {
+      padding: 3px 5px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
+      font-size: 0.7rem;
+      width: 100%;
     }
-    .liberado {
-      background: #27ae60;
-      color: #fff;
-      padding: 6px 12px;
+    .bloqueado { background: #c0392b; color: #fff; }
+    .liberado { background: #27ae60; color: #fff; }
+    .pago { background: #f1c40f; color: #000; }
+    .aguardando { background: #3498db; color: #fff; }
+
+    #nomeBloqueio {
+      width: 100%;
+      max-width: 360px;
+      padding: 10px;
+      border-radius: 8px;
       border: none;
-      border-radius: 6px;
-      cursor: pointer;
+      margin-bottom: 15px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    .pix-container {
+      margin: 20px 0;
+      max-width: 360px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #btnLimparPix {
+      margin-top: 10px;
+      padding: 10px;
+      width: 100%;
+      max-width: 360px;
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
       font-weight: bold;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+    #pixAdminAtual {
+      display: block;
+      margin-top: 5px;
+      color: #2ecc71;
+      font-size: 1.1rem;
     }
   </style>
-
-  <title>Painel ADM - Bloquear/Desbloquear</title>
 </head>
 <body>
 
@@ -69,30 +121,17 @@
 <input
   type="text"
   id="nomeBloqueio"
-  placeholder="Nome para o bloqueio"
-  style="width:100%;max-width:360px;padding:10px;border-radius:8px;border:none;margin-bottom:15px;"
-><div style="margin-top:10px;">
-  <strong>PIX atual:</strong>
-  <button
-  id="btnLimparPix"
-  style="
-    margin-top:10px;
-    padding:10px;
-    width:100%;
-    max-width:360px;
-    background:#e74c3c;
-    color:#fff;
-    border:none;
-    border-radius:8px;
-    font-size:16px;
-    font-weight:bold;
-    cursor:pointer;
-  "
+  placeholder="Nome para o bloqueio (ex: João Silva)"
 >
-🧹 LIMPAR PIX
-</button>
-  <span id="pixAdminAtual" style="color:#2ecc71"></span>
-</div></br>
+
+<div class="pix-container">
+  <strong>PIX atual:</strong>
+  <span id="pixAdminAtual"></span>
+  <button id="btnLimparPix">
+    🧹 LIMPAR PIX
+  </button>
+</div>
+
 <div id="grid-numeros"></div>
 
 <script>
@@ -111,8 +150,10 @@ const db = firebase.database();
 
 const grid = document.getElementById('grid-numeros');
 const nomeInput = document.getElementById("nomeBloqueio");
+const pixDisplay = document.getElementById('pixAdminAtual');
+const btnLimparPix = document.getElementById('btnLimparPix');
 
-/* 🔄 ATUALIZA EM TEMPO REAL */
+/* 🔄 ATUALIZA EM TEMPO REAL OS NÚMEROS */
 db.ref("numerosBloqueados").on("value", snapshot => {
   const bloqueios = snapshot.val() || {};
   grid.innerHTML = "";
@@ -121,66 +162,104 @@ db.ref("numerosBloqueados").on("value", snapshot => {
     const num = i.toString().padStart(3, "0");
     const info = bloqueios[num];
     const bloqueado = !!info;
+    const status = info?.status || '⏳ AGUARDANDO';
 
     const item = document.createElement("div");
     item.className = "item-numero";
 
-    const nome = info?.nome || "";
-    const extra = info?.extra ? "🎁" : "";
+    // Elementos do item
+    const numTexto = document.createElement("span");
+    numTexto.className = "numero-texto";
+    numTexto.textContent = `${num} ${info?.extra ? "🎁" : ""}`;
 
-    const btn = document.createElement("button");
-    btn.className = bloqueado ? "bloqueado" : "liberado";
-    btn.textContent = bloqueado ? "Desbloquear" : "Bloquear";
+    // Status do pagamento
+    const statusTexto = document.createElement("span");
+    statusTexto.className = status === '✅ PAGO' ? 'status-pago' : 'status-aguardando';
+    statusTexto.textContent = status;
 
-    btn.onclick = () => {
+    const nomeTexto = document.createElement("span");
+    nomeTexto.className = "nome-bloqueio";
+    nomeTexto.textContent = info?.nome || "";
+
+    // Botão Bloquear/Desbloquear
+    const btnAcao = document.createElement("button");
+    btnAcao.className = "btn-acao " + (bloqueado ? "bloqueado" : "liberado");
+    btnAcao.textContent = bloqueado ? "Desbloquear" : "Bloquear";
+
+    // Botões de status (apenas se bloqueado)
+    let btnStatus = null;
+    if (bloqueado) {
+      btnStatus = document.createElement("button");
+      btnStatus.className = "btn-acao " + (status === '✅ PAGO' ? "aguardando" : "pago");
+      btnStatus.textContent = status === '✅ PAGO' ? "Marcar como Aguardando" : "Marcar como Pago";
+      
+      btnStatus.onclick = () => {
+        const novoStatus = status === '✅ PAGO' ? '⏳ AGUARDANDO' : '✅ PAGO';
+        const confirmar = confirm(`⚠️ Alterar status do número ${num} para ${novoStatus}?`);
+        if (!confirmar) return;
+
+        db.ref("numerosBloqueados/" + num).update({
+          status: novoStatus,
+          [novoStatus === '✅ PAGO' ? 'pagoEm' : 'atualizadoEm']: Date.now()
+        });
+      };
+    }
+
+    // Ação do botão Bloquear/Desbloquear
+    btnAcao.onclick = () => {
       if (!bloqueado) {
         const nomeBloq = nomeInput.value.trim();
         if (!nomeBloq) {
-          alert("Informe o nome para bloquear");
+          alert("⚠️ Informe o nome para bloquear!");
+          nomeInput.focus();
           return;
         }
 
         db.ref("numerosBloqueados/" + num).set({
-  nome: nomeBloq,
-  status: '⏳ AGUARDANDO',
-  extra: false,
-  bloqueadoEm: Date.now()
-});
+          nome: nomeBloq,
+          status: '⏳ AGUARDANDO',
+          extra: false,
+          bloqueadoEm: Date.now()
+        }).then(() => {
+          nomeInput.value = "";
+        });
       } else {
+        const confirmar = confirm(`⚠️ Tem certeza que deseja desbloquear o número ${num}?`);
+        if (!confirmar) return;
+        
         db.ref("numerosBloqueados/" + num).remove();
       }
     };
 
-    item.innerHTML = `
-      <span class="numero-texto">${num} ${extra}</span>
-      <span style="font-size:12px;color:#ccc">${nome}</span>
-    `;
-    item.appendChild(btn);
+    // Adiciona elementos ao item
+    item.appendChild(numTexto);
+    item.appendChild(statusTexto);
+    item.appendChild(nomeTexto);
+    item.appendChild(btnAcao);
+    if (btnStatus) item.appendChild(btnStatus);
     grid.appendChild(item);
   }
 });
 
-/* PIX ADMIN */
+/* 📊 GERENCIA O PIX ADMIN */
 db.ref('admin/config/pix').on('value', snap => {
   const dados = snap.val();
-  if (dados?.chave) {
-    document.getElementById('pixAdminAtual').textContent = dados.chave;
-  }
+  pixDisplay.textContent = dados?.chave || "Nenhum PIX configurado";
 });
-document.getElementById('btnLimparPix').onclick = () => {
-  const ok = confirm('⚠️ Tem certeza que deseja LIMPAR o PIX?');
+
+btnLimparPix.onclick = () => {
+  const ok = confirm('⚠️ Tem certeza que deseja LIMPAR o PIX? Essa ação não pode ser desfeita!');
   if (!ok) return;
 
   db.ref('admin/config/pix').remove()
     .then(() => {
-      document.getElementById('pixAdminAtual').textContent = '';
-      alert('✅ PIX removido com sucesso');
+      alert('✅ PIX removido com sucesso!');
     })
     .catch(err => {
-      alert('❌ Erro ao limpar PIX');
+      alert('❌ Erro ao limpar PIX. Verifique o console para detalhes.');
       console.error(err);
     });
 };
 </script>
 </body>
-</html> 
+</html>
