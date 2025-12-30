@@ -4,30 +4,81 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>raffle between friends</title>
-  <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/centena1.5x1000.jpg" type="image/jpg">
-<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/centena1.5x1000.jpg" type="image/jpg">
+  <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/quartasabado.jpg" type="image/jpg">
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/quartasabado.jpg"type="image/jpg">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
   <style>
     /* ---------- GERAL ---------- */
-    :root {--bg: #232;--card: #111;--accent: #8098ff;--accent-dark: #6f86e6; --green: #2ecc71;--danger: #e74c3c;--text: #fff; }
-*{box-sizing:border-box}
-body {font-family: Arial, sans-serif;background: var(--bg);color:var(--text);margin:0;padding-top: 50px;text-align:center;}
-img.imagemIcone{display:none; width:100%;
-height:70px; margin:0;top:0;border-radius:10px;object-fit:cover;  }
-h1{font-size:22px;margin:8px 0; }
-/* ---------- TOPO FIXO ---------- */
-#topoWrapper {position: fixed;top: 0;left: 0;width: 100%;background:linear-gradient(90deg,var(--accent),var(--accent-dark));display:flex;
-align-items:center;padding:8px 10px;gap:6px;
-z-index:1000;border-bottom:2px solid rgba(0,0,0,0.3);box-shadow: 0 4px 8px rgba(0,0,0,0.2); }#btnMenu {color:#fff;
-font-size:16px;border:none;border-radius:8px; cursor:pointer;flex: 0 0 55px;height:px;}
+    :root {
+      --bg: #232;
+      --card: #111;
+      --accent: #8098ff;
+      --accent-dark: #6f86e6;
+      --green: #2ecc71;
+      --danger: #e74c3c;
+      --text: #fff;
+    }
+
+    *{box-sizing:border-box}
+    body {
+        font-family: Arial, sans-serif;
+        background: var(--bg);
+        color:var(--text);
+        margin:0;
+        padding-top: 50px;
+        text-align:center;
+    }
+
+    img.imagemIcone{
+    display:none;
+      width:100%;
+      height:70px;
+      margin:0;
+      top:0;
+      border-radius:10px;
+      object-fit:cover;
+    }
+
+    h1{
+        font-size:22px;
+        margin:8px 0;
+        
+    }
+
+    /* ---------- TOPO FIXO ---------- */
+    #topoWrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: linear-gradient(90deg,var(--accent),var(--accent-dark));
+        display:flex;
+        align-items:center;
+        padding:8px 10px;
+        gap:4px;
+        z-index:1000;
+        border-bottom:2px solid rgba(0,0,0,0.3);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    #btnMenu {
+        
+        color:#fff;
+        font-size:16px;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+        flex: 0 0 55px;
+        height:px;
+    }
 
     #topoInputs {
         display:flex;
         align-items:center;
-        gap:6px;
+        gap:12px;
         width:100%;
     }
 
@@ -36,7 +87,7 @@ font-size:16px;border:none;border-radius:8px; cursor:pointer;flex: 0 0 55px;heig
     #salvar {
         flex: 1;
         padding:6px;
-        font-size:13px;
+        font-size:14px;
         border-radius:8px;
         border:none;
         text-align:center;
@@ -168,17 +219,6 @@ font-size:16px;border:none;border-radius:8px; cursor:pointer;flex: 0 0 55px;heig
     }
 
     #modalNome.show { display:flex; }
-
-    #modalBox {
-        background: #fff;
-        color: #000;
-        width: 92%;
-        max-width:420px;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    }
 
     #modalBox input {
         width: 100%;
@@ -314,7 +354,51 @@ font-size:16px;border:none;border-radius:8px; cursor:pointer;flex: 0 0 55px;heig
 </head>
 <body>
      
-    <!-- MODAL PIX -->
+   <!-- MODAL DE RECEBER PRÊMIO -->
+<div id="modalPremio" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#111;
+    color:#fff;
+    width:92%;
+    max-width:420px;
+    padding:25px;
+    border-radius:14px;
+    text-align:center;
+    border:2px solid #8098ff;
+  ">
+    <h2 style="color:#ffd700; margin-top:0;">🎉 PARABÉNS, GANHADOR(A)! 🎉</h2>
+    
+    <p style="margin:15px 0;">Para receber seu prêmio de <strong style="color:#2ecc71;">R$ 80,00</strong>, siga esses passos:</p>
+    
+    <ol style="text-align:left; margin:20px 0; padding-left:25px;">
+      <li>1. Tire print do seu comprovante de reserva</li>
+      <li>2. Confira a dezena premiada exibida na tela</li>
+      <li>3. Envie ambos para o administrador no WhatsApp</li>
+    </ol>
+    
+    <button onclick="fecharModalPremio()" style="
+      margin-top:10px;
+      background:#8098ff;
+      color:#fff;
+      padding:10px 20px;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      font-weight:bold;
+    ">
+      Fechar
+    </button>
+  </div>
+</div>
+
 <!-- MODAL PIX -->
 <div id="modalPix" style="
   position:fixed;
@@ -382,23 +466,23 @@ font-size:16px;border:none;border-radius:8px; cursor:pointer;flex: 0 0 55px;heig
 </div>
     <img class="imagemIcone"     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg">
         <h1>
-  <strong style="color:white;border-bottom:3px solid #ff00f1; margin:0 30px;">RIFA da SORTE CENTENA </strong></br>
+  RIFA da SORTE CENTENA</br>
   <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin:0 30px;">
     1.50
   </strong> 
   GANHA
   <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin-left:20px;">
-   1000.00
+    1000.00
   </strong>
 </h1>
 
   <div id="topoWrapper" role="banner" aria-label="Topo">
-    <button style="color:#fff;background:#000000;font-weight:bold;padding:4px 14px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">☰VER</button>
+    <button style="color:#000;background: var(--green);font-weight:bold;padding:4px 20px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">VER</button>
 
     <div id="topoInputs" role="form" aria-label="Formulário topo">
       <input style="width:70px;font-weight:bold;" type="number" id="valor" value="1.50" readonly>
-      <select id="horarios" style="font-weight:bold;width:120px" aria-label="Horário" disablet>
-        <option value="20:00" readonly>FEDERAL</option>    
+      <select id="horarios" style="font-weight:bold;width:120px" aria-label="Horário">
+        <option value="20:00">FEDERAL</option type="disablet" readonly>    
       </select>
       <button id="salvar" title="Salvar reserva">SALVAR</button>
     </div>
@@ -467,11 +551,11 @@ font-size:16px;border:none;border-radius:8px; cursor:pointer;flex: 0 0 55px;heig
   <!-- MENU LATERAL -->
   
  <div id="menu" aria-hidden="true">
+  <div style="display: flex; gap: 8px; margin-bottom: 10px;">
   <button id="btnPixAdmin" style="
-    width:100%;
+    flex: 1;
     text-align:center;
     padding:10px;
-    margin-bottom:10px;
     background:#27ae60;
     color:#fff;
     border:none;
@@ -482,8 +566,91 @@ font-size:16px;border:none;border-radius:8px; cursor:pointer;flex: 0 0 55px;heig
   ">
     RECEBER PRÊMIO
   </button>
-    <div class="visualizador" id="codigo">Nenhuma reserva carregada</div> 
+
+  <button id="btnHistoricoData" style="
+    flex: 1;
+    text-align:center;
+    padding:10px;
+    background:#8098ff;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+    HISTÓRICO POR DATA
+  </button>
+</div>
+
+
+<!-- MODAL PARA SELECIONAR DATA DO HISTÓRICO -->
+<div id="modalHistoricoData" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  ">
+    <h2>📅 Selecionar Data do Histórico</h2>
+
+    <input id="inputDataHistorico" type="date"
+      style="
+        width:100%;
+        padding:12px;
+        text-align:center;
+        font-size:16px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        margin-bottom:15px;
+      "
+    >
+
+    <div style="display: flex; gap: 8px;">
+      <button onclick="fecharModalHistoricoData()" style="
+        flex: 1;
+        padding:8px;
+        text-align:center;
+        background:#ccc;
+        border:none;
+        border-radius:8px;
+      ">
+        Cancelar
+      </button>
+      
+      <button onclick="carregarHistoricoPorData()" style="
+        flex: 1;
+        padding:10px;
+        text-align:center;
+        background:#8098ff;
+        color:#fff;
+        border:none;
+        border-radius:8px;
+        font-size:16px;
+        font-weight:bold;
+      ">
+        📤 Carregar
+      </button>
+
+      
+    </div>
   </div>
+</div>
+<div class="visualizador" id="codigo"></div>
+    
+  </div>
+
   <!-- Conteúdo principal -->
 <div style="display:flex;justify-content:space-between;align-items:center; flex-wrap:wrap; width:95%;box-sizing:border-box;margin-bottom:12px;    ">
 
@@ -527,12 +694,11 @@ font-size:16px;border:none;border-radius:8px; cursor:pointer;flex: 0 0 55px;heig
         <div class="pequeno">O nome será salvo com a sua reserva.</div>
     </div>
   </div>
-
 <div id="modalPacote">
   <div id="modalPacoteBox">
     <button id="btnFecharModal">×</button>
     <h3>Quer adicionar mais cotas?</h3>
-    <p>Adicione 10 cotas com </br><strong style="color:gold">10% de desconto</strong></br> (paga R$13,50 por 10 cotas!)</p>
+    <p>Adicione 10 cotas com </br><strong style="color:gold">10% de desconto</strong></br> ( paga R$ 9,00 a cada 10 cotas! )</p>
     <p>Valor total atual: <span id="valorPacote">R$ 0,00</span></p>
     <div id="btnPacoteContainer">
       <button id="btnMais10" class="btnPacote">+10 Números</button>
@@ -571,54 +737,217 @@ let ultimaDataComDados = null;
 const modalNome = document.getElementById('modalNome');
 const inputNome = document.getElementById('inputNome');
 const btnContinuar = document.getElementById('btnContinuar');
-// Elementos do modal de pacote
+let jogoEncerrado = false;
+let selecionados = [];
+let bloqueados = new Set();
+// ELEMENTOS DO HISTÓRICO
+const btnHistoricoData = document.getElementById('btnHistoricoData');
+const modalHistoricoData = document.getElementById('modalHistoricoData');
+const inputDataHistorico = document.getElementById('inputDataHistorico');
+// TEMPORIZADOR DO MENU
+let temporizadorMenu;
 const modalPacote = document.getElementById('modalPacote');
 const btnFecharModal = document.getElementById('btnFecharModal');
 const btnMais10 = document.getElementById('btnMais10');
 const btnMenos10 = document.getElementById('btnMenos10');
 const valorPacoteSpan = document.getElementById('valorPacote');
-let jogoEncerrado = false;
-let selecionados = [];
-let bloqueados = new Set();
+let contadorMarcacoes = 0;
+// valor de cada número da rifa
+let valorNumero = 1.00;
 
-/* ========================= CALCULAR INÍCIO E FIM DA SEMANA ATUAL ========================= */
-function getInicioDaSemana() {
-  const hoje = new Date();
-  const diaSemana = hoje.getDay(); // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
-  const diasParaInicio = diaSemana === 0 ? -6 : 1 - diaSemana; // Semana começa na Segunda
-  const inicio = new Date(hoje);
-  inicio.setDate(hoje.getDate() + diasParaInicio);
-  return inicio.toISOString().slice(0, 10); // Formato: YYYY-MM-DD
+window.valorNumero = valorNumero;
+
+const numerosArray = Array.from(document.querySelectorAll('.numero'));
+
+/* ======================= DATA DO JOGO — ÚLTIMO SÁBADO DO MÊS ======================= */
+
+function getUltimoSabadoDoMesBase(dataBase = new Date()) {
+  let ano = dataBase.getFullYear();
+  let mes = dataBase.getMonth();
+
+  let ultimoDiaMes = new Date(ano, mes + 1, 0);
+
+  let diff = (ultimoDiaMes.getDay() - 6 + 7) % 7;
+
+  let ultimoSabado = new Date(ultimoDiaMes);
+  ultimoSabado.setDate(ultimoDiaMes.getDate() - diff);
+
+  return ultimoSabado;
 }
 
-function getFimDaSemana() {
-  const inicio = new Date(getInicioDaSemana());
-  inicio.setDate(inicio.getDate() + 6); // Semana termina na Sábado
-  return inicio.toISOString().slice(0, 10);
-}
+function getDataDoJogo() {
+  let hoje = new Date();
 
-/* ========================= REGRAS DE DIA/HORA ========================= */
-// SUBSTITUA a função podeMarcarAgora() por essa:
-function podeMarcarAgora() {
-  const agora = new Date();
-  const ultimoSabadoMes = proximaDataDeJogo();
-  
-  // Verifica se hoje é o último sábado do mês
-  const hojeEhUltimoSabado = (
-    agora.getDate() === ultimoSabadoMes.getDate() &&
-    agora.getMonth() === ultimoSabadoMes.getMonth() &&
-    agora.getFullYear() === ultimoSabadoMes.getFullYear()
-  );
-  
-  if (hojeEhUltimoSabado) {
-    const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-    return minutosAgora < (20 * 60); // Apenas até 20:00 no último sábado
+  let ultimoSabado = getUltimoSabadoDoMesBase(hoje);
+
+  // se já passou → usa próximo mês
+  if (hoje > ultimoSabado) {
+    let proximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+    ultimoSabado = getUltimoSabadoDoMesBase(proximoMes);
   }
-  
-  // Em outros dias, marcações estão liberadas
-  return true;
+
+  return ultimoSabado;
 }
 
+function formatarDataBR(data) {
+  return data.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+}
+
+/* ======================= EXIBIR DATA + CONTAGEM REGRESSIVA ======================= */
+
+function exibirDataDoJogo() {
+
+  const dataJogo = getDataDoJogo();
+
+  document.getElementById("dataJogo").textContent =
+    `📅 Próximo jogo: ${formatarDataBR(dataJogo)} - 20:00`;
+
+  iniciarContagemRegressiva(dataJogo);
+}
+
+exibirDataDoJogo();
+setInterval(exibirDataDoJogo, 3600000); // atualiza a cada hora
+
+/* ======================= CONTADOR ATÉ 20:00 ======================= */
+
+function iniciarContagemRegressiva(dataJogo) {
+
+  const alvo = new Date(dataJogo);
+  alvo.setHours(20, 0, 0, 0);
+
+  function atualizar() {
+    const agora = new Date();
+    const diff = alvo - agora;
+
+    const contadorEl = document.getElementById("dezenaAtual");
+
+    if (diff <= 0) {
+      contadorEl.textContent = "⛔ Marcações encerradas — aguardando sorteio";
+      verificarViradaDeMes();
+      return;
+    }
+
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+
+    contadorEl.textContent = `⏳ Faltam ${h}h ${m}m para o encerramento`;
+  }
+
+  atualizar();
+  setInterval(atualizar, 60000);
+}
+
+/* ======================= LIBERAÇÃO 24H — BLOQUEIA NO JOGO 20:00 ======================= */
+
+function podeMarcarAgora() {
+
+  const agora = new Date();
+  const dataJogo = getDataDoJogo();
+
+  const ehHoje =
+    agora.getDate() === dataJogo.getDate() &&
+    agora.getMonth() === dataJogo.getMonth() &&
+    agora.getFullYear() === dataJogo.getFullYear();
+
+  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+
+  if (ehHoje)
+    return minutosAgora < (20 * 60);
+
+  return true; // 24h nos outros dias
+}
+
+/* ======================= AGRUPAMENTO POR MÊS NO FIREBASE ======================= */
+
+function getMesChave() {
+  const jogo = getDataDoJogo();
+  const ano = jogo.getFullYear();
+  const mes = String(jogo.getMonth() + 1).padStart(2, "0");
+  return `${ano}-${mes}`; // EX: 2025-03
+}
+
+/* ======================= CARREGAR RESERVAS DO MÊS ATUAL ======================= */
+
+function carregarReservasMesAtual() {
+
+  const mes = getMesChave();
+
+  db.ref("reservas/" + mes).on("value", snapshot => {
+
+    bloqueados.clear();
+    selecionados = [];
+
+    numerosArray.forEach(btn => btn.classList.remove("ocupado", "selecionado"));
+
+    snapshot.forEach(item => {
+      const numero = item.key;
+      bloqueados.add(numero);
+
+      const btn = document.getElementById("num-" + numero);
+      if (btn) btn.classList.add("ocupado");
+    });
+
+    atualizarTotaisComPacote();
+  });
+}
+
+carregarReservasMesAtual();
+
+/* ======================= SALVAR RESERVA NO MÊS CORRETO ======================= */
+
+function salvarReserva(numero, nome) {
+
+  const mes = getMesChave();
+
+  db.ref(`reservas/${mes}/${numero}`).set({
+    nome: nome,
+    data: new Date().toISOString()
+  });
+}
+
+/* ======================= VIRADA AUTOMÁTICA APÓS O SORTEIO ======================= */
+
+function verificarViradaDeMes() {
+
+  const agora = new Date();
+  const jogo = getDataDoJogo();
+
+  const passouHorario =
+    agora.getFullYear() === jogo.getFullYear() &&
+    agora.getMonth() === jogo.getMonth() &&
+    agora.getDate() === jogo.getDate() &&
+    agora.getHours() >= 20;
+
+  if (!passouHorario) return;
+
+  const mesAtual = getMesChave();
+
+  const proximoMesData = new Date(jogo.getFullYear(), jogo.getMonth() + 1, 1);
+  const proximoMes = getMesChave(proximoMesData);
+
+  // move dados para histórico
+  db.ref(`historico/${mesAtual}`).set(true);
+
+  // limpa reservas e abre novo ciclo
+  db.ref(`reservas/${mesAtual}`).remove().then(() => {
+    carregarReservasMesAtual();
+    exibirDataDoJogo();
+  });
+}
+
+/* ========================= CRIA 00-99 ========================= */
+for (let i = 0; i < 1000; i++) {
+  let num = i.toString().padStart(3, '0');
+  let btn = document.createElement('button');
+  btn.textContent = num;
+  btn.className = 'numero';
+  btn.addEventListener('click', () => toggleNumero(btn, num));
+  numerosDiv.appendChild(btn);
+}
 
 /* ========================= MODAL NOME ========================= */
 function abrirModalNome() {
@@ -646,8 +975,9 @@ btnEditarNome.onclick = abrirModalNome;
 
 /* ========================= SELEÇÃO ========================= */
 function toggleNumero(btn, num) {
+
   if (btn.classList.contains('bloqueado')) return;
-  if (btn.classList.contains('extra')) return; // 🔒 BLOQUEIA EXTRA
+  if (btn.classList.contains('extra')) return;
   if (!podeMarcarAgora()) return alert('Marcações encerradas por hoje');
 
   if (btn.classList.contains('marcado')) {
@@ -656,11 +986,18 @@ function toggleNumero(btn, num) {
   } else {
     btn.classList.add('marcado');
     selecionados.push(num);
+
+    // 🔹 Contador de marcações
+    contadorMarcacoes++;
+
+    // 🔹 Abre o modal ao marcar 5 números
+    if (contadorMarcacoes === 5) {
+      abrirModalPacote();
+    }
   }
 
   atualizarTotais();
 }
-
 /* ========================= TOTAIS ========================= */
 function atualizarTotais() {
   const v = 1.50;
@@ -709,8 +1046,8 @@ function gerarDezenasExtras(qtd, jaSelecionados, jaBloqueados) {
   let extras = [];
   let tentativas = 0;
 
-  while (extras.length < extrasQtd && tentativas < 999) {
-    const n = Math.floor(Math.random() * 100)
+  while (extras.length < extrasQtd && tentativas < 500) {
+    const n = Math.floor(Math.random() * 1000)
       .toString()
       .padStart(3, '0');
 
@@ -726,24 +1063,12 @@ function gerarDezenasExtras(qtd, jaSelecionados, jaBloqueados) {
 
   return extras;
 }
-// -------------------------- FUNÇÃO DE CÁLCULO DE DESCONTO COMPARTILHADA (MANTER EM CIMA DO CÓDIGO) --------------------------
-const VALOR_UNITARIO = 1.50;
-const VALOR_PACOTE_10 = 13.50; // 10% de desconto
-
-function calcularValorTotal(qtdNumeros) {
-  if (qtdNumeros <= 0) return 0.00;
-  const totalPacotes = Math.floor(qtdNumeros / 10);
-  const totalIndividuais = qtdNumeros % 10;
-  return (totalPacotes * VALOR_PACOTE_10) + (totalIndividuais * VALOR_UNITARIO);
-}
-
-// -------------------------- ALTERAÇÕES NA FUNÇÃO QUE GERA O TEXTO DO TEXTAREA (textoNumerosBloqueados) --------------------------
 function textoNumerosBloqueados(callback) {
   db.ref('numerosBloqueados').once('value').then(snap => {
     const dados = snap.val() || {};
     const porNome = {};
 
-    // Agrupa por nome e conta quantidade total de números por pessoa
+    // Agrupa por nome
     Object.keys(dados).forEach(num => {
       const item = dados[num];
       const nome = item.nome?.trim();
@@ -766,8 +1091,6 @@ function textoNumerosBloqueados(callback) {
     Object.keys(porNome).forEach(nome => {
       const dadosNome = porNome[nome];
       const numeros = dadosNome.numeros.sort().join('-');
-      const qtdTotal = dadosNome.numeros.length; // Quantidade total de números da pessoa
-      const valorTotal = calcularValorTotal(qtdTotal); // Usa a função de desconto
 
       let classeStatus =
         dadosNome.status.includes('PAGO') ? 'verde' :
@@ -775,9 +1098,7 @@ function textoNumerosBloqueados(callback) {
         'amarelo';
 
       texto += `Nome:<span class="verde"> ${nome}</span>\n`;
-      texto += `Números: ${numeros}\n`;
-      texto += `Quantidade total: ${qtdTotal}\n`;
-      texto += `Valor total: R$ ${valorTotal.toFixed(2).replace('.', ',')}\n`; // Valor com desconto
+      texto +=  `Numero: ${numeros}\n`;
       texto += `Status :<span class="${classeStatus}">${dadosNome.status}</span>\n`;
       texto += '-----------------------------\n';
     });
@@ -786,50 +1107,99 @@ function textoNumerosBloqueados(callback) {
   });
 }
 
-// -------------------------- ALTERAÇÕES NA FUNÇÃO QUE ATUALIZA O TEXTAREA COM RESERVAS DA SEMANA --------------------------
 function atualizarTextareaReservasSemana(todasReservas) {
+  // Defina as regras de desconto aqui (igual no resto do app)
+  const VALOR_UNITARIO = 1.50;
+  const VALOR_PACOTE_10 = 9.00; // 10% de desconto por pacote de 10
+
+  // Função auxiliar para calcular valor com desconto
+  function calcularValorComDesconto(qtd) {
+    const pacotes = Math.floor(qtd / 10);
+    const individuais = qtd % 10;
+    return (pacotes * VALOR_PACOTE_10) + (individuais * VALOR_UNITARIO);
+  }
+
+  // OBTÉM O ÚLTIMO SÁBADO DO MÊS (DINÂMICO)
+  const ultimoSabado = getUltimoSabadoDoMes();
+  const DATA_PROXIMO_JOGO = new Date(ultimoSabado);
+  DATA_PROXIMO_JOGO.setHours(20, 0, 0, 0); // Horário do sorteio: 20:00
+
+  // Formata a data do jogo para exibição em pt-BR
+  const dataJogoFormatada = DATA_PROXIMO_JOGO.toLocaleDateString('pt-BR', { 
+    weekday: 'long', 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric' 
+  }) + ' - 20:00';
+
   textoNumerosBloqueados(textoBloq => {
     let html = textoBloq.replace(/\n/g, '<br>');
-    html += cabecalhoDataJogo().replace(/\n/g, '<br>');
+    
     const hoje = new Date();
-    const diaAtual = hoje.getDay();
-    const inicioSemana = getInicioDaSemana();
-    const fimSemana = getFimDaSemana();
+    const jaPassouJogo = hoje > DATA_PROXIMO_JOGO; // Verifica se o jogo já aconteceu
 
-    // Define qual parte exibir (mesma lógica antiga)
-    let tituloParte, diasParte, descricaoParte;
-    if (diaAtual === 0 || (diaAtual >= 1 && diaAtual <= 4)) {
-      descricaoParte = `Segunda (${inicioSemana.split('-').reverse().join('/')}) a Quarta`;
-      diasParte = dia => dia >= 1 && dia <= 3;
-    } else if (diaAtual >= 5 && diaAtual <= 6) {
-      descricaoParte = `Quinta a Sábado (${fimSemana.split('-').reverse().join('/')})`;
-      diasParte = dia => dia >= 4 && dia <= 6;
+    // Define período ativo DINÂMICO com base no último sábado do mês
+    let tituloParte, descricaoParte, filtroDias;
+    if (!jaPassouJogo) {
+      // Período: Do primeiro dia do mês até o último sábado (às 20:00)
+      const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      const dataInicioFormatada = primeiroDiaMes.toLocaleDateString('pt-BR');
+      
+      tituloParte = '';
+      descricaoParte = `De ${dataInicioFormatada} até ${dataJogoFormatada}`;
+      // Filtra reservas feitas desde o início do mês até o horário do jogo
+      filtroDias = (dataReserva) => 
+        new Date(`${dataReserva}T00:00:00`) >= primeiroDiaMes && 
+        new Date(`${dataReserva}T23:59:59`) <= DATA_PROXIMO_JOGO;
+    } else {
+      // Período: Do dia seguinte ao último sábado até o final do mês
+      const diaSeguinteJogo = new Date(DATA_PROXIMO_JOGO);
+      diaSeguinteJogo.setDate(DATA_PROXIMO_JOGO.getDate() + 1);
+      const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+      const dataInicioFormatada = diaSeguinteJogo.toLocaleDateString('pt-BR');
+      const dataFimFormatada = ultimoDiaMes.toLocaleDateString('pt-BR');
+      
+      tituloParte = ' ' + dataJogoFormatada;
+      descricaoParte = `De ${dataInicioFormatada} até ${dataFimFormatada}`;
+      // Filtra reservas feitas após o jogo até o final do mês
+      filtroDias = (dataReserva) => 
+        new Date(`${dataReserva}T00:00:00`) >= diaSeguinteJogo && 
+        new Date(`${dataReserva}T23:59:59`) <= ultimoDiaMes;
     }
   
     html += '------------------------------<br>';
+    html += `Período ativo: ${descricaoParte}<br><br>`;
 
     if (!todasReservas || Object.keys(todasReservas).length === 0) {
-      html += 'Nenhuma reserva nessa etapa.<br><br>';
       codigo.innerHTML = html;
+      salvarHistoricoAutomatico();
       return;
     }
 
-    const diasOrdenados = Object.keys(todasReservas).sort();
+    // Ordena os dias carregados e aplica o filtro do período
+    const diasOrdenados = Object.keys(todasReservas)
+      .sort()
+      .filter(dataStr => filtroDias(dataStr));
 
+    // Exibe cada dia do período filtrado
     diasOrdenados.forEach(dataStr => {
       const dadosDia = todasReservas[dataStr];
       const dataBR = dataStr.split('-').reverse().join('/');
       const diaSemana = new Date(dataStr).toLocaleDateString('pt-BR', { weekday: 'long' });
 
+      html += `----------------------`;
+
       const horariosOrdenados = Object.keys(dadosDia).sort();
       horariosOrdenados.forEach(horario => {
-        html += `<br><strong>[ HORÁRIO ] => ${horario}</strong><br>`;
+        html += ``;
 
         for (const k in dadosDia[horario]) {
-          const d = dadosDia[horario][k]; // AQUI É ONDE d É DEFINIDA
+          const d = dadosDia[horario][k];
           const countdownId = `countdown-${dataStr}-${horario}-${k}`.replace(/[^a-zA-Z0-9-_]/g, '');
-          const qtdTotal = d.numeros.length; // Quantidade total de números da reserva
-          const valorTotal = calcularValorTotal(qtdTotal); // Usa a função de desconto
+          const qtd = d.numeros.length;
+          
+          const valorComDesconto = calcularValorComDesconto(qtd);
+          const valorFormatado = valorComDesconto.toFixed(2).replace('.', ',');
 
           let status = d.status || 'AGUARDANDO';
           if (status.toUpperCase().includes('PAGO')) status = '✅ PAGO';
@@ -839,18 +1209,15 @@ function atualizarTextareaReservasSemana(todasReservas) {
           const corStatus = status.includes('VALIDADO') || status.includes('PAGO') ? 'verde' : status.includes('CANCELADO') ? 'vermelho' : 'amarelo';
           const corResultado = resultado.includes('GANHOU') ? 'verde' : resultado.includes('PERDEU') ? 'vermelho' : 'amarelo';
 
-          let extrasTxt = d.dezenasExtras && d.dezenasExtras.length ? `<br></br><strong>🎁 CENTENA extra:</strong> ${d.dezenasExtras.join('-')}` : '';
+          let extrasTxt = d.dezenasExtras && d.dezenasExtras.length ? `<br><strong>🎁 Dzn extra:</strong> ${d.dezenasExtras.join('-')}` : '';
 
-          // ESSA É A VERSÃO CORRETA DO CÓDIGO (DENTRO DO LOOP)
-          html += `</br>Nome: <span class="verde">${d.nome}</span><br>
-Quantidade: ${qtdTotal}</br>
-Centenas Escolhidas : ${d.numeros.join('-')} ${extrasTxt}<br>
-Valor a pagar: R$ ${valorTotal.toFixed(2).replace('.', ',')}<br> <!-- Valor com desconto -->
+          html += `        Nome: <span class="verde">${d.nome}</span><br>
+Quantidade: ${qtd}<br>
+Centena Escolhidas: ${d.numeros.join('-')} ${extrasTxt}<br>
+Valor a pagar: R$ ${valorFormatado}<br>
 Status: <span class="${corStatus}">${status}</span>
 Resultado: <span class="${corResultado}">${resultado}</span><br>
-<div id="${countdownId}" class="amarelo"></div><br>
----------------------------<br>
-`;
+<div id="${countdownId}" class="amarelo"></div>------------------------------<br>`;
 
           setTimeout(() => {
             const el = document.getElementById(countdownId);
@@ -861,63 +1228,19 @@ Resultado: <span class="${corResultado}">${resultado}</span><br>
     });
 
     codigo.innerHTML = html;
+    salvarHistoricoAutomatico();
   });
 }
 
 /* ========================= CARREGAR APENAS RESERVAS DA PARTE RELEVANTE DA SEMANA + APENAS DIAS COM RESERVAS ========================= */
-function carregarReservasDaSemana() {
-  const inicioSemana = getInicioDaSemana();
-  const fimSemana = getFimDaSemana();
-  const todasReservas = {};
-  const hoje = new Date();
-  const diaAtual = hoje.getDay(); // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab
-  const dataAtualHoje = hoje.toISOString().slice(0, 10); // Data de hoje no formato AAAA-MM-DD
-
-  // Define quais dias CARREGAR com base no dia atual (inclusive se hoje for Quarta)
-  let diasParaCarregar = [];
-  const dataPercorrer = new Date(inicioSemana);
-
-  while (dataPercorrer.toISOString().slice(0, 10) <= fimSemana) {
-    const dataStr = dataPercorrer.toISOString().slice(0, 10);
-    const diaDaSemana = new Date(dataStr).getDay();
-
-    // Regra ajustada:
-    // - Até Quarta-feira (inclusive): carrega Dom, Seg, Ter, Qua
-    // - A partir de Quinta-feira: carrega Qui, Sex, Sab
-    const ehAntesOuQuarta = new Date(dataStr) <= new Date(dataAtualHoje) || diaDaSemana ===6 ;
-    if (ehAntesOuQuarta) {
-      if (diaDaSemana === 0 || diaDaSemana >= 1 && diaDaSemana <= 6) {
-        diasParaCarregar.push(dataStr);
-      }
-    } else {
-      if (diaDaSemana >= 0 && diaDaSemana <= 6) {
-        diasParaCarregar.push(dataStr);
-      }
-    }
-
-    dataPercorrer.setDate(dataPercorrer.getDate() + 1);
-  }
 
   // Carrega apenas os dias selecionados E só mantém aqueles que tem reservas
   let diasCarregados = 0;
-  diasParaCarregar.forEach(dataStr => {
-    db.ref(`compras-dia/${dataStr}`).once('value').then(snap => {
-      const dadosDia = snap.val();
-      // Só adiciona o dia se houver pelo menos uma reserva nele
-      if (dadosDia && Object.keys(dadosDia).length > 0) {
-        todasReservas[dataStr] = dadosDia;
-      }
-      diasCarregados++;
+  
 
-      // Quando terminar de carregar, exibe os dias com reservas
-      if (diasCarregados === diasParaCarregar.length) {
-        atualizarTextareaReservasSemana(todasReservas);
-      }
-    });
-  });
-}
 
-salvarBtn.onclick = () => {
+  
+  salvarBtn.onclick = () => {
   if (selecionados.length === 0) return alert('Selecione números');
   if (!podeMarcarAgora()) return alert('Prazo encerrado');
 
@@ -926,14 +1249,7 @@ salvarBtn.onclick = () => {
   const dataHoje = new Date().toISOString().slice(0,10);
   const chave = 'ID-' + Date.now();
 
-  // 🎁 GERA DEZENAS EXTRAS
-  const dezenasExtras = gerarDezenasExtras(
-    selecionados.length,
-    selecionados,
-    bloqueados
-  );
-
-  // 🔢 TODOS OS NÚMEROS QUE SERÃO BLOQUEADOS
+  const dezenasExtras = gerarDezenasExtras(selecionados.length, selecionados, bloqueados);
   const todosNumeros = [...selecionados, ...dezenasExtras];
 
   const dados = {
@@ -943,68 +1259,47 @@ salvarBtn.onclick = () => {
     horario,
     status: '⏳ AGUARDANDO',
     resultado: '⏳ AGUARDANDO',
-    dataHora: new Date().toISOString(),
-    convidadoPor: convidadoPor // NOVO: RASTREAMENTO - Adiciona quem convidou
-    
+    dataHora: new Date().toISOString()
   };
 
   db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados)
-    .then(() => {
-      // 🔒 BLOQUEIA PAGOS + EXTRAS
-      const updates = {};
-      todosNumeros.forEach(n => {
-        updates['numerosBloqueados/' + n] = {
-          bloqueadoEm: Date.now(),
-          extra: dezenasExtras.includes(n)
-        };
-      });
-      return db.ref().update(updates);
-    })
-.then(() => {
-  abrirModalPix();
-
-  selecionados = [];
-  document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
-
-  atualizarTotais();
-  atualizarBloqueados();
-
-  // ⚠️ LOGICA ANTIGA DE ABRIR MENU APOS SALVAR FOI REMOVIDA AQUI
-});   
+  .then(() => {
+    const updates = {};
+    todosNumeros.forEach(n => {
+      updates['numerosBloqueados/' + n] = {
+        bloqueadoEm: Date.now(),
+        extra: dezenasExtras.includes(n)
+      };
+    });
+    agendarAtualizacaoStatusParaPago(dados.dataHora, `compras-dia/${dataHoje}/${horario}/${chave}`);
+    return db.ref().update(updates);
+  })
+  .then(() => {
+    abrirModalPix();
+    selecionados = [];
+    document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
+    atualizarTotais();
+    atualizarBloqueados();
+  });
 };
 
-// SUBSTITUA a função proximaDataDeJogo() por essa:
-// FUNÇÃO CORRIGIDA: Calcula o último sábado do mês (sem erro no ajuste de dias)
-function proximaDataDeJogo() {
+function ultimoSabadoDoMes() {
   const hoje = new Date();
-  let mesAtual = hoje.getMonth();
-  let anoAtual = hoje.getFullYear();
-
-  // Verifica se o último sábado do mês atual já passou — se sim, usa o próximo mês
-  const ultimoDiaDoMes = new Date(anoAtual, mesAtual + 1, 0);
-  const diaSemanaUltimoDia = ultimoDiaDoMes.getDay(); // 0 = dom, 6 = sab
-
-  // Calcula o último sábado: se o último dia não for sábado, subtrai os dias necessários
-  const ultimoSabado = new Date(ultimoDiaDoMes);
-  ultimoSabado.setDate(ultimoDiaDoMes.getDate() - ((diaSemanaUltimoDia + 1) % 7));
-
-  // Se o último sábado já passou, pega o do próximo mês
-  if (ultimoSabado < hoje) {
-    mesAtual++;
-    if (mesAtual > 11) {
-      mesAtual = 0;
-      anoAtual++;
-    }
-    const ultimoDiaProximoMes = new Date(anoAtual, mesAtual + 1, 0);
-    const diaSemanaProximo = ultimoDiaProximoMes.getDay();
-    const ultimoSabadoProximo = new Date(ultimoDiaProximoMes);
-    ultimoSabadoProximo.setDate(ultimoDiaProximoMes.getDate() - ((diaSemanaProximo + 1) % 7));
-    return ultimoSabadoProximo;
-  }
-
+  // Pega o primeiro dia do MÊS SEGUINTE
+  const primeiroDiaProximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+  // Volta 1 dia para pegar o ÚLTIMO DIA DO MÊS ATUAL
+  const ultimoDiaDoMes = new Date(primeiroDiaProximoMes - 86400000); // 86400000ms = 1 dia
+  const diaSemanaUltimoDia = ultimoDiaDoMes.getDay(); // 0=dom, 1=seg,..., 6=sab
+  // Calcula quantos dias voltar para chegar ao último sábado
+  // Se o último dia já for sábado (6), não volta nada; senão, volta (diaSemanaUltimoDia + 1) dias
+  const diasParaVoltar = (diaSemanaUltimoDia + 1) % 7;
+  const ultimoSabado = new Date(ultimoDiaDoMes - diasParaVoltar * 86400000);
   return ultimoSabado;
 }
 
+
+        
+        
 function abrirModalPix() {
  document.getElementById('valorPix').textContent = totalPagarSpan.textContent;
 
@@ -1028,10 +1323,10 @@ function copiarPix() {
       carregarReservasDaSemana(); // Atualiza se já estiver aberto
     }
 
-    // Fecha o modal após 2,5 segundos
+    // Fecha o modal após 1,5 segundos
     setTimeout(() => {
       fecharModalPix();
-    }, 3500);
+    }, 1000);
   });
 }
 
@@ -1040,66 +1335,38 @@ function formatarDataBR(data) {
   return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-function atualizarDataJogo() {
-  const dataJogo = proximaDataDeJogo();
-  const diaSemana = dataJogo.toLocaleDateString('pt-BR', { weekday: 'long' });
-  const el = document.getElementById("dataJogo");
-  
-  el.innerHTML = `📅 Próximo jogo: <strong>${diaSemana}</strong> - ${formatarDataBR(dataJogo)}`;
-}
+
+/* ========================= SALVAR HISTÓRICO AUTOMÁTICO (CORRIGIDO) ========================= */
 function salvarHistoricoAutomatico() {
   const agora = new Date();
+  const codigoConteudo = codigo.innerText.trim();
 
-  const dataStr = agora.toLocaleDateString('pt-BR');
-  const horaStr = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  // Verifica se há reservas válidas para salvar
+  if (codigoConteudo.includes('Nenhuma reserva') || codigoConteudo.includes('Erro ao carregar')) {
+    console.log('ℹ️ Nenhuma reserva válida para salvar no histórico');
+    return;
+  }
 
-  const dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  // Formata data e hora corretamente
+  const dataStr = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+  const horaStr = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}:${String(agora.getSeconds()).padStart(2, '0')}`;
+  const dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','S<div></div>ábado'];
   const diaSemana = dias[agora.getDay()];
+  const id = `${dataStr}_${horaStr.replace(/:/g,'-')}`;
 
-  const id = agora.toISOString().slice(0,10) + '_' + horaStr.replace(':','-');
-
-  const texto = codigo.innerText.trim();
-
-  if (!texto) return; // não salva vazio
-
+  // Salva no Firebase com todos os dados necessários
   db.ref('historico/' + id).set({
     data: dataStr,
     dia: diaSemana,
     hora: horaStr,
-    conteudo: texto,
+    conteudo: codigoConteudo,
     timestamp: Date.now()
+  }).then(() => {
+    console.log('📦 Histórico salvo com sucesso:', id);
+  }).catch(err => {
+    console.error('Erro ao salvar histórico:', err);
   });
-
-  console.log('📦 Histórico salvo:', id);
 }
-// SUBSTITUA a função podeAbrirPixAdmin() por essa:
-function podeAbrirPixAdmin() {
-  const agora = new Date();
-  const ultimoSabadoMes = proximaDataDeJogo();
-  
-  // Verifica se hoje é o último sábado do mês e já passou das 20:00
-  const hojeEhUltimoSabadoEapos20h = (
-    agora.getDate() === ultimoSabadoMes.getDate() &&
-    agora.getMonth() === ultimoSabadoMes.getMonth() &&
-    agora.getFullYear() === ultimoSabadoMes.getFullYear() &&
-    (agora.getHours() > 20 || (agora.getHours() === 20 && agora.getMinutes() >= 0))
-  );
-  
-  return hojeEhUltimoSabadoEapos20h;
-}
-
-const btnPixAdmin = document.getElementById('btnPixAdmin');
-const modalPixAdmin = document.getElementById('modalPixAdmin');
-const inputPixAdmin = document.getElementById('inputPixAdmin');
-
-btnPixAdmin.onclick = () => {
-  if (!podeAbrirPixAdmin()) {
-    alert('🔒 PIX do Ganhador Será Liberado às 20:30 do ultimo Sabado do Mes</>');
-    return;
-  }
-  inputPixAdmin.value = '';
-  modalPixAdmin.style.display = 'flex';
-};
 
 function salvarPixAdmin() {
   const pix = inputPixAdmin.value.trim();
@@ -1122,69 +1389,82 @@ function gerarCountdown(idElemento, dataHoraCompra, status) {
   const el = document.getElementById(idElemento);
   if (!el) return;
 
-  // ✅ SE JÁ ESTÁ PAGO
+  // ✅ SE JÁ ESTÁ PAGO, mostra status e sai
   if (status && status.toUpperCase().includes('PAGO')) {
-    el.innerHTML =
-      '<span class="verde">✅ PIX VALIDADO</span>';
+    el.innerHTML = '<span class="verde">✅ PIX VALIDADO</span>';
     return;
   }
 
   const inicio = Date.parse(dataHoraCompra);
-
-  if (isNaN(inicio)) {
-    el.innerHTML =
-      '<span class="amarelo">⏳ Aguardando pagamento</span>';
-    return;
-  }
-
-  const fim = inicio + (1 * 30 * 60 * 1000);
+  const tempoTotalEspera = 10 * 60 * 1000; // 30 MINUTOS TOTAIS em milissegundos
+  const fim = inicio + tempoTotalEspera;
+  const tempoLimiarVerde = 5 * 60 * 1000; // 5 MINUTOS FINAIS em milissegundos
   let timer = null;
 
   function atualizar() {
-    // 🛑 SE MUDOU PARA PAGO DURANTE O TEMPO
-    if (status && status.toUpperCase().includes('PAGO')) {
-      el.innerHTML =
-        '<span class="verde">✅ PIX VALIDADO</span>';
+    // 🛑 Se mudar para pago durante a contagem, atualiza e para
+    if (status && status.toUpperCase().includes('resenvado')) {
+      el.innerHTML = '<span class="verde">✅ Aguardando Comprovante</span>';
       clearInterval(timer);
       return;
     }
 
     const restante = fim - Date.now();
 
+    // Quando acabar o tempo, mostra validado
     if (restante <= 0) {
-      el.innerHTML =
-        '<span class="vermelho">⏰ pagamento nao indetificado</span>';
+      el.innerHTML = '<span class="verde">✅ DEZENA SERA VALIDADO AUTOMATICAMENTE ASSIM QUE INDENTIFICAR O PAGAMENTO...</span>';
       clearInterval(timer);
       return;
     }
 
-    const h = Math.floor(restante / 3600000);
+    // Calcula minutos e segundos restantes
     const m = Math.floor((restante % 3600000) / 60000);
     const s = Math.floor((restante % 60000) / 1000);
 
-    // 🟥 SÓ O CRONÔMETRO FICA VERMELHO
-    el.innerHTML =
-      `⏳ Faca o PIX Para Validar Sua Reserva. Suas Dezenas Sera LIBERADA apos Esse Prazo <span class="vermelho">${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</span>`;
+    // Define cor: vermelho se >5min, verde se ≤5min
+    const corClasse = restante > tempoLimiarVerde ? 'vermelho' : 'verde';
+    const mensagem = restante > tempoLimiarVerde 
+      ? '⏳ Faca o PIX Para Validar Sua Reserva. Tempo restante:' 
+      : '⚠️ ÚLTIMOS MINUTOS! Faca o pagamento e mantenha suas dezenas:';
+
+    // Atualiza o texto com a cor correta
+    el.innerHTML = `${mensagem} <span class="${corClasse}">${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</span>`;
   }
 
+  // Atualiza imediatamente e depois a cada 1 segundo
   atualizar();
   timer = setInterval(atualizar, 1000);
 }
+function ehUltimoSabadoDoMes(data = new Date()) {
+  const ano = data.getFullYear();
+  const mes = data.getMonth();
 
-// SUBSTITUA a função podeVirarPerdeuAutomatico() por essa:
+  // último dia do mês
+  const ultimoDiaMes = new Date(ano, mes + 1, 0);
+
+  // diferença até sábado (6)
+  const diff = (ultimoDiaMes.getDay() - 6 + 7) % 7;
+
+  const ultimoSabado = new Date(ultimoDiaMes);
+  ultimoSabado.setDate(ultimoDiaMes.getDate() - diff);
+
+  return (
+    data.getDate() === ultimoSabado.getDate() &&
+    data.getMonth() === ultimoSabado.getMonth() &&
+    data.getFullYear() === ultimoSabado.getFullYear()
+  );
+}
 function podeVirarPerdeuAutomatico() {
   const agora = new Date();
-  const ultimoSabadoMes = proximaDataDeJogo();
-  
-  // Verifica se hoje é o último sábado do mês e já passou das 20:30
-  const hojeEhUltimoSabadoEapos20h30 = (
-    agora.getDate() === ultimoSabadoMes.getDate() &&
-    agora.getMonth() === ultimoSabadoMes.getMonth() &&
-    agora.getFullYear() === ultimoSabadoMes.getFullYear() &&
-    (agora.getHours() > 20 || (agora.getHours() === 20 && agora.getMinutes() >= 30))
-  );
-  
-  return hojeEhUltimoSabadoEapos20h30;
+  const h = agora.getHours();
+  const m = agora.getMinutes();
+
+  // só roda se for o último sábado
+  if (!ehUltimoSabadoDoMes(agora)) return false;
+
+  // somente após 20:30
+  return h > 20 || (h === 20 && m >= 30);
 }
 
 function atualizarResultadosAutomaticamente() {
@@ -1215,13 +1495,13 @@ function atualizarResultadosAutomaticamente() {
 
     if (Object.keys(updates).length > 0) {
       db.ref().update(updates).then(() => {
-        console.log('⏰ Resultados mudaram para PERDEU (Qua/Sáb 20:30)');
-carregarReservasDaSemana(); // ✅ AGORA CARREGA A SEMANA
-
+        console.log('⏰ Resultados viraram para PERDEU (último sábado ≥ 20:30)');
+        carregarReservasDaSemana();
       });
     }
   });
 }
+
 function fecharPixAdmin() {
   document.getElementById('modalPixAdmin').style.display = 'none';
 }
@@ -1232,25 +1512,25 @@ const dezenaAtualPublica = document.getElementById('dezenaAtual');
 dezenaAtualPublica.style.display = 'none';
 
 // Função para atualizar a dezena premiada exibida e destacar na grade
+// Função para atualizar a dezena premiada E procurar o ganhador
 function atualizarDezenaPremiadaPublica() {
   db.ref('admin/config/dezenaPremiada').once('value').then(snap => {
     const dezena = snap.val();
-    
-    // Verifica se há dezena definida (ou seja, se houve alteração no painel)
+    const dezenaAtualPublica = document.getElementById('dezenaAtual');
+
     if (dezena) {
-      const dezenaFormatada = dezena.padStart(2, '0');
-      // Mostra o elemento e define o texto com a dezena
+      const dezenaFormatada = dezena.padStart(3, '0');
+      // Mostra a dezena premiada
       dezenaAtualPublica.style.display = 'block';
       dezenaAtualPublica.textContent = `🏆 Dezena premiada: ${dezenaFormatada}`;
       
-      // Destaca a dezena na grade de números
+      // Destaca a dezena na grade
       document.querySelectorAll('.numero').forEach(btn => {
         if (btn.textContent === dezenaFormatada) {
-          btn.style.background = 'linear-gradient(135deg, #8098ff, #6f86e6)';
-          btn.style.boxShadow = '0 0 15px rgba(128, 152, 255, 0.8)';
-          btn.style.border = '2px solid #fff';
+          btn.style.background = 'linear-gradient(135deg, #ffd700, #ffA500)';
+          btn.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.9)';
+          btn.style.border = '3px solid #fff';
         } else {
-          // Volta o estilo original para os outros números (exceto bloqueados/extras)
           if (!btn.classList.contains('bloqueado') && !btn.classList.contains('extra')) {
             btn.style.background = '#3498db';
             btn.style.boxShadow = 'none';
@@ -1258,11 +1538,13 @@ function atualizarDezenaPremiadaPublica() {
           }
         }
       });
+
+      // 🔍 VARREDURA AUTOMÁTICA PARA ENCONTRAR O GANHADOR
+      procurarGanhador(dezenaFormatada);
+
     } else {
-      // Se não há dezena, oculta o elemento (não mostra "Aguardando")
+      // Se não houver dezena, oculta e limpa destques
       dezenaAtualPublica.style.display = 'none';
-      
-      // Remove destaque de todos os números
       document.querySelectorAll('.numero').forEach(btn => {
         if (!btn.classList.contains('bloqueado') && !btn.classList.contains('extra')) {
           btn.style.background = '#3498db';
@@ -1270,11 +1552,14 @@ function atualizarDezenaPremiadaPublica() {
           btn.style.border = 'none';
         }
       });
+
+      // Limpa o nome do ganhador se não houver dezena
+      const ganhadorEl = document.getElementById('ganhadorPublico');
+      if (ganhadorEl) ganhadorEl.remove();
     }
   }).catch(err => {
     console.error('Erro ao carregar dezena premiada:', err);
-    // Oculta o elemento também em caso de erro (para não mostrar mensagem desnecessária)
-    dezenaAtualPublica.style.display = 'none';
+    document.getElementById('dezenaAtual').style.display = 'none';
   });
 }
 
@@ -1299,90 +1584,376 @@ document.addEventListener('click', (e) => {
     if (temporizadorMenu) clearTimeout(temporizadorMenu);
   }
 });
+/* ========================= ATUALIZA STATUS PARA PAGO APÓS 5 MINUTOS ========================= */
+function agendarAtualizacaoStatusParaPago(dataHoraCompra, caminhoReserva) {
+  const inicio = Date.parse(dataHoraCompra);
+  const tempoEspera = 5 * 60 * 1000; // 5 minutos em milissegundos
+  const horaAtualizacao = inicio + tempoEspera;
+  const tempoRestante = horaAtualizacao - Date.now();
+
+  // Se já passou os 5 minutos, atualiza imediatamente
+  if (tempoRestante <= 0) {
+    atualizarStatusParaPago(caminhoReserva);
+    return;
+  }
+
+  // Agenda a atualização para daqui a 5 minutos
+  setTimeout(() => {
+    atualizarStatusParaPago(caminhoReserva);
+  }, tempoRestante);
+}
+
+function atualizarStatusParaPago(caminhoReserva) {
+  // Verifica se o status ainda é "AGUARDANDO" antes de alterar
+  db.ref(caminhoReserva).once('value').then(snap => {
+    const reserva = snap.val();
+    if (reserva && reserva.status && reserva.status.includes('AGUARDANDO')) {
+      db.ref(caminhoReserva).update({
+        status: '✅ PAGO<!--  --> - PIX VALIDADO',
+        pagoEm: new Date().toISOString()
+      }).then(() => {
+        console.log('✅ Status atualizado para PAGO automaticamente');
+        carregarReservasDaSemana(); // Atualiza o menu com o novo status
+        atualizarBloqueados(); // Garante que os números permaneçam bloqueados
+      }).catch(err => {
+        console.error('Erro ao atualizar status para PAGO:', err);
+      });
+    }
+  });
+}
+
+// Abre o modal de seleção de data
+btnHistoricoData.onclick = () => {
+  // Define a data atual como padrão no input
+  const hoje = new Date().toISOString().slice(0, 10);
+  inputDataHistorico.value = hoje;
+  modalHistoricoData.style.display = 'flex';
+};
+
+// Fecha o modal de histórico por data
+function fecharModalHistoricoData() {
+  modalHistoricoData.style.display = 'none';
+}
+
+// Carrega o histórico da data selecionada
+/* ========================= CARREGAR HISTÓRICO POR DATA (CORRIGIDO) ========================= */
+function carregarHistoricoPorData() {
+  const dataSelecionada = inputDataHistorico.value;
+  if (!dataSelecionada) {
+    alert('Selecione uma data válida!');
+    return;
+  }
+
+  // Mostra mensagem de carregamento para o usuário
+  codigo.innerHTML = `<span class="amarelo">🔍 Carregando histórico para ${dataSelecionada.split('-').reverse().join('/')}...</span>`;
+
+  db.ref('historico')
+    .once('value')
+    .then(snap => {
+      const dadosHistorico = snap.val();
+      if (!dadosHistorico) {
+        codigo.innerHTML = `<span class="vermelho">Nenhum histórico foi salvo ainda.</span>`;
+        fecharModalHistoricoData();
+        return;
+      }
+
+      // Filtra registros pela data selecionada E que têm reservas válidas
+      const registrosValidos = Object.values(dadosHistorico).filter(registro => 
+        registro?.data === dataSelecionada && 
+        !registro.conteudo.includes('Nenhuma reserva') &&
+        !registro.conteudo.includes('Erro ao carregar')
+      );
+
+      // Obtém todas as datas com registros válidos
+      const datasDisponiveis = [...new Set(
+        Object.values(dadosHistorico).filter(r => 
+          !r.conteudo.includes('Nenhuma reserva') &&
+          !r.conteudo.includes('Erro ao carregar')
+        ).map(r => r?.data)
+      )].sort((a, b) => new Date(b) - new Date(a)).map(data => data.split('-').reverse().join('/'));
+
+      if (registrosValidos.length === 0) {
+        codigo.innerHTML = `
+          <span class="vermelho">Nenhuma reserva encontrada para ${dataSelecionada.split('-').reverse().join('/')}.</span><br><br>
+          <span class="amarelo">Datas com reservas disponíveis: ${datasDisponiveis.join(', ') || 'nenhuma'}</span>
+        `;
+        fecharModalHistoricoData();
+        return;
+      }
+
+      // Pega o registro mais recente do dia
+      const registroMaisRecente = registrosValidos.sort((a, b) => b.timestamp - a.timestamp)[0];
+
+      // Monta o conteúdo para exibição
+      let htmlHistorico = `
+        <span class="verde">📅 HISTÓRICO DA DATA: ${dataSelecionada.split('-').reverse().join('/')}</span><br><br>
+        <span class="amarelo">🗒️ ÚLTIMA ATUALIZAÇÃO: ${registroMaisRecente.dia} às ${registroMaisRecente.hora}</span><br>
+        ---------------------------<br><br>
+        ${registroMaisRecente.conteudo.replace(/\n/g, '<br>')}        <br><br>===============================<br>
+      `;
+
+      codigo.innerHTML = htmlHistorico;
+      fecharModalHistoricoData();
+
+      // Abre o menu se estiver fechado
+      if (!menuEl.classList.contains('open')) {
+        btnMenu.click();
+      }
+    })
+    .catch(err => {
+      console.error('Erro ao carregar histórico:', err);
+      codigo.innerHTML = `<span class="vermelho">Erro ao carregar histórico: ${err.message}</span>`;
+      fecharModalHistoricoData();
+    });
+}
 
 
 /* ========================= INIT ATUALIZADO ========================= */
 garantirNome();
 exibirNome();
-carregarReservasDaSemana(); // AGORA CARREGA TODA A SEMANA
 atualizarResultadosAutomaticamente();
 atualizarBloqueados();
-atualizarDataJogo(); // Mostra a data do próximo jogo
 
-// Atualizar o menu quando abrir (agora com reservas da semana)
-// Variável para controlar o temporizador (evitar múltiplos temporizadores ao abrir/fechar rápido)
-let temporizadorMenu;
+
+
+
 
 // Abre/fecha o menu com o botão + temporizador de 30 segundos
 btnMenu.onclick = () => {
   menuEl.classList.toggle('open');
-  menuEl.setAttribute('aria-hidden', !menuEl.classList.contains('open')); // Acessibilidade
+  menuEl.setAttribute('aria-hidden', !menuEl.classList.contains('open'));
 
   if (menuEl.classList.contains('open')) {
-    carregarReservasDaSemana(); // Carrega reservas ao abrir
-
-    // Limpa temporizador antigo (se houver)
+    carregarReservasDaSemana();
     if (temporizadorMenu) clearTimeout(temporizadorMenu);
-
-    // Fecha o menu após 30 segundos (30.000 milissegundos)
+    // Salva ao abrir o menu também
+    salvarHistoricoAutomatico();
+    // Fecha após 60 segundos
     temporizadorMenu = setTimeout(() => {
       if (menuEl.classList.contains('open')) {
         menuEl.classList.remove('open');
         menuEl.setAttribute('aria-hidden', 'true');
       }
-    }, 20000);
+    }, 60000);
   } else {
-    // Limpa temporizador se fechar manualmente antes dos 30 segundos
     if (temporizadorMenu) clearTimeout(temporizadorMenu);
+    // Salva ao fechar o menu
+    salvarHistoricoAutomatico();
   }
 };
-// Contador de números marcados para exibir o modal a cada 3
-let contadorMarcacoes = 0;
-// Valores base
-
-
-
-// FUNÇÃO CORRIGIDA: Calcula valor total com desconto para pacotes de 10
-function calcularValorTotal(qtdNumeros) {
-  if (qtdNumeros <= 0) return 0.00;
+// Função para verificar se está no horário válido (20:00 às 23:30)
+function estaNoHorarioPremio() {
+  const agora = new Date();
+  const horas = agora.getHours();
+  const minutos = agora.getMinutes();
   
-  // Total de pacotes de 10 e números individuais restantes
-  const totalPacotes = Math.floor(qtdNumeros / 10);
-  const totalIndividuais = qtdNumeros % 10;
-  
-  // Valor total = (pacotes * R$9) + (individuais * R$1)
-  return (totalPacotes * VALOR_PACOTE_10) + (totalIndividuais * VALOR_UNITARIO);
+  // Verifica se é entre 20:00 e 23:30
+  return (horas === 20 && minutos >= 0) || 
+         (horas > 20 && horas < 23) || 
+         (horas === 23 && minutos <= 30);
 }
 
-// Atualiza o valor exibido no modal
+// // Variável global para guardar o horário do último alerta exibido (inicialmente vazio)
+let ultimoHorarioAlertaPremio = null;
+// Tempo mínimo entre alertas (1 hora em milissegundos)
+const TEMPO_MINIMO_ENTRE_ALERTAS = 3600000;
+
+// Ação do botão "RECEBER PRÊMIO" (agora com bloqueio de 1 hora por clique)
+document.getElementById('btnPixAdmin').onclick = () => {
+  if (estaNoHorarioPremio()) {
+    // Abre o modal de prêmio se estiver no horário válido
+    document.getElementById('modalPremio').style.display = 'flex';
+    // Reseta o horário do último alerta (pois o usuário já pode usar a funcionalidade)
+    ultimoHorarioAlertaPremio = null;
+  } else {
+    const agora = Date.now();
+    
+    // Verifica se já passou pelo menos 1 hora do último alerta (ou se é o primeiro clique)
+    if (!ultimoHorarioAlertaPremio || (agora - ultimoHorarioAlertaPremio) >= TEMPO_MINIMO_ENTRE_ALERTAS) {
+      // Exibe o alerta
+         alert('⏰  Receber Prêmio Parabens⏰\nSó Está Disponível Entre QUARTA E SABADO 20:00 ate 23:30 Faca Sua Solicitacao! Retorne Aqui');
+      // Atualiza o horário do último alerta para o momento atual
+      ultimoHorarioAlertaPremio = agora;
+      console.log('⚠️ Alerta exibido — próximo só pode aparecer após 1 hora');
+    } else {
+      // Calcula o tempo restante até que o alerta possa aparecer novamente
+      const tempoRestanteMs = TEMPO_MINIMO_ENTRE_ALERTAS - (agora - ultimoHorarioAlertaPremio);
+      const tempoRestanteMin = Math.ceil(tempoRestanteMs / 60000);
+      // (Opcional) Mostra uma mensagem pequena no console (não incomoda o usuário com outro alerta)
+      console.log(`⌛ Aguardando ${tempoRestanteMin} minuto(s) para exibir o alerta novamente`);
+      // Se quiser, pode mostrar um alerta menor com o tempo restante — mas eu recomendo não, para não incomodar
+      // alert(`Aguarde mais ${tempoRestanteMin} minuto(s) para ver essa mensagem novamente`);
+    }
+  }
+};
+
+// Função para fechar o modal de prêmio (sem alterações)
+function fecharModalPremio() {
+  document.getElementById('modalPremio').style.display = 'none';
+}
+
+// 🔍 FUNÇÃO QUE FAZ A VARREDURA EM TODAS AS RESERVAS PARA ENCONTRAR O GANHADOR
+function procurarGanhador(dezenaPremiada) {
+  // Busca todas as reservas salvas no Firebase
+  db.ref('compras-dia').once('value').then(snap => {
+    const todasReservas = snap.val();
+    let ganhadorEncontrado = null;
+
+    // Percorre todos os dias, horários e reservas
+    if (todasReservas) {
+      Object.keys(todasReservas).forEach(dia => {
+        Object.keys(todasReservas[dia]).forEach(horario => {
+          Object.keys(todasReservas[dia][horario]).forEach(idReserva => {
+            const reserva = todasReservas[dia][horario][idReserva];
+            
+            // Verifica se a dezena premiada está nas dezenas selecionadas OU nas extras
+            const temDezenaSelecionada = reserva.numeros?.includes(dezenaPremiada);
+            const temDezenaExtra = reserva.dezenasExtras?.includes(dezenaPremiada);
+
+            // Se encontrar, salva o ganhador (só o primeiro, se houver empate)
+            if ((temDezenaSelecionada || temDezenaExtra) && !ganhadorEncontrado) {
+              ganhadorEncontrado = {
+                nome: reserva.nome,
+                dezenaTipo: temDezenaSelecionada ? 'selecionada' : 'extra',
+                numeros: reserva.numeros?.join('-'),
+                extras: reserva.dezenasExtras?.join('-')
+              };
+            }
+          })          ;
+        });
+      });
+    }
+
+    // Mostra o ganhador na tela
+    mostrarGanhadorPublico(ganhadorEncontrado, dezenaPremiada);
+  }).catch(err => {
+    console.error('Erro ao procurar ganhador:', err);
+    mostrarGanhadorPublico(null, dezenaPremiada);
+  });
+}
+
+// 🎉 FUNÇÃO QUE EXIBE O GANHADOR EM DESTAQUE NA TELA
+function mostrarGanhadorPublico(ganhador, dezenaPremiada) {
+  // Verifica se já existe um elemento para o ganhador — se sim, remove
+  let ganhadorEl = document.getElementById('ganhadorPublico');
+  if (ganhadorEl) ganhadorEl.remove();
+
+  // Cria o elemento novo
+  ganhadorEl = document.createElement('p');
+  ganhadorEl.id = 'ganhadorPublico';
+  ganhadorEl.style.cssText = `
+    color:#ffd700;
+    font-weight:bold;
+    font-size:22px;
+    margin:20px 0;
+    padding:15px;
+    background:rgba(255, 215, 0, 0.1);
+    border-radius:15px;
+    border:2px solid #ffd700;
+    box-shadow:0 0 15px rgba(255, 215, 0, 0.5);
+  `;
+
+  // Adiciona o texto com o ganhador ou mensagem de nenhum ganhador
+  if (ganhador) {
+    ganhadorEl.innerHTML = `
+      🎊 <strong>GANHADOR(A) ENCONTRADO(A)! 🎊</strong><br><br>
+      Nome: <span style="color:#fff;">${ganhador.nome}</span><br>
+      Dezena premiada: <span style="color:#fff;">${dezenaPremiada}</span> (${ganhador.dezenaTipo})<br>
+      Suas dezenas: <span style="color:#fff;">${ganhador.numeros}</span><br>
+      ${ganhador.extras ? `Dezenas extras: <span style="color:#fff;">${ganhador.extras}</span>` : ''}
+    `;
+  } else {
+    ganhadorEl.innerHTML = `
+      ❌ Nenhum ganhador encontrado para a dezena ${dezenaPremiada} ❌<br><br>
+      Verifique se a dezena foi reservada por alguém.
+    `;
+  }
+
+  // Adiciona o elemento na tela (abaixo da dezena premiada)
+  const dezenaEl = document.getElementById('dezenaAtual');
+  dezenaEl.after(ganhadorEl);
+}
+btnFecharModal.addEventListener('click', fecharModalPacote);
+btnMais10.addEventListener('click', adicionar10Numeros);
+btnMenos10.addEventListener('click', remover10Numeros);
+function atualizarContadorMarcacoes() {
+  contadorMarcacoes++;
+  if (contadorMarcacoes % 5 === 0) {
+    abrirModalPacote();
+  }
+}
+function fecharModalPacote() {
+  modalPacote.classList.remove('show');
+}
+function abrirModalPacote() {
+  valorPacoteSpan.textContent = 
+    `R$ ${(selecionados.length * 1.00).toFixed(2)}`;
+    
+  modalPacote.classList.add("show");
+}
 function atualizarValorModal() {
   const qtdAtual = selecionados.length;
   const valorTotal = calcularValorTotal(qtdAtual);
   valorPacoteSpan.textContent = valorTotal.toFixed(2).replace('.', ',');
 }
+function adicionar10Numeros() {
 
-// Atualiza os totais gerais (da página) com o desconto correto
-function atualizarTotais() {
-  const qtdAtual = selecionados.length;
-  const valorTotal = calcularValorTotal(qtdAtual);
-  
-  // Atualiza os spans da página (ajusta os IDs se forem diferentes na sua base)
-  document.getElementById('totalPagar').textContent = valorTotal.toFixed(2).replace('.', ',');
-  document.getElementById('totalReceber').textContent = (VALOR_UNITARIO * 666.6666666667).toFixed(2).replace('.', ',');
+  let disponiveis = [];
+
+  document.querySelectorAll(".numero").forEach(btn => {
+    if (
+      !btn.classList.contains("bloqueado") &&
+      !btn.classList.contains("extra") &&
+      !btn.classList.contains("marcado")
+    ) {
+      disponiveis.push(btn.textContent);
+    }
+  });
+
+  // garante que existam números livres
+  if (disponiveis.length < 10) {
+    alert("Não há números suficientes disponíveis para adicionar 10.");
+    return;
+  }
+
+  // escolhe 10 aleatórios
+  disponiveis = disponiveis.sort(() => Math.random() - 0.5).slice(0, 10);
+
+  disponiveis.forEach(n => {
+    const btn = [...document.querySelectorAll(".numero")]
+      .find(x => x.textContent === n);
+
+    btn.classList.add("marcado");
+    selecionados.push(n);
+  });
+
+  atualizarTotais();
+  atualizarValorPacote();
 }
+function remover10Numeros() {
 
-// Abre o modal (chamado a cada 3 números marcados)
-function abrirModalPacote() {
-  atualizarValorModal();
-  modalPacote.classList.add('show');
+  if (selecionados.length < 10) {
+    alert("Você não tem 10 números marcados ainda.");
+    return;
+  }
+
+  // remove os últimos 10 selecionados
+  const removidos = selecionados.splice(-10);
+
+  removidos.forEach(n => {
+    const btn = [...document.querySelectorAll(".numero")]
+      .find(x => x.textContent === n);
+
+    if (btn) btn.classList.remove("marcado");
+  });
+
+  atualizarTotais();
+  atualizarValorPacote();
 }
-
-// Fecha o modal (só no X)
-function fecharModalPacote() {
-  modalPacote.classList.remove('show');
+function atualizarValorPacote() {
+  valorPacoteSpan.textContent =
+    `R$ ${(selecionados.length * 1.00).toFixed(2)}`;
 }
-
-// Seleciona 10 números disponíveis aleatórios (com desconto garantido)
 function adicionar10Numeros() {
   let numerosAdicionados = 0;
   const todosNumeros = Array.from({length: 1000}, (_, i) => i.toString().padStart(3, '0'));
@@ -1404,106 +1975,382 @@ function adicionar10Numeros() {
   atualizarTotais();
   atualizarValorModal(); // Atualiza valor no modal (não fecha)
 }
+function calcularValorTotal() {
+  let quantidadeSelecionada = selecionados.length;
+  let valor = quantidadeSelecionada * valorNumero;
 
-// Desmarca os últimos 10 números selecionados
-function remover10Numeros() {
-  const qtdARemover = Math.min(10, selecionados.length);
-  const ultimos10 = selecionados.splice(-qtdARemover);
+  document.getElementById("totalPagar").textContent =
+    valor.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
 
-  ultimos10.forEach(num => {
-    const btn = document.querySelector(`.numero[data-num="${num}"]`);
-    if (btn) btn.classList.remove('marcado');
+  return valor;
+}
+
+const VALOR_COTA = valorNumero; // já existe no seu sistema
+
+let pacotes10 = 0; // contador de pacotes aplicados
+
+btnMais10.onclick = () => {
+
+  // adiciona 10 números
+  for (let i = 0; i < 10; i++) {
+    selecionados.push("auto");
+  }
+
+  pacotes10++; // incrementa quantidade de pacotes
+  atualizarValores();
+};
+
+btnMenos10.onclick = () => {
+
+  if (pacotes10 > 0) {
+    // remove 10 números
+    selecionados.splice(-10);
+    pacotes10--;
+  }
+
+  atualizarValores();
+};
+
+function atualizarValores() {
+
+  let qtd = selecionados.length;
+
+  // valor normal sem desconto
+  let totalNormal = qtd * VALOR_COTA;
+
+  // aplica 10% somente nos pacotes de 10
+  let valorPacotesComDesconto = pacotes10 * (10 * VALOR_COTA * 0.9);
+
+  // restante sem desconto
+  let restantes = qtd - (pacotes10 * 10);
+  let valorRestante = restantes * VALOR_COTA;
+
+  let total = valorPacotesComDesconto + valorRestante;
+
+  // mostra valor no modal do pacote
+  valorPacote.textContent = total.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
   });
 
-  atualizarTotais();
-  atualizarValorModal(); // Atualiza valor no modal (não fecha)
+  // atualiza valor a pagar na tela
+  document.getElementById("totalPagar").textContent =
+    total.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+
+  // também no PIX
+  document.getElementById("valorPix").textContent =
+    total.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
 }
 
-// Atualiza o contador de marcacoes e abre o modal a cada 5
-function atualizarContadorMarcacoes() {
-  contadorMarcacoes++;
-  if (contadorMarcacoes % 5 === 0) {
-    abrirModalPacote();
-  }
-}
 
-// Função de marcação manual com atualização de desconto
-function toggleNumero(btn, num) {
-  if (btn.classList.contains('bloqueado') || btn.classList.contains('extra') || !podeMarcarAgora()) {
+function getNumerosDisponiveis() {
+
+  return [...document.querySelectorAll(".numero")]
+    .filter(btn =>
+      !btn.classList.contains("bloqueado") &&
+      !btn.classList.contains("extra") &&
+      !btn.classList.contains("marcado")
+    )
+    .map(btn => btn.textContent);
+}
+btnMais10.onclick = () => {
+
+  const disponiveis = getNumerosDisponiveis();
+
+  console.log("Disponíveis:", disponiveis);
+
+  // impede ultrapassar o limite real
+  if (disponiveis.length < 10) {
+    alert(
+      `⚠ Restam apenas ${disponiveis.length} números disponíveis.\n` +
+      `O pacote só pode ser aplicado quando houver 10 livres.`
+    );
     return;
   }
 
-  if (btn.classList.contains('marcado')) {
-    btn.classList.remove('marcado');
-    selecionados = selecionados.filter(n => n !== num);
-    contadorMarcacoes--;
-  } else {
-    btn.classList.add('marcado');
-    selecionados.push(num);
-    atualizarContadorMarcacoes();
-  }
+  // adiciona somente os 10 primeiros realmente livres
+  const pacote = disponiveis.slice(0, 10);
+
+  pacote.forEach(num => {
+    const btn = [...document.querySelectorAll(".numero")]
+      .find(b => b.textContent === num);
+
+    if (btn) {
+      btn.classList.add("marcado");
+    }
+  });
+
+  selecionados.push(...pacote);
 
   atualizarTotais();
-  if (modalPacote.classList.contains('show')) {
-    atualizarValorModal();
+};
+// torna visível para chamadas inline
+window.calcularValorTotal = calcularValorTotal;
+/* ========================= PACOTE 10 + ALEGORIA ========================= */
+
+const VALOR_UNITARIO = 1.50;
+const VALOR_PACOTE_10 = 9.00; // 10% OFF
+let extrasGeradosPacote = [];
+
+/* retorna somente números disponíveis */
+function getNumerosDisponiveis() {
+  return Array.from(document.querySelectorAll('.numero'))
+    .filter(btn =>
+      !btn.classList.contains('bloqueado') &&
+      !btn.classList.contains('extra') &&
+      !btn.classList.contains('marcado')
+    )
+    .map(btn => btn.textContent);
+}
+
+/* calcula valor aplicado — pacote + individuais */
+function calcularValorComPacote(qtd) {
+
+  const pacotes = Math.floor(qtd / 10);
+  const individuais = qtd % 10;
+
+  return (pacotes * VALOR_PACOTE_10) + (individuais * VALOR_UNITARIO);
+}
+
+/* atualiza valor no modal */
+function atualizarValorModalPacote() {
+  const qtd = selecionados.length;
+  const total = calcularValorComPacote(qtd);
+
+  valorPacoteSpan.textContent = total.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2
+  });
+}
+
+/* atualiza os totais da tela */
+function atualizarTotaisComPacote() {
+  const qtd = selecionados.length;
+  const total = calcularValorComPacote(qtd);
+
+  totalPagarSpan.textContent = total.toFixed(2).replace(".", ",");
+
+  // valor fixo de 80,00
+  totalReceberSpan.textContent = (1000).toFixed(2).replace(".", ",");
+}
+/* abre modal após 5 marcações */
+function abrirModalPacote() {
+  atualizarValorModalPacote();
+  modalPacote.classList.add("show");
+}
+
+btnFecharModal.onclick = () => {
+  modalPacote.classList.remove("show");
+};
+
+/* ========================= BOTÃO +10 ========================= */
+btnMais10.onclick = () => {
+
+  const disponiveis = getNumerosDisponiveis();
+
+  if (disponiveis.length < 10) {
+    alert(
+      `⚠ Restam apenas ${disponiveis.length} números livres.\n` +
+      `É preciso ter pelo menos 10 disponíveis para aplicar o pacote.`
+    );
+    return;
   }
-}
 
-// Adiciona data-num aos botões de número (ao criar eles)
-for (let i = 0; i < 1000; i++) {
-  let num = i.toString().padStart(3, '0');
-  let btn = document.createElement('button');
-  btn.textContent = num;
-  btn.className = 'numero';
-  btn.setAttribute('data-num', num);
-  btn.addEventListener('click', () => toggleNumero(btn, num));
-  document.getElementById('numeros').appendChild(btn);
-}
+  // embaralha a lista de números livres
+  const sorteados = embaralhar([...disponiveis]).slice(0, 10);
 
-// Eventos do modal
-btnFecharModal.addEventListener('click', fecharModalPacote);
-btnMais10.addEventListener('click', adicionar10Numeros);
-btnMenos10.addEventListener('click', remover10Numeros);
+  sorteados.forEach(n => {
 
-/* ========================= FUNÇÃO CABECALHO DATA JOGO (CORRIGIDA) ========================= */
-function cabecalhoDataJogo() {
-  const dataJogo = proximaDataDeJogo(); // Usa a função do último sábado do mês
-  return `📅 DATA DO JOGO: ${dataJogo.toLocaleDateString('pt-BR')}\n==========================\n\n`;
-}
+    const btn = Array.from(document.querySelectorAll('.numero'))
+      .find(b => b.textContent === n);
 
-/* ========================= TEXTAREA (NUNCA LIMPA AUTOMÁTICO) ========================= */
-function gerarDezenasExtras(qtd, jaSelecionados, jaBloqueados) {
-  const extrasQtd = Math.floor(qtd / 20);
-  if (extrasQtd === 0) return [];
-
-  let extras = [];
-  let tentativas = 0;
-
-  while (extras.length < extrasQtd && tentativas < 999) {
-    const n = Math.floor(Math.random() * 1000)
-      .toString()
-      .padStart(3, '0');
-
-    if (
-      !jaSelecionados.includes(n) &&
-      !jaBloqueados.has(n) &&
-      !extras.includes(n)
-    ) {
-      extras.push(n);
+    if (btn) {
+      btn.classList.add("marcado");
     }
-    tentativas++;
+
+    selecionados.push(n);
+  });
+
+  atualizarValorModalPacote();
+  atualizarTotaisComPacote();
+};
+
+/* ========================= BOTÃO −10 (remove pacote aplicado) ========================= */
+btnMenos10.onclick = () => {
+
+  if (selecionados.length < 10) {
+    alert("⚠ Nenhum pacote completo para remover.");
+    return;
   }
 
-  return extras;
-}
-// NOVO: RASTREAMENTO DE CONVIDADOS - Lê o parâmetro do link
-// CÓDIGO DA RIFA PRINCIPAL - DEVE TER ESSA FUNÇÃO
-function getConvidadoDoLink() {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get('convidado')?.trim() || 'Nenhum';
-}
-const convidadoPor = getConvidadoDoLink(); // VARIÁVEL GLOBAL
+  const remover = selecionados.slice(-10);
 
+  remover.forEach(n => {
+    const btn = Array.from(document.querySelectorAll('.numero'))
+      .find(b => b.textContent === n);
+
+    if (btn) btn.classList.remove("marcado");
+  });
+
+  selecionados = selecionados.slice(0, -10);
+
+  atualizarValorModalPacote();
+  atualizarTotaisComPacote();
+};
+
+/* ========================= INTEGRAÇÃO AO MARCAR / DESMARCAR ========================= */
+function onSelecionarNumeroPacote() {
+  atualizarValorModalPacote();
+  atualizarTotaisComPacote();
+}
+function embaralhar(lista) {
+  for (let i = lista.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [lista[i], lista[j]] = [lista[j], lista[i]];
+  }
+  return lista;
+}
+
+/* ========================= MISSING FUNCTION: CARREGAR RESERVAS DA SEMANA ========================= */
+function getInicioDaSemana() {
+  const hoje = new Date();
+  const diaSemana = hoje.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+  const diasAtras = diaSemana === 0 ? 6 : diaSemana - 1; // Início na Segunda
+  const inicio = new Date(hoje);
+  inicio.setDate(hoje.getDate() - diasAtras);
+  return inicio.toISOString().slice(0, 10);
+}
+
+function getFimDaSemana() {
+  const inicio = new Date(getInicioDaSemana());
+  inicio.setDate(inicio.getDate() + 6); // Fim na Sábado
+  return inicio.toISOString().slice(0, 10);
+}
+
+function carregarReservasDaSemana() {
+  const inicioSemana = getInicioDaSemana();
+  const fimSemana = getFimDaSemana();
+  const diasSemana = [];
+
+  // Gera lista de datas da semana (Seg a Sáb)
+  let dataAtual = new Date(inicioSemana);
+  while (dataAtual <= new Date(fimSemana)) {
+    diasSemana.push(dataAtual.toISOString().slice(0, 10));
+    dataAtual.setDate(dataAtual.getDate() + 1);
+  }
+
+  // Carrega reservas para cada dia da semana
+  Promise.all(
+    diasSemana.map(data => 
+      db.ref(`compras-dia/${data}`).once('value').then(snap => ({
+        data,
+        dados: snap.val() || {}
+      }))
+    )
+  ).then(resultados => {
+    const reservasSemana = {};
+    resultados.forEach(({ data, dados }) => {
+      if (Object.keys(dados).length > 0) {
+        reservasSemana[data] = dados;
+      }
+    });
+    atualizarTextareaReservasSemana(reservasSemana);
+  }).catch(err => {
+    console.error('Erro ao carregar reservas da semana:', err);
+    codigo.innerHTML = `<span class="vermelho">Erro ao carregar reservas: ${err.message}</span>`;
+  });
+}
+/* ========================= FUNÇÕES PARA MOSTRAR O ÚLTIMO SÁBADO DO MÊS ========================= */
+// Calcula o último sábado do mês (se já passou, usa o do próximo mês)
+function getUltimoSabadoDoMes() {
+  const hoje = new Date();
+  let ano = hoje.getFullYear();
+  let mes = hoje.getMonth();
+
+  // Pega o último dia do mês atual
+  let ultimoDiaMes = new Date(ano, mes + 1, 0);
+  // Calcula quantos dias faltam para chegar ao sábado (dia da semana 6)
+  let diffDias = (ultimoDiaMes.getDay() - 6 + 7) % 7;
+  // Define o último sábado
+  let ultimoSabado = new Date(ultimoDiaMes);
+  ultimoSabado.setDate(ultimoDiaMes.getDate() - diffDias);
+
+  // Se o último sábado já passou, usa o do próximo mês
+  if (hoje > ultimoSabado) {
+    ultimoDiaMes = new Date(ano, mes + 2, 0);
+    diffDias = (ultimoDiaMes.getDay() - 6 + 7) % 7;
+    ultimoSabado = new Date(ultimoDiaMes);
+    ultimoSabado.setDate(ultimoDiaMes.getDate() - diffDias);
+  }
+
+  return ultimoSabado;
+}
+
+// Formata a data para o padrão BR (dia/mês/ano) + nome do dia da semana
+function formatarDataBR(data) {
+  return data.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    weekday: "long"
+  });
+}
+
+// Exibe o último sábado do mês em um elemento HTML (ex: <p id="dataJogo"></p>)
+function exibirUltimoSabado() {
+  const ultimoSabado = getUltimoSabadoDoMes();
+  const elementoExibicao = document.getElementById("dataJogo"); // Altere o ID se precisar
+  
+  if (elementoExibicao) {
+    elementoExibicao.innerHTML = `📅 Próximo jogo: <strong>${formatarDataBR(ultimoSabado)}</strong> - 20:00`;
+  }
+
+  // Opcional: Inicia contagem regressiva até o jogo às 20:00 do último sábado
+  iniciarContagemRegressiva(ultimoSabado);
+}
+
+// Contagem regressiva até o encerramento das marcações (20:00 do último sábado)
+function iniciarContagemRegressiva(dataJogo) {
+  const alvo = new Date(dataJogo);
+  alvo.setHours(20, 0, 0, 0);
+  const elementoContagem = document.getElementById("dezenaAtual"); // Altere o ID se precisar
+
+  function atualizarContagem() {
+    const agora = new Date();
+    const diff = alvo - agora;
+
+    if (!elementoContagem) return;
+
+    if (diff <= 0) {
+      elementoContagem.textContent = "⛔ Marcações encerradas — aguardando sorteio";
+      return;
+    }
+
+    const horas = Math.floor(diff / 3600000);
+    const minutos = Math.floor((diff % 3600000) / 60000);
+    elementoContagem.textContent = `⏳ Faltam ${horas}h ${minutos}m para o encerramento`;
+  }
+
+  atualizarContagem();
+  setInterval(atualizarContagem, 60000); // Atualiza a cada 1 minuto
+}
+
+// Chama a função para exibir o último sábado quando a página carrega
+window.onload = function() {
+  exibirUltimoSabado();
+  setInterval(exibirUltimoSabado, 3600000); // Atualiza a cada 1 hora (caso haja mudança de mês)
+};
+
+/* força uso da nova função total */
+atualizarTotais = atualizarTotaisComPacote;
 </script>
 </body>
-</html>
+</html> 
