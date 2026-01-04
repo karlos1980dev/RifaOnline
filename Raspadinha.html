@@ -3,154 +3,152 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sua Sorte — Raspadinha</title>
+
+<title>Raspadinha — Nome + Milhar Aleatória</title>
 
 <style>
   body{
     background:#55ff97;
-    color:#111;
-    font-weight:bold;
     display:flex;
-    flex-direction:column;
     justify-content:center;
     align-items:center;
     height:100vh;
     margin:0;
-    font-family:Arial;
+    font-family:Arial, sans-serif;
   }
 
-  h1{
-    margin-bottom:15px;
-    letter-spacing:2px;
-    text-align:center;
-  }
-
-  #card{
+  .card{
     position:relative;
-    width:260px;
-    height:200px;
-    border-radius:12px;
-    overflow:hidden;
-    box-shadow:0 0 20px rgba(0,0,0,.6);
-    background:#3c2bff;
-  }
-
-  /* container do nome + número */
-  #milhar{
-    position:absolute;
-    bottom:65px;
-    left:50%;
-    transform:translateX(-50%);
+    width:300px;
+    height:190px;
+    background:#fff;
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 8px 25px rgba(0,0,0,.25);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
     text-align:center;
-    color:#ffd700;
-    text-shadow:0 0 12px #000;
-    opacity:0;
-    transition:.4s ease;
+  }
+
+  .revelado{
     z-index:1;
-  }
-
-  #nome{
-    font-size:20px;
-    letter-spacing:1px;
-    margin-bottom:4px;
-  }
-
-  #numero{
-    font-size:44px;
     font-weight:bold;
-    letter-spacing:6px;
+  }
+
+  #nomeJogador{
+    font-size:24px;
+    color:#1aa31c;  /* nome verde */
+  }
+
+  #milharValor{
+    font-size:26px;
+    margin-top:6px;
+    color:#e6c014; /* milhar amarelo */
   }
 
   canvas{
     position:absolute;
-    top:0;
-    left:0;
+    inset:0;
+    width:100%;
+    height:100%;
+    border-radius:20px;
+    z-index:2;
   }
 </style>
 </head>
 
 <body>
 
-<h1>SUA SORTE TÁ AQUI</h1>
-<p>Raspe e descubra</p>
+<div class="card">
 
-<div id="card">
-  <div id="milhar">
-    <div id="nome"></div>
-    <div id="numero"></div>
+  <!-- CONTEÚDO QUE FICA ESCONDIDO -->
+  <div class="revelado">
+    🎉 Parabéns<br>
+    <span id="nomeJogador">SEU MILHAR DA SORTE</span><br>
+    Milhar<br>
+    <span id="milharValor"></span>
   </div>
 
-  <canvas id="scratch" width="260" height="200"></canvas>
+  <!-- CAMADA DE RASPAGEM -->
+  <canvas id="raspa"></canvas>
+
 </div>
 
+
 <script>
-const canvas = document.getElementById("scratch");
+const canvas = document.getElementById("raspa");
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
-const nomeEl = document.getElementById("nome");
-const numeroEl = document.getElementById("numero");
-const milharEl = document.getElementById("milhar");
-
-/* >>> DEFINA O NOME AQUI <<< */
-const nome = "SEU MILHAR DA SORTE";
-
-/* gera milhar */
-const milhar = String(Math.floor(Math.random()*10000)).padStart(4,"0");
-
-/* preenche textos */
-nomeEl.textContent = nome;
-numeroEl.textContent = milhar;
-
-/* camada raspável */
-ctx.fillStyle = "#bfbfbf";
-ctx.fillRect(0,0,canvas.width,canvas.height);
-
-ctx.strokeStyle = "#8a8a8a";
-ctx.lineWidth = 4;
-ctx.strokeRect(0,0,canvas.width,canvas.height);
-
-/* verifica raspagem */
-function raspadoSuficiente(){
-  const img = ctx.getImageData(0,0,canvas.width,canvas.height).data;
-  let transparentes = 0;
-
-  for(let i=3;i<img.length;i+=5){
-    if(img[i] === 0) transparentes++;
-  }
-
-  return transparentes / (img.length/5) >= 0.7;
+/* ---- GERAR MILHAR ALEATÓRIA ---- */
+function gerarMilhar(){
+  const numero = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
+  document.getElementById("milharValor").textContent = numero;
 }
+gerarMilhar();
 
-let raspando=false;
+/* ---- GARANTIR TAMANHO DO CANVAS ---- */
+function ajustarTamanho(){
+  const r = canvas.getBoundingClientRect();
+  canvas.width  = r.width;
+  canvas.height = r.height;
+}
+ajustarTamanho();
+window.addEventListener("resize", ajustarTamanho);
+
+/* ---- CRIAR CAMADA CINZA POR CIMA ---- */
+function criarCamada(){
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = "#b9b9b9";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  ctx.fillStyle = "#dcdcdc";
+  ctx.fillRect(0,0,canvas.width,45);
+
+  ctx.font = "bold 18px Arial";
+  ctx.fillStyle = "#444";
+  ctx.fillText("Raspe para revelar seu milhar", 75, 28);
+}
+criarCamada();
+
+let raspando = false;
 
 function raspar(x,y){
-  ctx.globalCompositeOperation="destination-out";
+  ctx.globalCompositeOperation = "destination-out";
   ctx.beginPath();
-  ctx.arc(x,y,18,0,Math.PI*2);
+  ctx.arc(x, y, 18, 0, Math.PI * 2);
   ctx.fill();
-
-  if(raspadoSuficiente()){
-    canvas.style.pointerEvents="none";
-    milharEl.style.opacity=1;
-  }
 }
 
-/* mouse */
-canvas.addEventListener("mousedown",()=>raspando=true);
-canvas.addEventListener("mouseup",()=>raspando=false);
-canvas.addEventListener("mousemove",e=>{
+/* ---- MOUSE ---- */
+canvas.addEventListener("mousedown", ()=> raspando = true);
+canvas.addEventListener("mouseup", ()=> raspando = false);
+canvas.addEventListener("mouseleave", ()=> raspando = false);
+
+canvas.addEventListener("mousemove", e=>{
   if(!raspando) return;
   const r = canvas.getBoundingClientRect();
-  raspar(e.clientX-r.left,e.clientY-r.top);
+  raspar(e.clientX - r.left, e.clientY - r.top);
 });
 
-/* touch */
-canvas.addEventListener("touchstart",()=>raspando=true);
-canvas.addEventListener("touchend",()=>raspando=false);
-canvas.addEventListener("touchmove",e=>{
+/* ---- TOUCH (CELULAR) ---- */
+canvas.addEventListener("touchstart", e=>{
+  raspando = true;
   const r = canvas.getBoundingClientRect();
-  raspar(e.touches[0].clientX-r.left,e.touches[0].clientY-r.top);
+  const t = e.touches[0];
+  raspar(t.clientX - r.left, t.clientY - r.top);
 });
+
+canvas.addEventListener("touchend", ()=> raspando = false);
+
+canvas.addEventListener("touchmove", e=>{
+  if(!raspando) return;
+  e.preventDefault();
+  const r = canvas.getBoundingClientRect();
+  const t = e.touches[0];
+  raspar(t.clientX - r.left, t.clientY - r.top);
+},{ passive:false });
 </script>
 
 </body>
