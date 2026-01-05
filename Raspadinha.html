@@ -10,11 +10,19 @@
   body{
     background:#55ff97;
     display:flex;
+    flex-direction:column;
     justify-content:center;
     align-items:center;
     height:100vh;
     margin:0;
     font-family:Arial, sans-serif;
+    gap:14px;
+  }
+
+  h1{
+    margin:0;
+    text-align:center;
+    color:#2d6e30;
   }
 
   .card{
@@ -39,13 +47,27 @@
 
   #nomeJogador{
     font-size:24px;
-    color:#1aa31c;  /* nome verde */
+    color:#1aa31c;
   }
 
   #milharValor{
     font-size:26px;
     margin-top:6px;
-    color:#e6c014; /* milhar amarelo */
+    color:#e6c014;
+    opacity:0;
+    transform:scale(.6);
+  }
+
+  /* Animação ao revelar */
+  .animarMilhar{
+    opacity:1 !important;
+    animation: boom .7s ease-out forwards;
+  }
+
+  @keyframes boom{
+    0%{ transform:scale(.6); }
+    60%{ transform:scale(1.35); }
+    100%{ transform:scale(1); }
   }
 
   canvas{
@@ -55,49 +77,68 @@
     height:100%;
     border-radius:20px;
     z-index:2;
+    cursor:pointer;
   }
 </style>
 </head>
 
 <body>
+
 <h1>MILHAR DA SORTE HOJE</h1>
+
 <div class="card">
 
-  <!-- CONTEÚDO QUE FICA ESCONDIDO -->
   <div class="revelado">
     🎉 Parabéns<br>
-    <span id="nomeJogador">SEU MILHAR DA SORTE</span><br>
+    <span id="nomeJogador">JOÃO DA SILVA</span><br>
     Milhar<br>
-    <span id="milharValor"></span>
+    <span id="milharValor">0000</span>
   </div>
 
-  <!-- CAMADA DE RASPAGEM -->
   <canvas id="raspa"></canvas>
 
 </div>
-
 
 <script>
 const canvas = document.getElementById("raspa");
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
+// Elementos do DOM
+const nomeEl = document.getElementById("nomeJogador");
+const milharEl = document.getElementById("milharValor");
+
+/* ---- CONFIGURAÇÃO PERSONALIZÁVEL ---- */
+const nomePersonalizado = "MILHAR DA SORTE";
+
 /* ---- GERAR MILHAR ALEATÓRIA ---- */
 function gerarMilhar(){
   const numero = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
-  document.getElementById("milharValor").textContent = numero;
+  milharEl.textContent = numero;
+  console.log("Milhar gerado:", numero); // Para depuração
 }
-gerarMilhar();
 
-/* ---- GARANTIR TAMANHO DO CANVAS ---- */
+/* ---- DEFINIR NOME DO JOGADOR ---- */
+function definirNomeJogador(){
+  nomeEl.textContent = nomePersonalizado || "SEU MILHAR DA SORTE";
+}
+
+let jaRevelou = false;
+
+/* ---- ANIMAR MILHAR ---- */
+function animarMilhar(){
+  milharEl.classList.add("animarMilhar");
+  console.log("Milhar revelado!"); // Para depuração
+}
+
+/* ---- AJUSTAR TAMANHO DO CANVAS ---- */
 function ajustarTamanho(){
   const r = canvas.getBoundingClientRect();
   canvas.width  = r.width;
   canvas.height = r.height;
+  criarCamada();
 }
-ajustarTamanho();
-window.addEventListener("resize", ajustarTamanho);
 
-/* ---- CRIAR CAMADA CINZA POR CIMA ---- */
+/* ---- CAMADA CINZA ---- */
 function criarCamada(){
   ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = "#b9b9b9";
@@ -108,10 +149,29 @@ function criarCamada(){
 
   ctx.font = "bold 18px Arial";
   ctx.fillStyle = "#444";
-  ctx.fillText("Raspe para revelar", 75, 28);
+  ctx.textAlign = "center";
+  ctx.fillText("Raspe para revelar", canvas.width / 2, 28);
 }
-criarCamada();
 
+/* ---- VERIFICAR % RASPADO ---- */
+function verificarRaspagem(){
+  if(jaRevelou) return;
+
+  const amostra = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  let apagados = 0;
+
+  for(let i = 3; i < amostra.length; i += 400){
+    if(amostra[i] < 100) apagados++;
+  }
+
+  // Aumentei o valor para acionar mais facilmente
+  if(apagados > 100){
+    jaRevelou = true;
+    animarMilhar();
+  }
+}
+
+/* ---- RASPAGEM ---- */
 let raspando = false;
 
 function raspar(x,y){
@@ -119,29 +179,29 @@ function raspar(x,y){
   ctx.beginPath();
   ctx.arc(x, y, 18, 0, Math.PI * 2);
   ctx.fill();
+
+  verificarRaspagem();
 }
 
-/* ---- MOUSE ---- */
+/* ---- EVENTOS ---- */
+// Mouse
 canvas.addEventListener("mousedown", ()=> raspando = true);
 canvas.addEventListener("mouseup", ()=> raspando = false);
 canvas.addEventListener("mouseleave", ()=> raspando = false);
-
 canvas.addEventListener("mousemove", e=>{
   if(!raspando) return;
   const r = canvas.getBoundingClientRect();
   raspar(e.clientX - r.left, e.clientY - r.top);
 });
 
-/* ---- TOUCH (CELULAR) ---- */
+// Touch
 canvas.addEventListener("touchstart", e=>{
   raspando = true;
   const r = canvas.getBoundingClientRect();
   const t = e.touches[0];
   raspar(t.clientX - r.left, t.clientY - r.top);
 });
-
 canvas.addEventListener("touchend", ()=> raspando = false);
-
 canvas.addEventListener("touchmove", e=>{
   if(!raspando) return;
   e.preventDefault();
@@ -149,6 +209,12 @@ canvas.addEventListener("touchmove", e=>{
   const t = e.touches[0];
   raspar(t.clientX - r.left, t.clientY - r.top);
 },{ passive:false });
+
+/* ---- INICIALIZAÇÃO (ORDEM CORRETA!) ---- */
+definirNomeJogador();
+gerarMilhar();
+ajustarTamanho();
+window.addEventListener("resize", ajustarTamanho);
 </script>
 
 </body>
