@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Painel — Cartões Fidelidade</title>
+
+<style>
+  body{ background:#000; color:#fff; font-family:Arial; padding:20px; }
+  input,button,select{ padding:10px; border-radius:8px; margin:5px 0; }
+</style>
+</head>
+
+<body>
+
+<h2>Painel do Administrador</h2>
+
+<label>Nome do Cliente</label>
+<input id="nomeCliente">
+
+<button onclick="criarCartao()">Criar Cartão</button>
+
+<hr>
+
+<label>Escolha o Cartão</label>
+<select id="listaCartoes"></select>
+
+<p>Marcados: <span id="qtd">0</span>/20</p>
+
+<button onclick="adicionar()">+ Marcar</button>
+<button onclick="remover()">- Desmarcar</button>
+
+<!-- 🔹 USAR APENAS COMPAT v9 (Realtime DB) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain: "rifa-782a3.firebaseapp.com",
+  databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId: "rifa-782a3"
+});
+
+const db = firebase.database();
+
+const lista = document.getElementById("listaCartoes");
+const qtdSpan = document.getElementById("qtd");
+
+let slugSelecionado = null;
+let dadosCartao = null;
+
+function slugfy(nome){
+  return nome.trim().toLowerCase().replace(/\s+/g,"_");
+}
+
+// Criar cartão
+function criarCartao(){
+  const nome = document.getElementById("nomeCliente").value.trim();
+  if(!nome) return alert("Digite um nome");
+
+  const slug = slugfy(nome);
+
+  db.ref("cartoes/" + slug).set({
+    nome,
+    marcados: 0
+  });
+
+  alert("Cartão criado!");
+  document.getElementById("nomeCliente").value = "";
+}
+
+// Carregar lista de cartões
+db.ref("cartoes").on("value", snap=>{
+  lista.innerHTML = "";
+
+  snap.forEach(child=>{
+    const dados = child.val();
+    const opt = document.createElement("option");
+    opt.value = child.key;
+    opt.textContent = dados.nome;
+    lista.appendChild(opt);
+  });
+
+  if(snap.numChildren()){
+    selecionar(lista.value);
+  } else {
+    qtdSpan.textContent = 0;
+  }
+});
+
+lista.onchange = ()=> selecionar(lista.value);
+
+// Selecionar cartão
+function selecionar(slug){
+  slugSelecionado = slug;
+
+  db.ref("cartoes/" + slug).once("value").then(snap=>{
+    dadosCartao = snap.val();
+    qtdSpan.textContent = dadosCartao?.marcados ?? 0;
+  });
+}
+
+// + marcar
+function adicionar(){
+  if(!dadosCartao) return;
+  if(dadosCartao.marcados >= 20) return;
+
+  const novo = dadosCartao.marcados + 1;
+
+  db.ref("cartoes/" + slugSelecionado).update({ marcados: novo });
+
+  qtdSpan.textContent = novo;
+  dadosCartao.marcados = novo;
+}
+
+// - desmarcar
+function remover(){
+  if(!dadosCartao) return;
+  if(dadosCartao.marcados <= 0) return;
+
+  const novo = dadosCartao.marcados - 1;
+
+  db.ref("cartoes/" + slugSelecionado).update({ marcados: novo });
+
+  qtdSpan.textContent = novo;
+  dadosCartao.marcados = novo;
+}
+</script>
+</body>
+</html>
