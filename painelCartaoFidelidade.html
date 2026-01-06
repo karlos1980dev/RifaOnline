@@ -23,13 +23,17 @@
 <hr>
 
 <label>Escolha o Cartão</label>
-<select id="listaCartoes"></select>
+<select id="listaCartoes">
+    <option>cartao</option>
+</select>
 
 <p>Marcados: <span id="qtd">0</span>/20</p>
 
 <button onclick="adicionar()">+ Marcar</button>
 <button onclick="remover()">- Desmarcar</button>
-
+<button onclick="excluirCartao()" style="background:#b00000; color:#fff">
+  🗑️ Excluir Cartão
+</button>
 <!-- 🔹 USAR APENAS COMPAT v9 (Realtime DB) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -125,6 +129,23 @@ function remover(){
 
   qtdSpan.textContent = novo;
   dadosCartao.marcados = novo;
+}
+function excluirCartao(){
+  if(!slugSelecionado) return alert("Selecione um cartão primeiro");
+
+  const confirmar = confirm("Tem certeza que deseja excluir este cartão?");
+
+  if(!confirmar) return;
+
+  db.ref("cartoes/" + slugSelecionado).remove().then(()=>{
+
+    alert("Cartão excluído com sucesso!");
+
+    slugSelecionado = null;
+    dadosCartao = null;
+    qtdSpan.textContent = 0;
+
+  });
 }
 </script>
 </body>
