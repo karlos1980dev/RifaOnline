@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cartão Fidelidade</title>
+
+<style>
+  body{
+    background:#111;
+    color:#fff;
+    font-family:Arial;
+    text-align:center;
+  }
+
+  .card{
+    margin-top:20px;
+    display:grid;
+    grid-template-columns:repeat(5,60px);
+    gap:8px;
+    justify-content:center;
+  }
+
+  .sq{
+    width:60px;
+    height:60px;
+    border:2px solid #0aff9d;
+    border-radius:10px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+  }
+
+  .filled{
+    background:#0aff9d;
+    color:#000;
+  }
+
+  /* ----- MODAL ----- */
+  .modal{
+    position:fixed;
+    top:0; left:0; right:0; bottom:0;
+    background:#000c;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+  }
+
+  .modal-box{
+    background:#111;
+    padding:20px;
+    border-radius:12px;
+    width:80%;
+    max-width:380px;
+    border:2px solid #0aff9d;
+  }
+
+  input{
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    margin-top:10px;
+  }
+
+  button{
+    margin-top:10px;
+    padding:10px;
+    width:100%;
+    border-radius:8px;
+    border:none;
+    background:#0aff9d;
+    color:#000;
+    font-weight:bold;
+  }
+  
+  marquee{
+  margin-bottom:5px;
+  font-size:22px;
+  font-weight:bold;
+}
+
+h3{
+  margin-top:0;
+  color:#0aff9d;
+}
+/* animação quando completa os 20 */
+.completed{
+  animation: glow 1.2s infinite alternate;
+}
+
+@keyframes glow{
+  from{
+    box-shadow:0 0 6px #0ff, 0 0 12px #0ff;
+  }
+  to{
+    box-shadow:0 0 18px #ff0, 0 0 36px #ff0;
+  }
+}
+.letraDiferente{
+    background:blue;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<marquee>Cartão Fidelidade</marquee>
+<h3 id="nomeCliente"></h3>
+<p>
+APOSTA VALIDA APARTIR DE R$ 10.00</br> A CADA R$ 20 APOSTA <span class="letraDiferente">VOCE GANHAR  MAIS UMA R$  30 </span></p>
+<div class="card" id="quadrados"></div>
+<div class="card" id="card"></div>
+<!-- MODAL -->
+<div id="modalNome" class="modal" style="display:none;">
+  <div class="modal-box">
+    <h3>Digite seu nome</h3>
+    <input id="inputNome" placeholder="Ex: Leandro">
+    <button onclick="confirmarNome()">Confirmar</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain: "rifa-782a3.firebaseapp.com",
+  databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId: "rifa-782a3"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const nomeCliente = document.getElementById("nomeCliente");
+const quadradosDiv = document.getElementById("quadrados");
+
+let slug = null;
+let nomeUsuario = null;
+
+function slugfy(nome){
+  return nome.trim().toLowerCase().replace(/\s+/g,"_");
+}
+
+function renderCartao(dados){
+  if(!dados) return;
+
+  nomeCliente.textContent = dados.nome;
+
+  quadradosDiv.innerHTML = "";
+  const marcados = dados.marcados || 0;
+
+  for(let i=1;i<=20;i++){
+    const sq = document.createElement("div");
+    sq.className = "sq" + (i <= marcados ? " filled" : "");
+    sq.textContent = i;
+    quadradosDiv.appendChild(sq);
+  }
+
+  // 🔥 ativa animação quando completar
+  if(marcados >= 20){
+  quadradosDiv.classList.add("completed");
+} else {
+  quadradosDiv.classList.remove("completed");
+}
+}
+function carregarCartao(){
+  db.ref("cartoes/" + slug).on("value", snap=>{
+    renderCartao(snap.val());
+  });
+}
+
+function salvarNomeLocal(nome){
+  localStorage.setItem("cartao_nome", nome);
+  localStorage.setItem("cartao_slug", slugfy(nome));
+}
+
+function confirmarNome(){
+  const nome = document.getElementById("inputNome").value.trim();
+  if(!nome) return alert("Digite seu nome");
+
+  nomeUsuario = nome;
+  slug = slugfy(nome);
+
+  salvarNomeLocal(nome);
+
+  // cria no firebase se não existir
+  db.ref("cartoes/" + slug).once("value").then(snap=>{
+    if(!snap.exists()){
+      db.ref("cartoes/" + slug).set({
+        nome: nome,
+        marcados: 0
+      });
+    }
+    document.getElementById("modalNome").style.display = "none";
+    carregarCartao();
+  });
+}
+
+// ---------- AUTO LOGIN POR LOCALSTORAGE ----------
+const nomeSalvo = localStorage.getItem("cartao_nome");
+const slugSalvo = localStorage.getItem("cartao_slug");
+
+if(nomeSalvo && slugSalvo){
+  nomeUsuario = nomeSalvo;
+  slug = slugSalvo;
+  carregarCartao();
+} else {
+  document.getElementById("modalNome").style.display = "flex";
+}
+function verificarCompleto(){
+  const card = document.getElementById("card");
+
+  if(state.marcados.length === 20){
+    card.classList.add("completed");
+  } else {
+    card.classList.remove("completed");
+  }
+}
+
+</script>
+
+</body>
+</html>
