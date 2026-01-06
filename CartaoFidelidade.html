@@ -105,6 +105,31 @@ h3{
     font-weight:bold;
     color :;
 }
+.btn-regras{
+  background:#0aff9d;
+  color:#000;
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.btn-regras:active{
+  transform:scale(.96);
+}
+
+.regras-fidelidade{
+  background:#111;
+  color:#e5e7eb;
+  padding:16px;
+  border-radius:12px;
+  border:2px solid #0aff9d;
+  margin-top:10px;
+  text-align:left;
+}
 </style>
 </head>
 
@@ -114,6 +139,9 @@ h3{
 <h3 id="nomeCliente"></h3>
 <p style="font-weight:bold;">
 APOSTA VALIDA APARTIR DE <span style="color:gold;font-weight:bold;">R$ 10.00</span></br> A CADA <span style="color:gold;font-weight:bold;">20</span> APOSTA ,<span class="letraDiferente">VOCE GANHAR  MAIS UMA R$  30 </span></p>
+<button class="btn-regras" onclick="toggleRegras()">
+  Ver Regras do Cartão Fidelidade
+</button>
 <div class="card" id="quadrados"></div>
 <div class="card" id="card"></div>
 <!-- MODAL -->
@@ -125,6 +153,23 @@ APOSTA VALIDA APARTIR DE <span style="color:gold;font-weight:bold;">R$ 10.00</sp
   </div>
 </div>
 
+
+<div id="boxRegras" class="regras-fidelidade" style="display:none;">
+  <h3>Regras do Cartão Fidelidade</h3>
+
+  <ul>
+    <li>Jogos só contam para o cartão se forem acima de 10.</li>
+    <li>Válido apenas para a primeira aposta do Dia.</li>
+    <li>
+      Prazo para concluir o cartão:
+      <strong><span id="diasConcluir">--</span> dias restantes</strong>
+    </li>
+    <li>
+      Após concluir, bônus válido por:
+      <strong><span id="diasBonus">--</span> dias restantes</strong>
+    </li>
+  </ul>
+</div>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
@@ -215,15 +260,41 @@ if(nomeSalvo && slugSalvo){
 } else {
   document.getElementById("modalNome").style.display = "flex";
 }
-function verificarCompleto(){
-  const card = document.getElementById("card");
 
-  if(state.marcados.length === 20){
-    card.classList.add("completed");
-  } else {
-    card.classList.remove("completed");
-  }
+function toggleRegras(){
+  const box = document.getElementById("boxRegras");
+  box.style.display = box.style.display === "none" ? "block" : "none";
 }
+
+// 🔹 Data da primeira aposta
+const primeiraAposta = new Date("2026-01-06");
+
+// 🔹 Data de conclusão (coloque null enquanto não concluiu)
+const dataConclusao = null;
+
+const spanConcluir = document.getElementById("diasConcluir");
+const spanBonus = document.getElementById("diasBonus");
+
+function diasRestantes(fim){
+  const hoje = new Date();
+  const diff = Math.ceil((fim - hoje) / (1000*60*60*24));
+  return diff < 0 ? 0 : diff;
+}
+
+// ⏳ 30 dias para concluir
+const prazoConclusao = new Date(primeiraAposta);
+prazoConclusao.setDate(prazoConclusao.getDate() + 30);
+spanConcluir.textContent = diasRestantes(prazoConclusao);
+
+// 🎁 2 dias de bônus após concluir
+if(dataConclusao){
+  const prazoBonus = new Date(dataConclusao);
+  prazoBonus.setDate(prazoBonus.getDate() + 2);
+  spanBonus.textContent = diasRestantes(prazoBonus);
+} else {
+  spanBonus.textContent = "aguardando conclusão";
+}
+
 
 </script>
 
