@@ -6,12 +6,109 @@
 <title>Painel — Cartões Fidelidade</title>
 
 <style>
-  body{ background:#000; color:#fff; font-family:Arial; padding:20px; }
-  input,button,select{ padding:10px; border-radius:8px; margin:5px 0; }
+  
+  body{
+    background: radial-gradient(circle at top, #0b0f1a, #000);
+    color:#e5e5e5;
+    font-family: "Segoe UI", Arial, sans-serif;
+    padding:20px;
+  }
+
+  h2{
+    text-align:center;
+    letter-spacing:1px;
+    color:#8b9bff;
+    text-shadow:0 0 12px #5f74ff;
+  }
+
+  .painel{
+    max-width:420px;
+    margin:0 auto;
+    padding:18px;
+    border-radius:18px;
+    background: rgba(20,25,40,.6);
+    border: 1px solid rgba(120,140,255,.25);
+    box-shadow:
+      0 0 20px rgba(90,110,255,.35),
+      inset 0 0 12px rgba(50,70,255,.25);
+    backdrop-filter: blur(6px);
+  }
+
+  label{
+    font-size:14px;
+    opacity:.85;
+    letter-spacing:.5px;
+  }
+
+  input,select{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    border:1px solid rgba(130,150,255,.35);
+    background: rgba(10,15,30,.6);
+    color:#fff;
+    outline:none;
+    transition: .25s;
+  }
+
+  input:focus,select:focus{
+    border-color:#6ea4ff;
+    box-shadow:0 0 12px #6ea4ff;
+  }
+
+  .linha{
+    display:flex;
+    gap:8px;
+    margin-top:6px;
+  }
+
+  button{
+    flex:1;
+    padding:10px;
+    border-radius:12px;
+    border:none;
+    background:linear-gradient(135deg,#2a3dff,#6ea4ff);
+    color:#fff;
+    font-weight:bold;
+    letter-spacing:.5px;
+    cursor:pointer;
+    box-shadow:0 0 12px rgba(90,130,255,.65);
+    transition:.25s;
+  }
+
+  button:hover{
+    transform:translateY(-2px) scale(1.02);
+    box-shadow:0 0 16px rgba(120,160,255,.95);
+  }
+
+  .danger{
+    background:linear-gradient(135deg,#c41228,#ff5866);
+    box-shadow:0 0 14px rgba(255,80,105,.7);
+  }
+
+  .contador{
+    text-align:center;
+    margin-top:10px;
+    font-size:16px;
+  }
+
+  .qtd{
+    color:#6ea4ff;
+    text-shadow:0 0 8px #6ea4ff;
+    font-weight:bold;
+  }
+
+  .dias{
+    color:#42ffb3;
+    text-shadow:0 0 8px #42ffb3;
+  }
+</style>
 </style>
 </head>
 
 <body>
+
+<div class="painel">
 
 <h2>Painel do Administrador</h2>
 
@@ -27,13 +124,20 @@
     <option>cartao</option>
 </select>
 
-<p>Marcados: <span id="qtd">0</span>/20</p>
+<p class="contador">
+  Marcados: <span class="qtd" id="qtd">0</span>/20
+</p>
 
 <button onclick="adicionar()">+ Marcar</button>
 <button onclick="remover()">- Desmarcar</button>
 <button onclick="excluirCartao()" style="background:#b00000; color:#fff">
   🗑️ Excluir Cartão
 </button>
+
+<p class="contador">
+  Dias restantes: <span class="dias" id="diasRestantes">0</span>
+</p>
+</div>
 <!-- 🔹 USAR APENAS COMPAT v9 (Realtime DB) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -50,62 +154,114 @@ const db = firebase.database();
 
 const lista = document.getElementById("listaCartoes");
 const qtdSpan = document.getElementById("qtd");
+const diasSpan = document.getElementById("diasRestantes");
 
 let slugSelecionado = null;
 let dadosCartao = null;
 
+/* ---------------------
+  Função gerar slug
+--------------------- */
 function slugfy(nome){
   return nome.trim().toLowerCase().replace(/\s+/g,"_");
 }
 
-// Criar cartão
+/* ---------------------
+  Dias restantes
+--------------------- */
+function calcularDiasRestantes(validade){
+  if(!validade) return 0; // 👈 evita NaN
+
+  const hoje = Date.now();
+  const diff = validade - hoje;
+
+  if(diff <= 0) return 0;
+
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+/* ---------------------
+  Criar Cartão
+--------------------- */
 function criarCartao(){
   const nome = document.getElementById("nomeCliente").value.trim();
   if(!nome) return alert("Digite um nome");
 
   const slug = slugfy(nome);
 
+  const agora = Date.now();
+  const diasValidade = 30; // ⬅️ pode alterar
+
   db.ref("cartoes/" + slug).set({
     nome,
-    marcados: 0
+    marcados: 0,
+    criadoEm: agora,
+    validade: agora + (diasValidade * 24 * 60 * 60 * 1000)
   });
 
   alert("Cartão criado!");
   document.getElementById("nomeCliente").value = "";
 }
 
-// Carregar lista de cartões
+/* ---------------------
+  Carregar lista
+--------------------- */
 db.ref("cartoes").on("value", snap=>{
   lista.innerHTML = "";
 
   snap.forEach(child=>{
-    const dados = child.val();
-    const opt = document.createElement("option");
-    opt.value = child.key;
-    opt.textContent = dados.nome;
-    lista.appendChild(opt);
-  });
+  const dados = child.val();
+
+  // 🔹 Se o cartão é antigo → cria validade automática
+  if(!dados.validade){
+    const agora = Date.now();
+    const diasValidade = 30;
+
+    dados.validade = agora + (diasValidade * 24 * 60 * 60 * 1000);
+
+    db.ref("cartoes/" + child.key).update({
+      validade: dados.validade
+    });
+  }
+
+  const dias = calcularDiasRestantes(dados.validade);
+
+  const opt = document.createElement("option");
+  opt.value = child.key;
+  opt.textContent = `${dados.nome} — ${dias} dia(s) restante(s)`;
+
+  lista.appendChild(opt);
+});
 
   if(snap.numChildren()){
     selecionar(lista.value);
   } else {
     qtdSpan.textContent = 0;
+    diasSpan.textContent = 0;
   }
 });
 
 lista.onchange = ()=> selecionar(lista.value);
 
-// Selecionar cartão
+/* ---------------------
+  Selecionar cartão
+--------------------- */
 function selecionar(slug){
   slugSelecionado = slug;
 
   db.ref("cartoes/" + slug).once("value").then(snap=>{
     dadosCartao = snap.val();
+
     qtdSpan.textContent = dadosCartao?.marcados ?? 0;
+
+    const dias = calcularDiasRestantes(dadosCartao.validade);
+diasSpan.textContent = dias || 0;
   });
 }
 
-// + marcar
+/* ---------------------
+  + Marcar
+--------------------- */
 function adicionar(){
   if(!dadosCartao) return;
   if(dadosCartao.marcados >= 20) return;
@@ -118,7 +274,9 @@ function adicionar(){
   dadosCartao.marcados = novo;
 }
 
-// - desmarcar
+/* ---------------------
+  - Desmarcar
+--------------------- */
 function remover(){
   if(!dadosCartao) return;
   if(dadosCartao.marcados <= 0) return;
@@ -130,21 +288,22 @@ function remover(){
   qtdSpan.textContent = novo;
   dadosCartao.marcados = novo;
 }
+
+/* ---------------------
+  Excluir cartão
+--------------------- */
 function excluirCartao(){
   if(!slugSelecionado) return alert("Selecione um cartão primeiro");
 
   const confirmar = confirm("Tem certeza que deseja excluir este cartão?");
-
   if(!confirmar) return;
 
   db.ref("cartoes/" + slugSelecionado).remove().then(()=>{
-
     alert("Cartão excluído com sucesso!");
-
     slugSelecionado = null;
     dadosCartao = null;
     qtdSpan.textContent = 0;
-
+    diasSpan.textContent = 0;
   });
 }
 </script>
