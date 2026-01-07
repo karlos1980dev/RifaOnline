@@ -58,7 +58,7 @@ body{
 }
 
 input{
-  width:100%;
+  width:80%;
   padding:10px;
   border-radius:8px;
   border:none;
@@ -145,7 +145,7 @@ h3{
 <p style="font-weight:bold;">
 APOSTA VÁLIDA A PARTIR DE
 <span style="color:gold;">R$ 10,00</span><br>
-A CADA <span style="color:gold;">20</span> APOSTAS,
+A COMPLETADO <span style="color:gold;">20</span> APOSTAS,
 <span class="letraDiferente">VOCÊ GANHA UMA PULE DE R$ 30+Bonus</span>
 </p>
 
@@ -159,7 +159,7 @@ A CADA <span style="color:gold;">20</span> APOSTAS,
 <div id="modalNome" class="modal" style="display:none;">
   <div class="modal-box">
     <h3>Digite seu nome</h3>
-    <input id="inputNome" placeholder="Ex: Leandro">
+    <input id="inputNome" placeholder="Exemplo : Leandro Dias">
     <button onclick="confirmarNome()">Confirmar</button>
   </div>
 </div>
@@ -313,6 +313,7 @@ if(dataConclusao){
 } else {
   spanBonus.textContent = "aguardando conclusão";
 }
+
 </script>
 
 </body>
