@@ -4,80 +4,79 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/cartaof.jpg" type="image/jpg">
-<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/cartaof.jpg" type="image/jpg">
 <title>Cartão Fidelidade</title>
 
 <style>
-  body{
-    background:#111;
-    color:#fff;
-    font-family:Arial;
-    text-align:center;
-  }
+body{
+  background:#111;
+  color:#fff;
+  font-family:Arial;
+  text-align:center;
+}
 
-  .card{
-    margin-top:20px;
-    display:grid;
-    grid-template-columns:repeat(5,60px);
-    gap:8px;
-    justify-content:center;
-  }
+.card{
+  margin-top:20px;
+  display:grid;
+  grid-template-columns:repeat(5,60px);
+  gap:8px;
+  justify-content:center;
+}
 
-  .sq{
-    width:60px;
-    height:60px;
-    border:2px solid #0aff9d;
-    border-radius:10px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-weight:bold;
-  }
+.sq{
+  width:60px;
+  height:60px;
+  border:2px solid #0aff9d;
+  border-radius:10px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-weight:bold;
+}
 
-  .filled{
-    background:#0aff9d;
-    color:#000;
-  }
+.filled{
+  background:#0aff9d;
+  color:#000;
+}
 
-  /* ----- MODAL ----- */
-  .modal{
-    position:fixed;
-    top:0; left:0; right:0; bottom:0;
-    background:#000c;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-  }
+/* modal */
+.modal{
+  position:fixed;
+  inset:0;
+  background:#000c;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
 
-  .modal-box{
-    background:#111;
-    padding:20px;
-    border-radius:12px;
-    width:80%;
-    max-width:380px;
-    border:2px solid #0aff9d;
-  }
+.modal-box{
+  background:#111;
+  padding:20px;
+  border-radius:12px;
+  width:80%;
+  max-width:380px;
+  border:2px solid #0aff9d;
+}
 
-  input{
-    width:100%;
-    padding:10px;
-    border-radius:8px;
-    border:none;
-    margin-top:10px;
-  }
+input{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  margin-top:10px;
+}
 
-  button{
-    margin-top:10px;
-    padding:10px;
-    width:100%;
-    border-radius:8px;
-    border:none;
-    background:#0aff9d;
-    color:#000;
-    font-weight:bold;
-  }
-  
-  marquee{
+button{
+  margin-top:10px;
+  padding:10px;
+  width:100%;
+  border-radius:8px;
+  border:none;
+  background:#0aff9d;
+  color:#000;
+  font-weight:bold;
+}
+
+marquee{
   margin-bottom:5px;
   font-size:22px;
   font-weight:bold;
@@ -87,6 +86,7 @@ h3{
   margin-top:0;
   color:#0aff9d;
 }
+
 /* animação quando completa os 20 */
 .completed{
   animation: glow 1.2s infinite alternate;
@@ -94,17 +94,21 @@ h3{
 
 @keyframes glow{
   from{
-    box-shadow:0 0 6px #0ff, 0 0 12px #0ff;
+    box-shadow:0 0 8px #0aff9d;
   }
   to{
-    box-shadow:0 0 18px #ff0, 0 0 36px #ff0;
+    box-shadow:0 0 22px #ff0;
   }
 }
+
+/* destaque bônus */
 .letraDiferente{
-    background:blue;
-    font-weight:bold;
-    color :;
+  background:#0aff9d;
+  color:#000;
+  padding:2px 6px;
+  border-radius:6px;
 }
+
 .btn-regras{
   background:#0aff9d;
   color:#000;
@@ -137,13 +141,20 @@ h3{
 
 <marquee>Cartão Fidelidade</marquee>
 <h3 id="nomeCliente"></h3>
+
 <p style="font-weight:bold;">
-APOSTA VALIDA APARTIR DE <span style="color:gold;font-weight:bold;">R$ 10.00</span></br> A CADA <span style="color:gold;font-weight:bold;">20</span> APOSTA ,<span class="letraDiferente">VOCE GANHAR  MAIS UMA R$  30 </span></p>
+APOSTA VÁLIDA A PARTIR DE
+<span style="color:gold;">R$ 10,00</span><br>
+A CADA <span style="color:gold;">20</span> APOSTAS,
+<span class="letraDiferente">VOCÊ GANHA UMA PULE DE R$ 30+Bonus</span>
+</p>
+
 <button class="btn-regras" onclick="toggleRegras()">
   Ver Regras do Cartão Fidelidade
 </button>
+
 <div class="card" id="quadrados"></div>
-<div class="card" id="card"></div>
+
 <!-- MODAL -->
 <div id="modalNome" class="modal" style="display:none;">
   <div class="modal-box">
@@ -153,23 +164,20 @@ APOSTA VALIDA APARTIR DE <span style="color:gold;font-weight:bold;">R$ 10.00</sp
   </div>
 </div>
 
-
 <div id="boxRegras" class="regras-fidelidade" style="display:none;">
   <h3>Regras do Cartão Fidelidade</h3>
-
   <ul>
-    <li>Jogos só contam para o cartão se forem acima de 10.</li>
-    <li>Válido apenas para a primeira aposta do Dia.</li>
-    <li>
-      Prazo para concluir o cartão:
+    <li>Jogos só contam para o cartão se forem acima de R$ 10.</li>
+    <li>Válido apenas para a primeira aposta do dia.</li>
+    <li>Prazo para concluir o cartão:
       <strong><span id="diasConcluir">--</span> dias restantes</strong>
     </li>
-    <li>
-      Após concluir, bônus válido por:
-      <strong><span id="diasBonus">--</span> dias restantes</strong>
+    <li>Após concluir, bônus válido por:
+      <strong><span id="diasBonus">--</span> dias</strong>
     </li>
   </ul>
 </div>
+
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
@@ -209,13 +217,13 @@ function renderCartao(dados){
     quadradosDiv.appendChild(sq);
   }
 
-  // 🔥 ativa animação quando completar
   if(marcados >= 20){
-  quadradosDiv.classList.add("completed");
-} else {
-  quadradosDiv.classList.remove("completed");
+    quadradosDiv.classList.add("completed");
+  } else {
+    quadradosDiv.classList.remove("completed");
+  }
 }
-}
+
 function carregarCartao(){
   db.ref("cartoes/" + slug).on("value", snap=>{
     renderCartao(snap.val());
@@ -236,7 +244,6 @@ function confirmarNome(){
 
   salvarNomeLocal(nome);
 
-  // cria no firebase se não existir
   db.ref("cartoes/" + slug).once("value").then(snap=>{
     if(!snap.exists()){
       db.ref("cartoes/" + slug).set({
@@ -249,27 +256,41 @@ function confirmarNome(){
   });
 }
 
-// ---------- AUTO LOGIN POR LOCALSTORAGE ----------
-const nomeSalvo = localStorage.getItem("cartao_nome");
-const slugSalvo = localStorage.getItem("cartao_slug");
+window.addEventListener("load", () => {
 
-if(nomeSalvo && slugSalvo){
-  nomeUsuario = nomeSalvo;
-  slug = slugSalvo;
-  carregarCartao();
-} else {
-  document.getElementById("modalNome").style.display = "flex";
-}
+  const nomeSalvo = localStorage.getItem("cartao_nome");
+  const slugSalvo = localStorage.getItem("cartao_slug");
+
+  if(nomeSalvo && slugSalvo){
+
+    nomeUsuario = nomeSalvo;
+    slug = slugSalvo;
+
+    // garante que o cartão existe no Firebase
+    db.ref("cartoes/" + slug).once("value").then(snap => {
+
+      if(snap.exists()){
+        carregarCartao();     // 👍 agora renderiza ao abrir
+      } else {
+        // caso o cartão tenha sido apagado no banco
+        document.getElementById("modalNome").style.display = "flex";
+      }
+
+    });
+
+  } else {
+    document.getElementById("modalNome").style.display = "flex";
+  }
+
+});
 
 function toggleRegras(){
   const box = document.getElementById("boxRegras");
   box.style.display = box.style.display === "none" ? "block" : "none";
 }
 
-// 🔹 Data da primeira aposta
+// Datas do cartão
 const primeiraAposta = new Date("2026-01-06");
-
-// 🔹 Data de conclusão (coloque null enquanto não concluiu)
 const dataConclusao = null;
 
 const spanConcluir = document.getElementById("diasConcluir");
@@ -281,12 +302,10 @@ function diasRestantes(fim){
   return diff < 0 ? 0 : diff;
 }
 
-// ⏳ 30 dias para concluir
 const prazoConclusao = new Date(primeiraAposta);
 prazoConclusao.setDate(prazoConclusao.getDate() + 30);
 spanConcluir.textContent = diasRestantes(prazoConclusao);
 
-// 🎁 2 dias de bônus após concluir
 if(dataConclusao){
   const prazoBonus = new Date(dataConclusao);
   prazoBonus.setDate(prazoBonus.getDate() + 2);
@@ -294,8 +313,6 @@ if(dataConclusao){
 } else {
   spanBonus.textContent = "aguardando conclusão";
 }
-
-
 </script>
 
 </body>
