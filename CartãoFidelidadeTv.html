@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/cartaof.jpg" type="image/jpg">
+<title>Cartão Fidelidade Iptv</title>
+
+<style>
+body{
+  background:#111;
+  color:#fff;
+  font-family:Arial;
+  text-align:center;
+}
+
+.card{
+  margin-top:20px;
+  display:grid;
+  grid-template-columns:repeat(5,60px);
+  gap:8px;
+  justify-content:center;
+}
+
+.sq{
+  width:60px;
+  height:60px;
+  border:2px solid #0aff9d;
+  border-radius:10px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-weight:bold;
+}
+
+.filled{
+  background:#0aff9d;
+  color:#000;
+}
+
+/* modal */
+.modal{
+  position:fixed;
+  inset:0;
+  background:#000c;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-box{
+  background:#111;
+  padding:20px;
+  border-radius:12px;
+  width:80%;
+  max-width:380px;
+  border:2px solid #0aff9d;
+}
+
+input{
+  width:80%;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  margin-top:10px;
+}
+
+button{
+  margin-top:10px;
+  padding:10px;
+  width:100%;
+  border-radius:8px;
+  border:none;
+  background:#0aff9d;
+  color:#000;
+  font-weight:bold;
+}
+
+marquee{
+  margin-bottom:5px;
+  font-size:22px;
+  font-weight:bold;
+}
+
+h3{
+  margin-top:0;
+  color:#0aff9d;
+}
+
+/* animação quando completa os 20 */
+.completed{
+  animation: glow 1.2s infinite alternate;
+}
+
+@keyframes glow{
+  from{
+    box-shadow:0 0 8px #0aff9d;
+  }
+  to{
+    box-shadow:0 0 22px #ff0;
+  }
+}
+
+/* destaque bônus */
+.letraDiferente{
+  background:#0aff9d;
+  color:#000;
+  padding:2px 6px;
+  border-radius:6px;
+}
+
+.btn-regras{
+  background:#0aff9d;
+  color:#000;
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.btn-regras:active{
+  transform:scale(.96);
+}
+
+.regras-fidelidade{
+  background:#111;
+  color:#e5e7eb;
+  padding:16px;
+  border-radius:12px;
+  border:2px solid #0aff9d;
+  margin-top:10px;
+  text-align:left;
+}
+.bonus{
+  background:linear-gradient(135deg, gold, orange);
+  color:#000;
+  border:2px dashed #fff;
+  font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<marquee>Cartão Fidelidade Iptv</marquee>
+<h3 id="nomeCliente"></h3>
+
+<p style="font-weight:bold;">
+   <span style="color:gold;"> FACA <span class="letraDiferente">4</span> PAGAMENTOS 
+<span class="letraDiferente">05 GRATIS</span>
+</p>
+
+<button class="btn-regras" onclick="toggleRegras()">
+  Ver Regras do Cartão Fidelidade
+</button>
+
+<div class="card" id="quadrados"></div>
+
+<!-- MODAL -->
+<div id="modalNome" class="modal" style="display:none;">
+  <div class="modal-box">
+    <h3>Digite seu nome</h3>
+    <input id="inputNome" placeholder="Exemplo : Leandro Dias">
+    <button onclick="confirmarNome()">Confirmar</button>
+  </div>
+</div>
+
+<div id="boxRegras" class="regras-fidelidade" style="display:none;">
+  <h3>Regras do Cartão Fidelidade</h3>
+  <ul>
+    <li>Jogos só contam para o cartão se forem acima de 25.00.</li>
+    <li>Sua indicacao Validada Marcar um Quadrado.</li>
+ <li>pagamento pix sera via link para marcacao automatica do quadrado.</li>
+    <li>Prazo para concluir o cartão:
+      <strong><span id="diasConcluir">--</span> dias restantes</strong>
+    </li>
+    <li>Após concluir, bônus válido por:
+      <strong><span id="diasBonus">--</span> dias</strong>
+    </li>
+  </ul>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain: "rifa-782a3.firebaseapp.com",
+  databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId: "rifa-782a3"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const nomeCliente = document.getElementById("nomeCliente");
+const quadradosDiv = document.getElementById("quadrados");
+
+let slug = null;
+let nomeUsuario = null;
+
+function slugfy(nome){
+  return nome.trim().toLowerCase().replace(/\s+/g,"_");
+}
+
+function renderCartao(dados){
+  if(!dados) return;
+
+  nomeCliente.textContent = dados.nome;
+  quadradosDiv.innerHTML = "";
+
+  const marcados = dados.marcados || 0;
+
+  for(let i=1;i<=5;i++){
+    const sq = document.createElement("div");
+
+    // quadrados 1 a 4 = pagamento
+    if(i <= 4){
+      sq.className = "sq" + (i <= marcados ? " filled" : "");
+      sq.textContent = i;
+    }
+
+    // quadrado 5 = bônus
+    if(i === 5){
+      sq.className = "sq bonus";
+
+      if(marcados >= 4){
+        sq.textContent = "🎁";
+        sq.classList.add("filled");
+      } else {
+        sq.textContent = "BÔNUS";
+      }
+    }
+
+    quadradosDiv.appendChild(sq);
+  }
+
+  // animação quando completa os 4 pagamentos
+  if(marcados >= 4){
+    quadradosDiv.classList.add("completed");
+
+    // salva data de conclusão
+    if(!dados.concluidoEm){
+      db.ref("cartoes/" + slug + "/concluidoEm").set(Date.now());
+    }
+  } else {
+    quadradosDiv.classList.remove("completed");
+  }
+
+  calcularDatas(dados);
+}
+function carregarCartao(){
+  db.ref("cartoes/" + slug).on("value", snap=>{
+    renderCartao(snap.val());
+  });
+}
+
+function salvarNomeLocal(nome){
+  localStorage.setItem("cartao_nome", nome);
+  localStorage.setItem("cartao_slug", slugfy(nome));
+}
+
+function confirmarNome(){
+  const nome = document.getElementById("inputNome").value.trim();
+  if(!nome) return alert("Digite seu nome");
+
+  nomeUsuario = nome;
+  slug = slugfy(nome);
+
+  salvarNomeLocal(nome);
+
+  db.ref("cartoes/" + slug).once("value").then(snap=>{
+    if(!snap.exists()){
+      db.ref("cartoes/" + slug).set({
+  nome: nome,
+  marcados: 0,
+  criadoEm: Date.now(),
+  concluidoEm: null
+});
+    }
+    document.getElementById("modalNome").style.display = "none";
+    carregarCartao();
+  });
+}
+
+window.addEventListener("load", () => {
+
+  const nomeSalvo = localStorage.getItem("cartao_nome");
+  const slugSalvo = localStorage.getItem("cartao_slug");
+
+  if(nomeSalvo && slugSalvo){
+
+    nomeUsuario = nomeSalvo;
+    slug = slugSalvo;
+
+    // garante que o cartão existe no Firebase
+    db.ref("cartoes/" + slug).once("value").then(snap => {
+
+      if(snap.exists()){
+        carregarCartao();     // 👍 agora renderiza ao abrir
+      } else {
+      
+        // caso o cartão tenha sido apagado no banco
+        document.getElementById("modalNome").style.display = "flex";
+      }
+
+    });
+
+  } else {
+    document.getElementById("modalNome").style.display = "flex";
+  }
+
+});
+
+function toggleRegras(){
+  const box = document.getElementById("boxRegras");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
+
+// Datas do cartão
+const primeiraAposta = new Date("2026-01-06");
+const dataConclusao = null;
+
+const spanConcluir = document.getElementById("diasConcluir");
+const spanBonus = document.getElementById("diasBonus");
+
+function diasRestantes(fim){
+  const hoje = new Date();
+  const diff = Math.ceil((fim - hoje) / (1000*60*60*24));
+  return diff < 0 ? 0 : diff;
+}
+
+const prazoConclusao = new Date(primeiraAposta);
+prazoConclusao.setDate(prazoConclusao.getDate() + 120);
+spanConcluir.textContent = diasRestantes(prazoConclusao);
+
+if(dataConclusao){
+  const prazoBonus = new Date(dataConclusao);
+  prazoBonus.setDate(prazoBonus.getDate() + 2);
+  spanBonus.textContent = diasRestantes(prazoBonus);
+} else {
+  spanBonus.textContent = "aguardando conclusão";
+}
+function calcularDatas(dados){
+  const spanConcluir = document.getElementById("diasConcluir");
+  const spanBonus = document.getElementById("diasBonus");
+
+  if(!dados.criadoEm){
+    spanConcluir.textContent = "--";
+    spanBonus.textContent = "--";
+    return;
+  }
+
+  const criado = new Date(dados.criadoEm);
+  const prazoConclusao = new Date(criado);
+  prazoConclusao.setDate(prazoConclusao.getDate() + 120);
+
+  spanConcluir.textContent = diasRestantes(prazoConclusao);
+
+  if(dados.concluidoEm){
+    const concluido = new Date(dados.concluidoEm);
+    const prazoBonus = new Date(concluido);
+    prazoBonus.setDate(prazoBonus.getDate() + 2);
+    spanBonus.textContent = diasRestantes(prazoBonus);
+  } else {
+    spanBonus.textContent = "aguardando conclusão";
+  }
+}
+</script>
+
+</body>
+</html>
