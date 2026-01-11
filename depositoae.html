@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Deposite e ganhe </title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/porcento.jpg" type="image/jpg">
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/porcento.jpg" type="image/jpg">
+<style>
+body{margin:0;font-family:Arial;background:#0b0f1a;color:#fff;}
+.menu-btn{
+  position:fixed;top:15px;left:15px;
+  font-size:26px;cursor:pointer;color:#00ffcc;z-index:2000;
+}
+.menu{
+  position:fixed;left:-280px;top:0;width:260px;height:100%;
+  background:#141a2b;padding:15px;transition:.3s;z-index:1500;
+}
+.menu.active{left:0;}
+.menu h3{text-align:center;color:#00ffcc;}
+.menu textarea{
+  width:100%;height:90%;background:#0a0f1e;
+  color:#00ff99;border:none;border-radius:10px;padding:10px;
+}
+
+.box{
+  width:85%;max-width:320px;margin:80px auto;
+  background:#141a2b;padding:20px;border-radius:14px;
+}
+h2{text-align:center;color:#00ffcc;}
+input,button,textarea{
+  width:95%;padding:12px;margin:10px 0;
+  border:none;border-radius:10px;
+}
+input{background:#0a0f1e;color:#fff;}
+button{
+  background:linear-gradient(135deg,#00ffcc,#7c4dff);
+  font-weight:bold;cursor:pointer;
+}
+
+.modal{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.85);
+  justify-content:center;align-items:center;z-index:3000;
+}
+.modal-content{
+  background:#141a2b;
+  padding:20px;
+  border-radius:14px;
+  width:90%;
+  max-width:320px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  
+}
+.modal textarea{
+  width:85%;
+  height:45px;
+  text-align:center;
+  font-size:16px;
+  letter-spacing:1px;
+  background:#02040a;
+  color:#00ff99;
+  border:1px solid #00ffcc;
+  border-radius:10px;
+  padding:10px;
+}
+.msg{margin-top:10px;color:#00ff99;display:none;}
+.close{
+  position:absolute;
+  top:10px;
+  right:15px;
+  font-size:20px;
+  color:#fff;
+  cursor:pointer;
+}
+.close:hover{
+  color:#ff4d4d;
+}
+.modal-content{
+  position:relative;
+}
+.link-site{
+  display:block;
+  margin-top:15px;
+  text-align:center;
+  color:#00ffcc;
+  text-decoration:none;
+  font-weight:bold;
+}
+.link-site:hover{
+  text-decoration:underline;
+}
+.valor-modal{
+  width:100%;
+  margin-bottom:12px;
+  padding:12px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#00ffcc22,#7c4dff22);
+  color:#00ffcc;
+  font-weight:bold;
+  text-align:center;
+  font-size:15px;
+  line-height:1.4;
+}
+.cronometro{
+  margin-bottom:15px;
+  padding:12px;
+  border-radius:12px;
+  text-align:center;
+  font-weight:bold;
+  background:#0a0f1e;
+  color:#00ffcc;
+  font-size:14px;
+}
+.cronometro.paused{
+  color:#ff4d4d;
+}
+</style>
+</head>
+
+<body>
+
+<div class="menu-btn" onclick="toggleMenu()">☰</div>
+
+<div class="menu" id="menu">
+  <h3>📄 Registros</h3>
+  <textarea id="historico" readonly></textarea>
+</div>
+
+<div class="box">
+    <div id="cronometro" class="cronometro"></div>
+ <h2>📥 ANTECIPE E GANHE 20%<br>
+<small style="font-size:12px;color:#00ff99">
+Seg • Qua • Sex | Mínimo R$ 20,00
+</small>
+</h2>
+  <input id="nome" placeholder="Nome">
+  <input id="valor" type="number" placeholder="Valor">
+  <button onclick="abrirPix()">Salvar</button>
+
+<a href="https://mjonline.netlify.app/" target="_blank" class="link-site">
+  🔗 Acessar site oficial
+</a>
+</div>
+
+<div class="modal" id="modalPix">
+  <div class="modal-content">
+  <span class="close" onclick="fecharModal()">✕</span>
+
+  <div class="valor-modal" id="valorModal"></div>
+
+  <h3>PIX Copia e Cola</h3>
+  <textarea id="pix" readonly>71992290058</textarea>
+  <button onclick="copiarPix()">Copiar PIX</button>
+  <div class="msg" id="msgSucesso">
+    PIX copiado com sucesso! Cadastro registrado.
+  </div>
+</div>
+
+</div>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+// ================= FIREBASE =================
+if (!firebase.apps.length) {
+  firebase.initializeApp({
+    apiKey: "AIzaSyDlWGPUuGyugzvvQt_Wd5GI3IBFH90hUgQ",
+    authDomain: "multijogo.firebaseapp.com",
+    databaseURL: "https://multijogo-default-rtdb.firebaseio.com",
+    projectId: "multijogo"
+  });
+}
+
+const db = firebase.database();
+let temp = null;
+
+// ================= ELEMENTOS =================
+const nomeInput  = document.getElementById("nome");
+const valorInput = document.getElementById("valor");
+const modalPix   = document.getElementById("modalPix");
+const pix        = document.getElementById("pix");
+const msgSucesso = document.getElementById("msgSucesso");
+const historico  = document.getElementById("historico");
+const cronometro = document.getElementById("cronometro");
+
+// ================= MENU =================
+function toggleMenu(){
+  document.getElementById("menu").classList.toggle("active");
+}
+
+// ================= BONUS =================
+function temBonus(){
+  const dia = new Date().getDay();
+  // 1 = Seg | 3 = Qua | 5 = Sex
+  return dia === 1 || dia === 3 || dia === 5;
+}
+
+// ================= CRONÔMETRO (INFORMATIVO) =================
+function atualizarCronometro(){
+  const dias = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+  const hoje = new Date();
+  const nomeDia = dias[hoje.getDay()];
+
+  if(temBonus()){
+    cronometro.className = "cronometro";
+    cronometro.innerHTML =
+      `📅 Hoje é <b>${nomeDia}</b><br>
+       🎉 <b>BÔNUS DE 20% ATIVO</b><br>
+       <small>Válido somente SEG • QUA • SEX</small>`;
+  }else{
+    cronometro.className = "cronometro off";
+    cronometro.innerHTML =
+      `📅 Hoje é <b>${nomeDia}</b><br>
+       ⚠️ <b>HOJE NÃO HÁ BÔNUS</b><br>
+       <small>Bônus somente SEG • QUA • SEX</small>`;
+  }
+}
+
+setInterval(atualizarCronometro, 1000);
+atualizarCronometro();
+
+// ================= LOCAL STORAGE =================
+const nomeSalvo = localStorage.getItem("nomeCliente");
+if(nomeSalvo){
+  nomeInput.value = nomeSalvo;
+}
+
+// ================= ABRIR PIX =================
+function abrirPix(){
+
+  const nome  = nomeInput.value.trim();
+  const valor = parseFloat(valorInput.value);
+
+  if(!nome || isNaN(valor)){
+    alert("Preencha corretamente");
+    return;
+  }
+
+  if(valor < 20){
+    alert("⚠️ Valor mínimo para participar é R$ 20,00");
+    return;
+  }
+
+  localStorage.setItem("nomeCliente", nome);
+
+  const bonusAtivo = temBonus();
+  const valorFinal = bonusAtivo ? valor * 1.2 : valor;
+
+  temp = {
+    nome: nome,
+    valorOriginal: valor,
+    valorFinal: valorFinal,
+    bonus: bonusAtivo ? "20%" : "Sem bônus",
+    status: "Pendente",
+    data: Date.now()
+  };
+
+  document.getElementById("valorModal").innerText =
+`💵 Você paga R$ ${valor.toFixed(2)}
+💰 Seu saldo será R$ ${valorFinal.toFixed(2)}
+${bonusAtivo ? "🎉 Bônus 20% aplicado" : "⚠️ Hoje sem bônus"}`;
+
+  msgSucesso.style.display = "none";
+  modalPix.style.display = "flex";
+}
+
+// ================= COPIAR PIX =================
+function copiarPix(){
+  pix.select();
+  document.execCommand("copy");
+
+  if(temp){
+    db.ref("registros").push(temp);
+    temp = null;
+  }
+
+  msgSucesso.style.display = "block";
+  nomeInput.value  = "";
+  valorInput.value = "";
+}
+
+// ================= FECHAR MODAL =================
+function fecharModal(){
+  modalPix.style.display = "none";
+}
+
+// ================= HISTÓRICO (SÓ DO NOME) =================
+db.ref("registros").on("value", snap => {
+
+  const nomeLocal = localStorage.getItem("nomeCliente");
+  if(!nomeLocal){
+    historico.value = "Nenhum nome identificado.";
+    return;
+  }
+
+  let registros = [];
+
+  snap.forEach(c => {
+    const d = c.val();
+    if(d.nome.toLowerCase() === nomeLocal.toLowerCase()){
+      registros.push(d);
+    }
+  });
+
+  if(registros.length === 0){
+    historico.value = "Nenhum registro encontrado para este nome.";
+    return;
+  }
+
+  let texto = `👤 ${nomeLocal.toUpperCase()}\n\n`;
+
+  registros.forEach(d => {
+    texto +=
+`Valor: R$ ${Number(d.valorOriginal).toFixed(2)}
+Valor Final: R$ ${Number(d.valorFinal).toFixed(2)}
+Bônus: ${d.bonus}
+Status: ${d.status}
+Data e hora: ${new Date(d.data).toLocaleString("pt-BR")}
+-----------------
+`;
+  });
+
+  historico.value = texto || "Nenhum registro encontrado para este nome.";
+});
+</script>
+</body>
+</html>
