@@ -2,10 +2,10 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Deposite e ganhe AE </title>
+<title>Deposite AE ganhe</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/depositoae.jpg" type="image/jpg">
-<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/depositoae.jpg" type="image/jpg">
+<link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/depositodez.jpg" type="image/jpg">
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/depositodez.jpg" type="image/jpg">
 <style>
 body{margin:0;font-family:Arial;background:#0b0f1a;color:#fff;}
 .menu-btn{
@@ -132,7 +132,7 @@ button{
 
 <div class="box">
     <div id="cronometro" class="cronometro"></div>
- <h2>📥 ANTECIPE E GANHE 20%<br>
+ <h2>📥 ANTECIPE E GANHE 10%<br>
 <small style="font-size:12px;color:#00ff99">
 Seg • Qua • Sex | Mínimo R$ 20,00
 </small>
@@ -209,7 +209,7 @@ function atualizarCronometro(){
     cronometro.className = "cronometro";
     cronometro.innerHTML =
       `📅 Hoje é <b>${nomeDia}</b><br>
-       🎉 <b>BÔNUS DE 20% ATIVO</b><br>
+       🎉 <b>BÔNUS DE 10% ATIVO</b><br>
        <small>Válido somente SEG • QUA • SEX</small>`;
   }else{
     cronometro.className = "cronometro off";
@@ -248,13 +248,13 @@ function abrirPix(){
   localStorage.setItem("nomeCliente", nome);
 
   const bonusAtivo = temBonus();
-  const valorFinal = bonusAtivo ? valor * 1.2 : valor;
+  const valorFinal = bonusAtivo ? valor * 1.1 : valor;
 
   temp = {
     nome: nome,
     valorOriginal: valor,
     valorFinal: valorFinal,
-    bonus: bonusAtivo ? "20%" : "Sem bônus",
+    bonus: bonusAtivo ? "10%" : "Sem bônus",
     status: "Pendente",
     data: Date.now()
   };
