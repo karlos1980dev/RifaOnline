@@ -590,8 +590,10 @@ const STATUS = [
   "Pagamento aprovado",
   "Pagamento recusado"
 ];
+
 function classeStatus(status){
   switch(status){
+  
     case "Recebido": return "entrega";
     case "Confirmado": return "entrega";
     case "Separando": return "entrega";
@@ -606,22 +608,31 @@ function classeStatus(status){
 }
 const dados={
   c1:[
-    {nome:"Maçã",preco:3,img:"https://images.unsplash.com/photo-1567306226416-28f0efdc88ce"},
-    {nome:"Morango",preco:7,img:"https://images.unsplash.com/photo-1587393855524-087f83d95bc9"},
-    {nome:"Cereja",preco:8,img:"https://images.unsplash.com/photo-1560807707-8cc77767d783"}
+    {nome:"jaca unidade ",preco:5,img:"https://images.unsplash.com/photo-1651565919334-bf81165cd0a3?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},
+    {nome:"Manga cx 50",preco:30,img:"https://images.unsplash.com/photo-1655168339415-fc5a98a7184f?q=80&w=1122&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},
+    {nome:"abate cx 50 ",preco: 60,img:"https://images.unsplash.com/photo-1596119415004-be78a87f8d14?q=80&w=1362&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
   ],
   c2:[
-    {nome:"Banana",preco:2,img:"https://images.unsplash.com/photo-1574226516831-e1dff420e37d"},
-    {nome:"Abacaxi",preco:6,img:"https://images.unsplash.com/photo-1550258987-190a2d41a8ba"},
-    {nome:"Manga",preco:4,img:"https://images.unsplash.com/photo-1622445275463-afa2ab738c34"}
+    {nome:"coco seco cx 30",preco:30,img:"https://images.unsplash.com/photo-1553787434-dd9eb4ea4d0b?q=80&w=1335&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},
+    {nome:"coco verde",preco:1.20,img:"https://images.unsplash.com/photo-1537191072641-5e19cc173c6a?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},
+    {nome:"Cana de Acucar fecho con 30",preco:60,img:"https://images.unsplash.com/photo-1730488636376-3bbb36aa5eb0?q=80&w=1110&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
   ],
   c3:[
-    {nome:"Laranja",preco:3,img:"https://images.unsplash.com/photo-1580910051074-7c8a8d73d8b2"},
-    {nome:"Limão",preco:2,img:"https://images.unsplash.com/photo-1502741338009-cac2772e18bc"},
-    {nome:"Tangerina",preco:3,img:"https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2"}
+    {nome:"Laranja cx com 50",preco:55,img:"https://plus.unsplash.com/premium_photo-1678911690542-8214b16d7bd6?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},
+    
+    {nome:"Caju 50 unid",preco:40,img:"https://images.unsplash.com/photo-1764607080323-f9c760408cd3?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dc"},
+    
+    {nome:"AIPIM CX 60",preco:3,img:"https://images.unsplash.com/photo-1757283961570-682154747d9c?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
   ]
 };
-
+const carrinhoUl = document.getElementById("carrinho");
+const totalSpan = document.getElementById("total");
+const modalCadastro = document.getElementById("modalCadastro");
+const clienteTopo = document.getElementById("clienteTopo");
+const boxCarrinho = document.getElementById("boxCarrinho");
+const valorPix = document.getElementById("valorPix");
+const chavePix = document.getElementById("chavePix");
+const modalPix = document.getElementById("modalPix");
 let carrinho=JSON.parse(localStorage.getItem("carrinho"))||[];
 
 Object.keys(dados).forEach(id=>{
@@ -706,8 +717,7 @@ function copiarPix(){
   alert("PIX copiado!");
 }
 
-const carrinhoUl=document.getElementById("carrinho");
-const totalSpan=document.getElementById("total");
+
 
 const cadastro = JSON.parse(localStorage.getItem("cadastroCliente"));
 
@@ -768,15 +778,20 @@ function salvarPedido(){
   itens: carrinho.map(i => i.nome),
   total: carrinho.reduce((s,i)=>s+i.preco,0),
   entrega: "2 dias",
-  status: "Recebido", // ✅ STATUS INICIAL
+  status: "Aguardando ", // ✅ STATUS INICIAL
   data: new Date().toLocaleString("pt-BR")
 };
   database.ref("pedidos/" + pedidoID).set(pedido);
 
   alert("Pedido enviado com sucesso!");
 
-  carrinho = [];
-  atualizar();
+// Limpar carrinho
+carrinho = [];
+atualizar();
+
+// Abrir modal PIX
+valorPix.textContent = pedido.total.toFixed(2);
+modalPix.style.display = "flex";
   fecharModal();
 }
 function toggleMenu(){
