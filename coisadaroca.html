@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>🍎 Coisa da Roca</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --verde:#16a34a;
+  --verde-escuro:#15803d;
+  --cinza:#f1f5f9;
+  --card:#fff;
+  --sombra:0 10px 25px rgba(0,0,0,.15);
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:var(--cinza);
+  padding-top:90px;
+}
+h1{
+    text-align:center;
+    color:green;
+    font-weight:bold;
+    margin:0px;
+}
+
+/* TOPO */
+.topo{
+  position:fixed;
+  top:0;
+  width:100%;
+  background:linear-gradient(135deg,var(--verde),var(--verde-escuro));
+  color:#fff;
+  padding:15px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:var(--sombra);
+  z-index:1000;
+}
+
+.btn-carrinho{
+  background:#fff;
+  color:var(--verde-escuro);
+  border:none;
+  padding:8px 14px;
+  border-radius:999px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* CONTAINER */
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:20px;
+}
+
+/* CARROSSEL */
+.carousel{
+  margin:40px 0;
+}
+
+.carousel h2{
+  margin-bottom:15px;
+}
+
+.track{
+  display:flex;
+  gap:20px;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  padding-bottom:10px;
+}
+
+.track::-webkit-scrollbar{
+  height:6px;
+}
+
+.track::-webkit-scrollbar-thumb{
+  background:var(--verde);
+  border-radius:10px;
+}
+
+/* CARD */
+.card{
+  flex:0 0 calc(33.333% - 14px);
+  border-radius:18px;
+  box-shadow:var(--sombra);
+  overflow:hidden;
+  scroll-snap-align:start;
+  transition:.3s; background:linear-gradient(135deg,#ffffff,#ecfdf5);
+  padding:15px;
+  border-radius:14px;
+  box-shadow:0 10px 20px rgba(0,0,0,.15);
+  margin-bottom:15px;
+
+}
+
+.card:hover{
+  transform:translateY(-6px);
+}
+
+.card img{
+  width:100%;
+  height:140px;
+  object-fit:cover;
+}
+
+.card-body{
+  padding:15px;
+  text-align:center;
+}
+
+.card-body h3{
+  margin:8px 0;
+}
+
+.card-body button{
+  margin-top:8px;
+  background:var(--verde);
+  color:#fff;
+  border:none;
+  padding:8px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+@media(max-width:768px){
+  .card{
+    flex:0 0 80%;
+  }
+}
+
+/* CARRINHO */
+.carrinho-box{
+  position:fixed;
+  top:85px;
+  right:20px;
+  width:320px;
+  background:#fff;
+  border-radius:16px;
+  box-shadow:var(--sombra);
+  padding:15px;
+  display:none;
+}
+
+.carrinho-box ul{
+  list-style:none;
+  padding:0;
+  margin:10px 0;
+  max-height:40vh;
+  overflow-y:auto;
+}
+
+.carrinho-box li{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
+
+.remove{
+  background:#dc2626;
+  color:#fff;
+  border:none;
+  padding:3px 7px;
+  border-radius:4px;
+}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+
+.modal-content{
+  background:#fff;
+  padding:30px;
+  border-radius:20px;
+  text-align:center;
+}
+.entrega{
+  background:#e0f2fe;
+  color:#0369a1;
+  font-size:12px;
+  padding:4px 8px;
+  border-radius:999px;
+  display:inline-block;
+  margin-top:6px;
+  font-weight:bold;
+}/* ===== MODAL CADASTRO MODERNO ===== */
+.modal.cadastro{
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(4px);
+}
+
+.modal-cadastro{
+  background:#fff;
+  width:95%;
+  max-width:420px;
+  border-radius:22px;
+  box-shadow:0 30px 60px rgba(0,0,0,.35);
+  overflow:hidden;
+  animation:fadeUp .35s ease;
+}
+
+@keyframes fadeUp{
+  from{
+    transform:translateY(40px);
+    opacity:0;
+  }
+  to{
+    transform:translateY(0);
+    opacity:1;
+  }
+}
+
+.modal-cadastro-header{
+  background:linear-gradient(135deg,#16a34a,#15803d);
+  color:#fff;
+  padding:22px;
+  text-align:center;
+}
+
+.modal-cadastro-header h2{
+  margin:0;
+  font-size:22px;
+}
+
+.modal-cadastro-header p{
+  margin:6px 0 0;
+  font-size:14px;
+  opacity:.9;
+}
+
+.modal-cadastro-body{
+  padding:22px;
+}
+
+.campo{
+  margin-bottom:14px;
+  text-align:left;
+}
+
+.campo label{
+  display:block;
+  font-size:13px;
+  font-weight:bold;
+  margin-bottom:6px;
+  color:#334155;
+}
+
+.campo input{
+  width:100%;
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid #e5e7eb;
+  font-size:15px;
+  transition:.2s;
+}
+
+.campo input:focus{
+  outline:none;
+  border-color:#16a34a;
+  box-shadow:0 0 0 2px rgba(22,163,74,.15);
+}
+
+.modal-cadastro-footer{
+  padding:18px 22px;
+  background:#f8fafc;
+}
+
+.btn-salvar{
+  width:100%;
+  background:#16a34a;
+  color:#fff;
+  border:none;
+  padding:14px;
+  font-size:16px;
+  border-radius:14px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.btn-salvar:hover{
+  background:#15803d;
+}
+
+.modal-info{
+  font-size:12px;
+  color:#64748b;
+  margin-top:10px;
+  text-align:center;
+}
+.btn-finalizar span{
+  background:#fff;
+  color:#16a34a;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+}
+.btn-finalizar:disabled{
+  background:#cbd5e1;
+  box-shadow:none;
+  cursor:not-allowed;
+}
+.btn-finalizar{
+  width:100%;
+  margin-top:12px;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,#16a34a,#22c55e);
+  color:#fff;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 10px 25px rgba(22,163,74,.45);
+  transition:.3s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+
+.btn-finalizar:hover{
+  transform:translateY(-2px);
+  box-shadow:0 15px 35px rgba(22,163,74,.55);
+}
+
+.btn-finalizar:active{
+  transform:scale(.97);
+}
+.btn-menu{
+  background:rgba(255,255,255,.2);
+  border:none;
+  color:#fff;
+  font-size:22px;
+  padding:6px 12px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.menu-lateral{
+  position:fixed;
+  top:0;
+  left:-100%;
+  width:320px;
+  height:100%;
+  background:#fff;
+  box-shadow:20px 0 40px rgba(0,0,0,.25);
+  z-index:2000;
+  transition:.35s;
+  display:flex;
+  flex-direction:column;
+}
+
+.menu-lateral.ativo{
+  left:0;
+}
+
+/* HEADER */
+.menu-header{
+  background:linear-gradient(135deg,#16a34a,#15803d);
+  color:#fff;
+  padding:20px;
+  font-size:18px;
+  font-weight:bold;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.fechar{
+  cursor:pointer;
+  font-size:22px;
+}
+
+/* LISTA */
+.menu-body{
+  padding:15px;
+  overflow-y:auto;
+}
+
+.menu-card{
+  background:#f8fafc;
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,.1);
+  font-size:14px;
+}
+
+.menu-card b{
+  color:#16a34a;
+}
+
+.status{
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.status.entrega{
+  background:#dcfce7;
+  color:#166534;
+}
+/* ===== BOTÃO WHATSAPP FLUTUANTE ===== */
+.whatsapp-float{
+  position:fixed;
+  bottom:20px;
+  right:0px;
+  width:40px;
+  height:40px;
+  background:#25D366;
+  border-radius:50%;
+  box-shadow:0 10px 25px rgba(0,0,0,.35);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:22px;
+  cursor:pointer;
+  z-index:3000;
+  transition:.3s;
+}
+
+.whatsapp-float:hover{
+  transform:scale(1.08);
+  box-shadow:0 15px 35px rgba(0,0,0,.45);
+}
+
+.whatsapp-float span{
+  animation:pulse 1.6s infinite;
+}
+
+@keyframes pulse{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.15)}
+  100%{transform:scale(1)}
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOPO -->
+<div class="topo">
+  <button class="btn-menu" onclick="toggleMenu()">☰</button><span>👤 <span id="clienteTopo"></span></span>
+  <button class="btn-carrinho" onclick="toggleCarrinho()">
+    🛒 <span id="qtdTopo">0</span> | R$ <span id="totalTopo">0.00</span>
+  </button>
+</div>
+<div class="menu-lateral" id="menuLateral">
+
+  <div class="menu-header">
+    📋 Meus Pedidos
+    <span class="fechar" onclick="toggleMenu()">✖</span>
+  </div>
+
+  <div class="menu-body" id="listaPedidos">
+    <!-- pedidos entram aqui -->
+  </div>
+
+</div>
+<!-- CARRINHO -->
+<div class="carrinho-box" id="boxCarrinho">
+  <h3>🛒 Carrinho</h3>
+  <ul id="carrinho"></ul>
+  <p>Total: R$ <span id="total">0.00</span></p>
+  <button class="btn-finalizar" onclick="salvarPedido()">
+  <span>🛒</span> Finalizar Pedido
+</button>
+</div>
+
+<div class="container">
+  <h1>COISA DA ROCA</h1>
+
+  <!-- CARROSSEL 1 -->
+  <div class="carousel">
+    <h2>🍎 Frutas Vermelhas</h2>
+    <div class="track" id="c1"></div>
+  </div>
+
+  <!-- CARROSSEL 2 -->
+  <div class="carousel">
+    <h2>🍌 Frutas Tropicais</h2>
+    <div class="track" id="c2"></div>
+  </div>
+
+  <!-- CARROSSEL 3 -->
+  <div class="carousel">
+    <h2>🍊 Cítricas</h2>
+    <div class="track" id="c3"></div>
+  </div>
+</div>
+
+<!-- MODAL PIX -->
+<div class="modal" id="modalPix">
+  <div class="modal-content">
+    <h2>Pagamento PIX</h2>
+    <p>R$ <span id="valorPix">0.00</span></p>
+    <div id="chavePix">PIX-EXEMPLO-123</div><br>
+    <button onclick="copiarPix()">Copiar PIX</button>
+    <button onclick="fecharModal()">Fechar</button>
+  </div>
+</div>
+<!-- ===== MODAL CADASTRO ===== -->
+<!-- ===== MODAL CADASTRO ===== -->
+<div class="modal cadastro" id="modalCadastro">
+  <div class="modal-cadastro">
+
+    <div class="modal-cadastro-header">
+      <h2>🚚 Dados para Entrega</h2>
+      <p>Informe para finalizar seus pedidos</p>
+    </div>
+
+    <div class="modal-cadastro-body">
+      <div class="campo">
+        <label>👤 Nome</label>
+        <input id="nomeCadastro" placeholder="Seu nome completo">
+      </div>
+
+      <div class="campo">
+        <label>📍 Endereço</label>
+        <input id="enderecoCadastro" placeholder="Rua, número, bairro">
+      </div>
+
+      <div class="campo">
+        <label>📞 Telefone / WhatsApp</label>
+        <input id="telefoneCadastro" placeholder="(11) 99999-9999">
+      </div>
+
+      <div class="modal-info">
+        Seus dados são usados apenas para entrega.
+      </div>
+    </div>
+
+    <div class="modal-cadastro-footer">
+      <button class="btn-salvar" onclick="salvarCadastro()">
+        Salvar e continuar
+      </button>
+    </div>
+
+  </div>
+</div>
+<div class="whatsapp-float" onclick="abrirWhats()">
+  <span>💬</span>
+</div>
+    <!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+/* ===== FIREBASE CONFIG ===== */
+const firebaseConfig = {
+  databaseURL: "https://loteriasmj-274f9-default-rtdb.firebaseio.com/",
+};
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+</script>
+
+<script>
+const STATUS = [
+  "Recebido",
+  "Confirmado",
+  "Separando",
+  "Em rota",
+  "Entregue",
+  "Cancelado",
+  "Aguardando pagamento",
+  "Pagamento aprovado",
+  "Pagamento recusado"
+];
+function classeStatus(status){
+  switch(status){
+    case "Recebido": return "entrega";
+    case "Confirmado": return "entrega";
+    case "Separando": return "entrega";
+    case "Em rota": return "entrega";
+    case "Entregue": return "entrega";
+    case "Cancelado": return "cancelado";
+    case "Aguardando pagamento": return "aguardando";
+    case "Pagamento aprovado": return "aprovado";
+    case "Pagamento recusado": return "recusado";
+    default: return "entrega";
+  }
+}
+const dados={
+  c1:[
+    {nome:"Maçã",preco:3,img:"https://images.unsplash.com/photo-1567306226416-28f0efdc88ce"},
+    {nome:"Morango",preco:7,img:"https://images.unsplash.com/photo-1587393855524-087f83d95bc9"},
+    {nome:"Cereja",preco:8,img:"https://images.unsplash.com/photo-1560807707-8cc77767d783"}
+  ],
+  c2:[
+    {nome:"Banana",preco:2,img:"https://images.unsplash.com/photo-1574226516831-e1dff420e37d"},
+    {nome:"Abacaxi",preco:6,img:"https://images.unsplash.com/photo-1550258987-190a2d41a8ba"},
+    {nome:"Manga",preco:4,img:"https://images.unsplash.com/photo-1622445275463-afa2ab738c34"}
+  ],
+  c3:[
+    {nome:"Laranja",preco:3,img:"https://images.unsplash.com/photo-1580910051074-7c8a8d73d8b2"},
+    {nome:"Limão",preco:2,img:"https://images.unsplash.com/photo-1502741338009-cac2772e18bc"},
+    {nome:"Tangerina",preco:3,img:"https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2"}
+  ]
+};
+
+let carrinho=JSON.parse(localStorage.getItem("carrinho"))||[];
+
+Object.keys(dados).forEach(id=>{
+  const track=document.getElementById(id);
+  dados[id].forEach(f=>{
+    track.innerHTML+=`
+      <div class="card">
+        <img src="${f.img}" alt="${f.nome}">
+        <div class="card-body">
+          <h3>${f.nome}</h3>
+          <p>R$ ${f.preco.toFixed(2)}</p>
+<span class="entrega">🚚 Entrega em até 2 dias</span>
+<button onclick="add('${f.nome}',${f.preco})">Adicionar</button>
+        </div>
+      </div>`;
+  });
+});
+
+/* CARRINHO */
+function add(nome,preco){
+  carrinho.push({nome,preco});
+  atualizar();
+}
+
+function remover(i){
+  carrinho.splice(i,1);
+  atualizar();
+}
+
+function atualizar(){
+  localStorage.setItem("carrinho", JSON.stringify(carrinho));
+
+  carrinhoUl.innerHTML = "";
+  let total = 0;
+
+  // AGRUPAR ITENS
+  const agrupado = {};
+  carrinho.forEach(item=>{
+    total += item.preco;
+    agrupado[item.nome] = (agrupado[item.nome] || 0) + 1;
+   document.querySelector(".btn-finalizar").disabled = carrinho.length === 0;
+
+  });
+
+  // MOSTRAR NO CARRINHO
+  carrinhoUl.innerHTML += `
+    <li style="margin-bottom:10px;font-weight:bold;color:#16a34a">
+      🚚 Entregar em 2 dias
+    </li>
+  `;
+
+  Object.keys(agrupado).forEach((nome)=>{
+    for(let i=0;i<agrupado[nome];i++){
+      carrinhoUl.innerHTML += `
+        <li style="border-bottom:1px solid #eee;padding:4px 0">
+          ${nome}
+        </li>
+      `;
+    }
+  });
+
+  totalTopo.textContent = total.toFixed(2);
+  qtdTopo.textContent = carrinho.length;
+  totalSpan.textContent = total.toFixed(2);
+}
+
+
+function toggleCarrinho(){
+  boxCarrinho.style.display=
+    boxCarrinho.style.display==="block"?"none":"block";
+}
+
+function abrirModal(){
+  if(!carrinho.length)return alert("Carrinho vazio");
+  valorPix.textContent=carrinho.reduce((s,i)=>s+i.preco,0).toFixed(2);
+  modalPix.style.display="flex";
+}
+
+function fecharModal(){modalPix.style.display="none"}
+function copiarPix(){
+  navigator.clipboard.writeText(chavePix.innerText);
+  alert("PIX copiado!");
+}
+
+const carrinhoUl=document.getElementById("carrinho");
+const totalSpan=document.getElementById("total");
+
+const cadastro = JSON.parse(localStorage.getItem("cadastroCliente"));
+
+window.onload = ()=>{
+  const cadastro = JSON.parse(localStorage.getItem("cadastroCliente"));
+
+  if(!cadastro){
+    modalCadastro.style.display = "flex";
+  }else{
+    clienteTopo.textContent = cadastro.nome;
+  }
+
+};
+
+
+let clienteID = localStorage.getItem("clienteID") || null;
+
+function salvarCadastro(){
+  const nome = nomeCadastro.value.trim();
+  const endereco = enderecoCadastro.value.trim();
+  const telefone = telefoneCadastro.value.trim();
+
+  if(!nome || !endereco || !telefone){
+    alert("Preencha todos os campos");
+    return;
+  }
+
+  if(!clienteID){
+    clienteID = database.ref("clientes").push().key;
+    localStorage.setItem("clienteID", clienteID);
+  }
+
+  const cliente = { nome, endereco, telefone };
+
+  database.ref("clientes/" + clienteID).set(cliente);
+  localStorage.setItem("cadastroCliente", JSON.stringify(cliente));
+
+  clienteTopo.textContent = nome;
+  modalCadastro.style.display = "none";
+}
+function salvarPedido(){
+  if(carrinho.length === 0){
+    alert("Carrinho vazio");
+    return;
+  }
+
+  const cliente = JSON.parse(localStorage.getItem("cadastroCliente"));
+  if(!cliente){
+    alert("Cadastro não encontrado");
+    return;
+  }
+
+  const pedidoID = database.ref("pedidos").push().key;
+
+  const pedido = {
+  clienteID,
+  cliente,
+  itens: carrinho.map(i => i.nome),
+  total: carrinho.reduce((s,i)=>s+i.preco,0),
+  entrega: "2 dias",
+  status: "Recebido", // ✅ STATUS INICIAL
+  data: new Date().toLocaleString("pt-BR")
+};
+  database.ref("pedidos/" + pedidoID).set(pedido);
+
+  alert("Pedido enviado com sucesso!");
+
+  carrinho = [];
+  atualizar();
+  fecharModal();
+}
+function toggleMenu(){
+  document.getElementById("menuLateral").classList.toggle("ativo");
+}  
+function adicionarPedidoMenu(pedido){
+  const div = document.createElement("div");
+  div.className = "menu-card";
+
+  div.innerHTML = `
+    <p><b>Nome:</b> ${pedido.nome}</p>
+    <p><b>Valor:</b> R$ ${pedido.valor.toFixed(2)}</p>
+    <p><b>Status:</b> 
+      <span class="status entrega">Em entrega</span>
+    </p>
+    <p><b>Data da entrega:</b> ${pedido.data}</p>
+  `;
+
+  document.getElementById("listaPedidos").prepend(div);
+}
+database.ref("pedidos").on("value", snap=>{
+  const dados = snap.val();
+  const lista = document.getElementById("listaPedidos");
+  lista.innerHTML = "";
+
+  if(!dados) return;
+
+  Object.values(dados).forEach(p=>{
+
+    // 🔒 MOSTRA SÓ PEDIDOS DO CLIENTE LOGADO
+    if(p.clienteID !== clienteID) return;
+
+    const div = document.createElement("div");
+    div.className = "menu-card";
+
+    div.innerHTML = `
+      <p><b>Nome:</b> ${p.cliente?.nome || "-"}</p>
+      <p><b>Valor:</b> R$ ${Number(p.total).toFixed(2)}</p>
+      <p>
+        <b>Status:</b>
+        <span class="status ${classeStatus(p.status)}">
+          ${p.status}
+        </span>
+      </p>
+      <p><b>Data:</b> ${p.data}</p>
+    `;
+
+    lista.prepend(div);
+  });
+});
+atualizar();
+const WHATSAPP_LOJA = "5571983579955"; // SEU NÚMERO
+
+function abrirWhats(){
+  const cliente = JSON.parse(localStorage.getItem("cadastroCliente"));
+  const nome = cliente?.nome || "Cliente";
+
+  const msg = `
+Olá 👋
+Sou ${nome}
+
+Gostaria de informações sobre os produtos 🍎🍌
+  `.trim();
+
+  const url = `https://wa.me/${WHATSAPP_LOJA}?text=${encodeURIComponent(msg)}`;
+  window.open(url, "_blank");
+}
+</script>
+</body>
+</html>
