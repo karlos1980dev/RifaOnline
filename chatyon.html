@@ -143,13 +143,22 @@ let somLiberado = false;
 // ===== FUNÇÕES AUXILIARES =====
 
 function detectarMencao(texto){
+
   let palavras = texto.split(" ");
 
   for(let p of palavras){
+
     if(p.startsWith("@")){
-      return p.replace("@", "");
+
+      let usuario = p.replace("@", "");
+
+      // remove possíveis vírgulas ou pontos
+      usuario = usuario.replace(/[^a-zA-Z0-9]/g, "");
+
+      return usuario.toLowerCase();
     }
   }
+
   return null;
 }
 
@@ -390,4 +399,4 @@ document.getElementById("chat").addEventListener("click", function(){
 });
 </script>
 </body>
-</html>
+</html
