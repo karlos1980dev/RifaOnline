@@ -149,6 +149,29 @@ firebase.initializeApp(firebaseConfig);
 
 const db = firebase.database();
 
+
+// ===== FUNÇÃO PARA GERAR COR BASEADA NO NOME =====
+
+function gerarCor(nome){
+  let hash = 0;
+
+  for (let i = 0; i < nome.length; i++) {
+    hash = nome.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  let cor = '#';
+
+  for (let i = 0; i < 3; i++) {
+    let value = (hash >> (i * 8)) & 0xFF;
+    cor += ('00' + value.toString(16)).substr(-2);
+  }
+
+  return cor;
+}
+
+
+// ======= NOME SALVO NO LOCALSTORAGE =======
+
 let nome = localStorage.getItem("nomeChat");
 
 if(!nome){
@@ -158,22 +181,70 @@ if(!nome){
   }
   localStorage.setItem("nomeChat", nome);
 }
-let userId = Math.floor(Math.random() * 1000000);
-
-// STATUS ONLINE
-db.ref("usuarios/" + userId).set({
-  nome: nome,
-  status: "online"
-});
-
-// OFFLINE AUTOMÁTICO
-db.ref("usuarios/" + userId).onDisconnect().set({
-  nome: nome,
-  status: "offline"
-});
 
 
-// ENVIAR MENSAGEM
+// ======= CONTROLE DE USER ID =======
+
+let userId = localStorage.getItem("userIdChat");
+
+if(!userId){
+
+  db.ref("usuarios").once("value", function(snapshot){
+
+    let encontrado = false;
+
+    snapshot.forEach(function(child){
+      let u = child.val();
+
+      if(u.nome == nome){
+        userId = child.key;
+        encontrado = true;
+      }
+    });
+
+    if(!encontrado){
+      userId = Math.floor(Math.random() * 1000000);
+    }
+
+    localStorage.setItem("userIdChat", userId);
+
+    iniciarUsuario();
+  });
+
+} else {
+  iniciarUsuario();
+}
+
+
+// ===== FUNÇÃO QUE INICIA O USUÁRIO =====
+
+function iniciarUsuario(){
+
+  db.ref("usuarios/" + userId).once("value", function(snap){
+
+    if(snap.exists()){
+      db.ref("usuarios/" + userId).update({
+        status: "online"
+      });
+    } else {
+      db.ref("usuarios/" + userId).set({
+        nome: nome,
+        status: "online",
+        total: 0
+      });
+    }
+
+  });
+
+  db.ref("usuarios/" + userId).onDisconnect().update({
+    status: "offline"
+  });
+
+}
+
+
+// ===== ENVIAR MENSAGEM =====
+
 function enviar(){
 
   let texto = document.getElementById("mensagem").value;
@@ -186,20 +257,28 @@ function enviar(){
     data: new Date().toLocaleTimeString()
   });
 
+  // aumentar contador
+  db.ref("usuarios/" + userId + "/total").transaction(function(valorAtual){
+    return (valorAtual || 0) + 1;
+  });
+
   document.getElementById("mensagem").value = "";
 }
 
 
-// RECEBER MENSAGENS
+// ===== RECEBER MENSAGENS COM COR POR PESSOA =====
+
 db.ref("mensagens").on("child_added", function(snapshot){
 
   let msg = snapshot.val();
 
   let chat = document.getElementById("chat");
 
+  let corUsuario = gerarCor(msg.nome);
+
   chat.innerHTML += `
     <div class="msg">
-      <b>${msg.nome}</b>
+      <b style="color:${corUsuario}">${msg.nome}</b>
       <br>
       ${msg.texto}
       <br>
@@ -212,7 +291,8 @@ db.ref("mensagens").on("child_added", function(snapshot){
 });
 
 
-// LISTA DE USUÁRIOS
+// ===== LISTA DE USUÁRIOS COM CONTADOR =====
+
 db.ref("usuarios").on("value", function(snapshot){
 
   let lista = document.getElementById("usuarios");
@@ -232,26 +312,24 @@ db.ref("usuarios").on("value", function(snapshot){
     }
   });
 
-  // MOSTRAR PRIMEIRO OS ONLINE
   onlines.forEach(function(u){
     lista.innerHTML += `
       <p style="color:#00ff9d">
-        ● ${u.nome} - online
+        ● ${u.nome} - online - ${u.total || 0}
       </p>
     `;
   });
 
-  // DEPOIS OS OFFLINE
   offlines.forEach(function(u){
     lista.innerHTML += `
       <p style="color:#ff4b5c">
-        ● ${u.nome} - offline
+        ● ${u.nome} - offline - ${u.total || 0}
       </p>
     `;
   });
 
 });
-</script>
 
+</script>
 </body>
 </html>
