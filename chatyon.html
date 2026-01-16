@@ -327,7 +327,7 @@ db.ref("mensagens").on("child_added", function(snapshot){
 
   let estilo = "";
 
-  if(mencionado && mencionado.toLowerCase() === nome.toLowerCase()){
+  if(mencionado && mencionado === nome.toLowerCase()){
 
     estilo = "border:2px solid yellow; background:#1e2a47;";
 
