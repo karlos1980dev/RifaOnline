@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chat on</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -20,10 +20,10 @@ body{
 
 header{
   background:#0d1320;
-  padding:15px;
+  padding:5px;
   text-align:center;
   border-bottom:2px solid #00f2ff;
-  box-shadow:0 0 15px #00f2ff;
+  box-shadow:0 0 5px #00f2ff;
 }
 
 .container{
@@ -87,35 +87,26 @@ button:hover{
   box-shadow:0 0 10px #00f2ff;
 }
 
-.online{
-  color:#00ff9d;
-}
-
-.offline{
-  color:#ff4b5c;
-}
-
 .footer{
   margin-top:10px;
   text-align:center;
 }
 
-@media(max-width:700px){
-  .painel{
-    grid-template-columns:1fr;
-  }
-}
-
 </style>
-
 </head>
 
 <body>
 
+<div id="alerta" style="display:none; background:#ff9800; padding:10px; color:#fff; margin-bottom:10px;">
+  Novas mensagens: <span id="totalNovas">0</span>
+</div>
+
 <header>
   <h2>🚀 CHAT ON</h2>
 </header>
-
+<div style="text-align:center;margin:10px;">
+  <button style="width:80%;" onclick="ativarSom()">🔊 Ativar Som</button>
+</div>
 <div class="container">
 
   <div class="painel">
@@ -138,19 +129,29 @@ button:hover{
   </div>
 
 </div>
-
 <script>
-
 const firebaseConfig = {
-  databaseURL: "https://loteriasmj-274f9-default-rtdb.firebaseio.com/",
+  databaseURL: "https://loteriasmj-274f9-default-rtdb.firebaseio.com/"
 };
 
 firebase.initializeApp(firebaseConfig);
-
 const db = firebase.database();
 
+let mensagensNovas = 0;
+let somLiberado = false;
 
-// ===== FUNÇÃO PARA GERAR COR BASEADA NO NOME =====
+// ===== FUNÇÕES AUXILIARES =====
+
+function detectarMencao(texto){
+  let palavras = texto.split(" ");
+
+  for(let p of palavras){
+    if(p.startsWith("@")){
+      return p.replace("@", "");
+    }
+  }
+  return null;
+}
 
 function gerarCor(nome){
   let hash = 0;
@@ -169,21 +170,43 @@ function gerarCor(nome){
   return cor;
 }
 
+function tocarSom(){
+  if(!somLiberado){
+    console.log("Som ainda não foi liberado pelo usuário");
+    return;
+  }
 
-// ======= NOME SALVO NO LOCALSTORAGE =======
+  let audio = new Audio("https://www.myinstants.com/media/sounds/notification.mp3");
+
+  audio.play().catch(err => {
+    console.log("Erro ao tocar som:", err);
+  });
+}
+
+function ativarSom(){
+  let audio = new Audio("https://www.myinstants.com/media/sounds/notification.mp3");
+
+  audio.play().then(() => {
+    somLiberado = true;
+    alert("Som ativado com sucesso!");
+  }).catch(() => {
+    alert("Clique novamente para liberar o som.");
+  });
+}
+
+// ===== IDENTIFICAÇÃO DO USUÁRIO =====
 
 let nome = localStorage.getItem("nomeChat");
 
 if(!nome){
   nome = prompt("Digite seu nome:");
+
   if(!nome){
     nome = "User" + Math.floor(Math.random() * 1000);
   }
+
   localStorage.setItem("nomeChat", nome);
 }
-
-
-// ======= CONTROLE DE USER ID =======
 
 let userId = localStorage.getItem("userIdChat");
 
@@ -207,7 +230,6 @@ if(!userId){
     }
 
     localStorage.setItem("userIdChat", userId);
-
     iniciarUsuario();
   });
 
@@ -215,8 +237,7 @@ if(!userId){
   iniciarUsuario();
 }
 
-
-// ===== FUNÇÃO QUE INICIA O USUÁRIO =====
+// ===== INICIAR USUÁRIO =====
 
 function iniciarUsuario(){
 
@@ -242,31 +263,46 @@ function iniciarUsuario(){
 
 }
 
-
 // ===== ENVIAR MENSAGEM =====
 
 function enviar(){
 
   let texto = document.getElementById("mensagem").value;
 
-  if(texto == "") return;
+  if(texto.trim() == "") return;
 
   db.ref("mensagens").push({
     nome: nome,
     texto: texto,
     data: new Date().toLocaleTimeString()
+  })
+  .then(() => {
+    console.log("Mensagem salva com sucesso!");
+  })
+  .catch(e => {
+    console.log("Erro ao salvar mensagem:", e);
   });
 
-  // aumentar contador
   db.ref("usuarios/" + userId + "/total").transaction(function(valorAtual){
     return (valorAtual || 0) + 1;
   });
 
   document.getElementById("mensagem").value = "";
+
+  mensagensNovas = 0;
+  document.getElementById("alerta").style.display = "none";
+  document.title = "Chat on";
 }
 
+// ===== ENTER PARA ENVIAR =====
 
-// ===== RECEBER MENSAGENS COM COR POR PESSOA =====
+document.getElementById("mensagem").addEventListener("keypress", function(e){
+  if(e.key === "Enter"){
+    enviar();
+  }
+});
+
+// ===== RECEBER MENSAGENS =====
 
 db.ref("mensagens").on("child_added", function(snapshot){
 
@@ -276,11 +312,27 @@ db.ref("mensagens").on("child_added", function(snapshot){
 
   let corUsuario = gerarCor(msg.nome);
 
+  let texto = msg.texto;
+
+  let mencionado = detectarMencao(texto);
+
+  let estilo = "";
+
+  if(mencionado && mencionado.toLowerCase() === nome.toLowerCase()){
+
+    estilo = "border:2px solid yellow; background:#1e2a47;";
+
+    tocarSom();
+
+    document.getElementById("alerta").style.display = "block";
+    document.getElementById("totalNovas").innerText = "Você foi mencionado!";
+  }
+
   chat.innerHTML += `
-    <div class="msg">
+    <div class="msg" style="${estilo}">
       <b style="color:${corUsuario}">${msg.nome}</b>
       <br>
-      ${msg.texto}
+      ${texto}
       <br>
       <small>${msg.data}</small>
     </div>
@@ -288,48 +340,54 @@ db.ref("mensagens").on("child_added", function(snapshot){
 
   chat.scrollTop = chat.scrollHeight;
 
+  if(msg.nome !== nome){
+
+    mensagensNovas++;
+
+    document.getElementById("alerta").style.display = "block";
+    document.getElementById("totalNovas").innerText = mensagensNovas;
+
+    document.title = `(${mensagensNovas}) Chat on`;
+  }
+
 });
 
-
-// ===== LISTA DE USUÁRIOS COM CONTADOR =====
+// ===== ATUALIZAR USUÁRIOS EM TEMPO REAL =====
 
 db.ref("usuarios").on("value", function(snapshot){
 
   let lista = document.getElementById("usuarios");
-
   lista.innerHTML = "";
 
-  let onlines = [];
-  let offlines = [];
-
   snapshot.forEach(function(child){
+
     let u = child.val();
+    let total = u.total || 0;
 
     if(u.status == "online"){
-      onlines.push(u);
-    } else {
-      offlines.push(u);
+
+      lista.innerHTML += `
+        <p style="color:#00ff9d">
+          ● ${u.nome} - online - ${total}
+        </p>
+      `;
     }
-  });
 
-  onlines.forEach(function(u){
-    lista.innerHTML += `
-      <p style="color:#00ff9d">
-        ● ${u.nome} - online - ${u.total || 0}
-      </p>
-    `;
-  });
-
-  offlines.forEach(function(u){
-    lista.innerHTML += `
-      <p style="color:#ff4b5c">
-        ● ${u.nome} - offline - ${u.total || 0}
-      </p>
-    `;
   });
 
 });
 
+// ===== ZERAR AO CLICAR NO CHAT =====
+
+document.getElementById("chat").addEventListener("click", function(){
+
+  mensagensNovas = 0;
+
+  document.getElementById("alerta").style.display = "none";
+
+  document.title = "Chat on";
+
+});
 </script>
 </body>
 </html>
