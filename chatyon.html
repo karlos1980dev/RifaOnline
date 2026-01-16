@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chat On</title>
+<meta charset="UTF-8">
+<title>Chat on</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -219,22 +218,38 @@ db.ref("usuarios").on("value", function(snapshot){
 
   lista.innerHTML = "";
 
-  snapshot.forEach(function(child){
+  let onlines = [];
+  let offlines = [];
 
+  snapshot.forEach(function(child){
     let u = child.val();
 
-    let classe = u.status == "online" ? "online" : "offline";
+    if(u.status == "online"){
+      onlines.push(u);
+    } else {
+      offlines.push(u);
+    }
+  });
 
+  // MOSTRAR PRIMEIRO OS ONLINE
+  onlines.forEach(function(u){
     lista.innerHTML += `
-      <p class="${classe}">
-        ● ${u.nome} - ${u.status}
+      <p style="color:#00ff9d">
+        ● ${u.nome} - online
       </p>
     `;
+  });
 
+  // DEPOIS OS OFFLINE
+  offlines.forEach(function(u){
+    lista.innerHTML += `
+      <p style="color:#ff4b5c">
+        ● ${u.nome} - offline
+      </p>
+    `;
   });
 
 });
-
 </script>
 
 </body>
