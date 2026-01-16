@@ -7,7 +7,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 <style>
 
 body{
@@ -65,7 +65,7 @@ header{
 }
 
 input{
-  width:70%;
+  width:80%;
   padding:12px;
   border-radius:8px;
   border:1px solid #00f2ff;
@@ -89,9 +89,11 @@ button:hover{
 
 .footer{
   margin-top:10px;
-  text-align:center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
-
 </style>
 </head>
 
@@ -124,19 +126,22 @@ button:hover{
   </div>
 
   <div class="footer">
-    <input id="mensagem" placeholder="Digite sua mensagem...">
-    <button onclick="enviar()">Enviar</button>
-  </div>
+  <input id="mensagem" placeholder="Digite sua mensagem...">
+  <input style="display:none;"type="file" id="imagem" accept="image/*">
+  <button onclick="enviar()">Enviar</button>
+</div>
 
 </div>
+
 <script>
 const firebaseConfig = {
   databaseURL: "https://loteriasmj-274f9-default-rtdb.firebaseio.com/"
+  
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-
+const storage = firebase.storage();
 let mensagensNovas = 0;
 let somLiberado = false;
 
@@ -277,93 +282,107 @@ function iniciarUsuario(){
 function enviar(){
 
   let texto = document.getElementById("mensagem").value;
+  let arquivo = document.getElementById("imagem").files[0];
 
-  if(texto.trim() == "") return;
+  if(texto == "" && !arquivo) return;
 
-  db.ref("mensagens").push({
-    nome: nome,
-    texto: texto,
-    data: new Date().toLocaleTimeString()
-  })
-  .then(() => {
-    console.log("Mensagem salva com sucesso!");
-  })
-  .catch(e => {
-    console.log("Erro ao salvar mensagem:", e);
-  });
+  if(arquivo){
 
-  db.ref("usuarios/" + userId + "/total").transaction(function(valorAtual){
-    return (valorAtual || 0) + 1;
-  });
+    let nomeArquivo = Date.now() + "_" + arquivo.name;
+
+    let ref = storage.ref("imagens/" + nomeArquivo);
+
+    ref.put(arquivo).then(() => {
+
+      ref.getDownloadURL().then(url => {
+
+        db.ref("mensagens").push({
+          nome: nome,
+          texto: texto,
+          imagem: url,
+          data: new Date().toLocaleTimeString(),
+          userId: userId
+        });
+
+      });
+
+    });
+
+  } else {
+
+    db.ref("mensagens").push({
+      nome: nome,
+      texto: texto,
+      data: new Date().toLocaleTimeString(),
+      userId: userId
+    });
+
+  }
 
   document.getElementById("mensagem").value = "";
+  document.getElementById("imagem").value = "";
 
   mensagensNovas = 0;
   document.getElementById("alerta").style.display = "none";
   document.title = "Chat on";
 }
 
-// ===== ENTER PARA ENVIAR =====
-
-document.getElementById("mensagem").addEventListener("keypress", function(e){
-  if(e.key === "Enter"){
-    enviar();
-  }
-});
-
 // ===== RECEBER MENSAGENS =====
 
-db.ref("mensagens").on("child_added", function(snapshot){
-
-  let msg = snapshot.val();
+db.ref("mensagens").on("value", function(snapshot){
 
   let chat = document.getElementById("chat");
+  chat.innerHTML = "";
 
-  let corUsuario = gerarCor(msg.nome);
+  snapshot.forEach(function(child){
 
-  let texto = msg.texto;
+    let id = child.key;
+    let msg = child.val();
 
-  let mencionado = detectarMencao(texto);
+    let corUsuario = gerarCor(msg.nome);
 
-  let estilo = "";
+    let conteudoImagem = "";
 
-  if(mencionado && mencionado === nome.toLowerCase()){
+    if(msg.imagem){
+      conteudoImagem = `
+        <br>
+        <img src="${msg.imagem}" style="max-width:200px;border-radius:10px;margin-top:5px;">
+      `;
+    }
 
-    estilo = "border:2px solid yellow; background:#1e2a47;";
+    let botoes = "";
 
-    tocarSom();
+    if(msg.userId == userId){
 
-    document.getElementById("alerta").style.display = "block";
-    document.getElementById("totalNovas").innerText = "Você foi mencionado!";
-  }
+      botoes = `
+        <span style="float:right;cursor:pointer;margin-left:10px;"
+          onclick="excluirMensagem('${id}', '${msg.userId}')">❌</span>
 
-  chat.innerHTML += `
-    <div class="msg" style="${estilo}">
-      <b style="color:${corUsuario}">${msg.nome}</b>
-      <br>
-      ${texto}
-      <br>
-      <small>${msg.data}</small>
-    </div>
-  `;
+        <span style="float:right;cursor:pointer;"
+          onclick="editarMensagem('${id}', '${msg.userId}', '${msg.texto || ""}')">✏️</span>
+      `;
+    }
+
+    chat.innerHTML += `
+      <div class="msg">
+        ${botoes}
+        <b style="color:${corUsuario}">${msg.nome}</b>
+        <br>
+        ${msg.texto || ""}
+        ${conteudoImagem}
+        <br>
+        <small>${msg.data}</small>
+      </div>
+    `;
+
+  });
 
   chat.scrollTop = chat.scrollHeight;
 
-  if(msg.nome !== nome){
-
-    mensagensNovas++;
-
-    document.getElementById("alerta").style.display = "block";
-    document.getElementById("totalNovas").innerText = mensagensNovas;
-
-    document.title = `(${mensagensNovas}) Chat on`;
-  }
-
 });
-
 // ===== ATUALIZAR USUÁRIOS EM TEMPO REAL =====
 
-db.ref("usuarios").on("value", function(snapshot){
+db.ref("usuarios").on("value",     function(snapshot){
 
   let lista = document.getElementById("usuarios");
   lista.innerHTML = "";
@@ -397,6 +416,34 @@ document.getElementById("chat").addEventListener("click", function(){
   document.title = "Chat on";
 
 });
+function excluirMensagem(id, dono){
+
+  if(dono !== userId){
+    alert("Você só pode excluir suas próprias mensagens!");
+    return;
+  }
+
+  let confirmar = confirm("Deseja excluir esta mensagem?");
+
+  if(!confirmar) return;
+
+  db.ref("mensagens/" + id).remove();
+}
+function editarMensagem(id, dono, textoAtual){
+
+  if(dono !== userId){
+    alert("Você só pode editar suas próprias mensagens!");
+    return;
+  }
+
+  let novoTexto = prompt("Editar mensagem:", textoAtual);
+
+  if(novoTexto === null || novoTexto === "") return;
+
+  db.ref("mensagens/" + id).update({
+    texto: novoTexto + " (editado)"
+  });
+}
 </script>
 </body>
-</html
+</html>
