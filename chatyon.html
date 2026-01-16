@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Chat on</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<style>
+
+body{
+  margin:0;
+  padding:0;
+  font-family: Arial;
+  background:#0a0e17;
+  color:#fff;
+}
+
+header{
+  background:#0d1320;
+  padding:15px;
+  text-align:center;
+  border-bottom:2px solid #00f2ff;
+  box-shadow:0 0 15px #00f2ff;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:15px;
+}
+
+.painel{
+  display:grid;
+  grid-template-columns:1fr 2fr;
+  gap:10px;
+}
+
+.box{
+  background:#101728;
+  border:1px solid #00f2ff;
+  box-shadow:0 0 10px #00f2ff;
+  border-radius:10px;
+  padding:10px;
+}
+
+#usuarios{
+  height:100px;
+  overflow:auto;
+}
+
+#chat{
+  height:250px;
+  overflow:auto;
+}
+
+.msg{
+  background:#16203a;
+  margin:8px 0;
+  padding:8px;
+  border-radius:8px;
+  border-left:3px solid #00ff9d;
+}
+
+input{
+  width:70%;
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #00f2ff;
+  background:#0d1320;
+  color:#fff;
+}
+
+button{
+  padding:12px;
+  background:#00f2ff;
+  border:none;
+  color:#000;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+button:hover{
+  box-shadow:0 0 10px #00f2ff;
+}
+
+.online{
+  color:#00ff9d;
+}
+
+.offline{
+  color:#ff4b5c;
+}
+
+.footer{
+  margin-top:10px;
+  text-align:center;
+}
+
+@media(max-width:700px){
+  .painel{
+    grid-template-columns:1fr;
+  }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+  <h2>🚀 CHAT ON</h2>
+</header>
+
+<div class="container">
+
+  <div class="painel">
+
+    <div class="box">
+      <h3>👥 Usuários</h3>
+      <div id="usuarios"></div>
+    </div>
+
+    <div class="box">
+      <h3>💬 Mensagens</h3>
+      <div id="chat"></div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <input id="mensagem" placeholder="Digite sua mensagem...">
+    <button onclick="enviar()">Enviar</button>
+  </div>
+
+</div>
+
+<script>
+
+const firebaseConfig = {
+  databaseURL: "https://loteriasmj-274f9-default-rtdb.firebaseio.com/",
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+
+let nome = localStorage.getItem("nomeChat");
+
+if(!nome){
+  nome = prompt("Digite seu nome:");
+  if(!nome){
+    nome = "User" + Math.floor(Math.random() * 1000);
+  }
+  localStorage.setItem("nomeChat", nome);
+}
+let userId = Math.floor(Math.random() * 1000000);
+
+// STATUS ONLINE
+db.ref("usuarios/" + userId).set({
+  nome: nome,
+  status: "online"
+});
+
+// OFFLINE AUTOMÁTICO
+db.ref("usuarios/" + userId).onDisconnect().set({
+  nome: nome,
+  status: "offline"
+});
+
+
+// ENVIAR MENSAGEM
+function enviar(){
+
+  let texto = document.getElementById("mensagem").value;
+
+  if(texto == "") return;
+
+  db.ref("mensagens").push({
+    nome: nome,
+    texto: texto,
+    data: new Date().toLocaleTimeString()
+  });
+
+  document.getElementById("mensagem").value = "";
+}
+
+
+// RECEBER MENSAGENS
+db.ref("mensagens").on("child_added", function(snapshot){
+
+  let msg = snapshot.val();
+
+  let chat = document.getElementById("chat");
+
+  chat.innerHTML += `
+    <div class="msg">
+      <b>${msg.nome}</b>
+      <br>
+      ${msg.texto}
+      <br>
+      <small>${msg.data}</small>
+    </div>
+  `;
+
+  chat.scrollTop = chat.scrollHeight;
+
+});
+
+
+// LISTA DE USUÁRIOS
+db.ref("usuarios").on("value", function(snapshot){
+
+  let lista = document.getElementById("usuarios");
+
+  lista.innerHTML = "";
+
+  snapshot.forEach(function(child){
+
+    let u = child.val();
+
+    let classe = u.status == "online" ? "online" : "offline";
+
+    lista.innerHTML += `
+      <p class="${classe}">
+        ● ${u.nome} - ${u.status}
+      </p>
+    `;
+
+  });
+
+});
+
+</script>
+
+</body>
+</html>
