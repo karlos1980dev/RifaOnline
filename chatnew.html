@@ -47,7 +47,7 @@ header{
 }
 
 #usuarios{
-  height:100px;
+  height:250px;
   overflow:auto;
 }
 
@@ -94,6 +94,50 @@ button:hover{
   justify-content: center;
   gap: 10px;
 }
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #555;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #00f2ff;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
 </style>
 </head>
 
@@ -102,8 +146,14 @@ button:hover{
   <h2>🚀 CHAT ON</h2>
 </header>
 
-<div style="text-align:center;margin:10px;">
-  <button style="width:40%;" onclick="ativarSom()">🔊 Ativar Som</button>
+
+  <div style="text-align:center;margin:10px;">
+  <label class="switch">
+    <input type="checkbox" id="switchSom" onchange="toggleSom()">
+    <span class="slider"></span>
+  </label>
+  <span id="statusSom">Som desligado</span>
+</div>
   <div id="topoConversa">
 
   <button style="display:none; onclick="voltar()">Voltar</button>
@@ -112,8 +162,8 @@ button:hover{
 
   <button style="display:none;"id="btnLigarTopo" onclick="ligarAtual()">📞 Ligar</button>
 </div>
-</div>
-<div id="telaChamada" style="display:none; position:fixed; top:10%; left:10%; background:#101728; padding:20px; border:2px solid #00f2ff; z-index:999;">
+
+<div id="telaChamada" style="display:none; position:fixed; top:10%; left:0%; background:#101728; padding:20px; border:2px solid #00f2ff; z-index:999;">
 
   <h3 id="infoChamada">Chamada</h3>
 
@@ -222,17 +272,20 @@ function tocarSom(){
   });
 }
 
-function ativarSom(){
-  let audio = new Audio("https://www.myinstants.com/media/sounds/notification.mp3");
+function toggleSom(){
 
-  audio.play().then(() => {
-    somLiberado = true;
-    alert("Som ativado com sucesso!");
-  }).catch(() => {
-    alert("Clique novamente para liberar o som.");
-  });
+  let check = document.getElementById("switchSom").checked;
+
+  if(check){
+    liberarSom();
+    localStorage.setItem("somAtivo", "sim");
+  } else {
+    somLiberado = false;
+    document.getElementById("statusSom").innerText = "Som desligado";
+    localStorage.setItem("somAtivo", "nao");
+  }
+
 }
-
 // ===== IDENTIFICAÇÃO DO USUÁRIO =====
 
 let nome = localStorage.getItem("nomeChat");
@@ -665,6 +718,30 @@ function selecionarUsuario(id, nome){
     "Conversando com: " + nome;
 
   alert("Usuário selecionado: " + nome);
+}
+function liberarSom(){
+
+  let audio = new Audio("https://www.myinstants.com/media/sounds/notification.mp3");
+
+  audio.play().then(() => {
+    somLiberado = true;
+    document.getElementById("statusSom").innerText = "Som ativado";
+  }).catch(() => {
+    alert("Clique novamente para liberar o som.");
+    document.getElementById("switchSom").checked = false;
+  });
+
+}
+window.onload = function(){
+
+  let salvo = localStorage.getItem("somAtivo");
+
+  if(salvo === "sim"){
+    document.getElementById("switchSom").checked = true;
+    somLiberado = true;
+    document.getElementById("statusSom").innerText = "Som ativado";
+  }
+
 }
 </script>
 </body>
