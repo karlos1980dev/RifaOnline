@@ -33,7 +33,7 @@ body{
 
 header{
   background:#0d1320;
-  padding:5px;
+  padding:0px;
   text-align:center;
   border-bottom:2px solid #00f2ff;
   box-shadow:0 0 5px #00f2ff;
@@ -155,25 +155,72 @@ input:checked + .slider:before {
   background:#1a2748;
   border-left:3px solid #ffeb3b;
 }
+#btnMenu{
+  background:#00ff9d;
+  border:none;
+  padding:8px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+#menuLigacoes{
+  margin:10px;
+}
 </style>
 </head>
 
 <body>
-    <header>
-  <h2>🚀 CHAT ON</h2>
-</header>
+    
 
+<div id="menuLigacoes">
 
-  <div style="text-align:center;margin:10px;">
-  <label class="switch">
-    <input type="checkbox" id="switchSom" onchange="toggleSom()">
-    <span class="slider"></span>
-  </label>
-  <span id="statusSom">Som desligado</span>
+  <button id="btnMenu" onclick="toggleMenu()">
+    ☰ Menu
+  </button>
+
+  <div id="painelLigacoes" style="
+  display:none;
+  position:fixed;
+  top:60px;
+  left:10px;
+  width:300px;
+  background:#111;
+  color:white;
+  padding:10px;
+  border-radius:10px;
+  max-height:350px;
+  overflow:auto;
+  z-index:9999;
+  box-shadow:0 0 15px rgba(0,0,0,0.8);
+">
+
+    <h3>Configurações</h3>
+
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+      <label class="switch">
+        <input type="checkbox" id="switchSom" onchange="toggleSom()">
+        <span class="slider"></span>
+      </label>
+
+      <span id="statusSom">Som desligado</span>
+    </div>
+
+    <hr style="border:1px solid #333;margin:10px 0;">
+
+    <h3>Histórico de Ligações</h3>
+
+    <div id="listaLigacoes"></div>
+
+  </div>
+
 </div>
+<header>
+  <h2>🚀 CHAT NEW</h2>
+</header>
   <div id="topoConversa">
 
-  <button style="display:none; onclick="voltar()">Voltar</button>
+  <button style="display:none;" onclick="voltar()">Voltar</button>
 
   <span id="nomeTopo"></span>
 
@@ -216,7 +263,7 @@ input:checked + .slider:before {
   </div>
 
   <div class="footer">
-  <input style="font-weight:bold;" id="mensagem" placeholder="Digite sua mensagem...">
+  <input style="font-weight:bold;" id="mensagem" placeholder="@Digite sua mensagem...">
   <input style="display:none;"type="file" id="imagem" accept="image/*">
   <button onclick="enviar()">Enviar</button>
 </div>
@@ -558,20 +605,33 @@ db.ref("usuarios").on("value", function(snapshot){
     if(u.status == "online"){
 
       lista.innerHTML += `
-        <p style="color:#00ff9d">
-          ● ${u.nome} - online
+        <div style="color:#00ff9d; margin-bottom:8px;">
 
-          ${u.nome !== nome ? 
-            `<button onclick="ligarPara('${child.key}','${u.nome}')">📞 Ligar</button>` 
-            : ""}
-        </p>
+          <span>● ${u.nome} - online</span>
+
+          ${u.nome !== nome ? `
+
+          <div style="display:flex; gap:8px; margin-top:5px;">
+
+            <button onclick="ligarPara('${child.key}','${u.nome}', false)">
+              📞 Áudio
+            </button>
+
+            <button onclick="ligarPara('${child.key}','${u.nome}', true)">
+              🎥 Vídeo
+            </button>
+
+          </div>
+
+          ` : ""}
+
+        </div>
       `;
     }
 
   });
 
 });
-
 // ===== CARREGAR CONFIGURAÇÕES =====
 
 window.onload = function(){
@@ -593,17 +653,21 @@ const configRTC = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
 };
 
-async function ligarPara(idDestino, nomeDestino){
+async function ligarPara(destinoId, destinoNome, comVideo){
 
-  usuarioLigando = idDestino;
+  usuarioLigando = destinoId;
 
   document.getElementById("telaChamada").style.display = "block";
-  document.getElementById("infoChamada").innerText = "Ligando para " + nomeDestino;
+
+  document.getElementById("infoChamada").innerText =
+    "Ligando para " + destinoNome + (comVideo ? " (Vídeo)" : " (Áudio)");
+
+  registrarLigacao(destinoNome, comVideo);
 
   try{
     localStream = await navigator.mediaDevices.getUserMedia({
       audio: true,
-      video: true
+      video: comVideo
     });
   }catch(e){
     alert("Permissão de câmera/microfone negada!");
@@ -620,7 +684,7 @@ async function ligarPara(idDestino, nomeDestino){
 
   peerConnection.onicecandidate = event => {
     if(event.candidate){
-      db.ref("chamadas/" + idDestino).update({
+      db.ref("chamadas/" + destinoId).update({
         tipo: "candidate",
         candidate: event.candidate
       });
@@ -634,15 +698,16 @@ async function ligarPara(idDestino, nomeDestino){
   let offer = await peerConnection.createOffer();
   await peerConnection.setLocalDescription(offer);
 
-  db.ref("chamadas/" + idDestino).set({
+  db.ref("chamadas/" + destinoId).set({
     tipo: "offer",
     oferta: offer,
     de: userId,
-    nome: nome
+    nome: nome,
+    video: comVideo
   });
 
+  registrarHistorico("saindo", destinoNome);
 }
-
 db.ref("chamadas/" + userId).on("value", async snap => {
 
   let dados = snap.val();
@@ -652,15 +717,19 @@ db.ref("chamadas/" + userId).on("value", async snap => {
 
     usuarioLigando = dados.de;
 
+    let somChamada = tocarSomChamada();
+
     document.getElementById("telaChamada").style.display = "block";
 
     document.getElementById("infoChamada").innerHTML = `
-      📞 ${dados.nome} está ligando...<br><br>
-      <button onclick="aceitarChamada()">Aceitar</button>
-      <button onclick="recusarChamada()">Recusar</button>
+      📞 ${dados.nome} está ligando (${dados.video ? "Vídeo" : "Áudio"})...<br><br>
+      <button onclick="aceitarChamada(); pararSom(somChamada)">Aceitar</button>
+      <button onclick="recusarChamada(); pararSom(somChamada)">Recusar</button>
     `;
 
     window.offerRecebida = dados;
+
+    registrarHistorico("entrada", dados.nome);
 
   }
 
@@ -755,6 +824,99 @@ function encerrarChamada(){
   document.getElementById("videoRemoto").srcObject = null;
 
   document.getElementById("infoChamada").innerText = "Ligação encerrada";
+}
+function tocarSomChamada(){
+  let audio = new Audio("https://www.myinstants.com/media/sounds/skype-incoming-call.mp3");
+  audio.loop = true;
+  audio.play();
+  return audio;
+}
+function pararSom(audio){
+  if(audio){
+    audio.pause();
+    audio.currentTime = 0;
+  }
+}
+function registrarHistorico(tipo, comQuem){
+
+  db.ref("historicoChamadas").push({
+    de: nome,
+    para: comQuem,
+    tipo: tipo,
+    data: new Date().toLocaleString()
+  });
+
+}
+db.ref("historicoChamadas").limitToLast(20).on("value", function(snapshot){
+
+  let div = document.getElementById("listaLigacoes");
+
+  if(!div) return;
+
+  div.innerHTML = "";
+
+  snapshot.forEach(function(child){
+
+    let h = child.val();
+
+    div.innerHTML += `
+      <p>
+        ${h.de} → ${h.para}  
+        (${h.tipo})  
+        <br>
+        <small>${h.data}</small>
+      </p>
+      <hr>
+    `;
+
+  });
+
+});
+function toggleMenu(){
+
+  let painel = document.getElementById("painelLigacoes");
+
+  if(painel.style.display === "none"){
+    painel.style.display = "block";
+  } else {
+    painel.style.display = "none";
+  }
+
+}
+function registrarLigacao(destinoNome, tipo){
+
+  let lista = document.getElementById("listaLigacoes");
+
+  let data = new Date().toLocaleString();
+
+  lista.innerHTML = `
+
+    <div style="
+      padding:6px;
+      border-bottom:1px solid #333;
+      font-size:14px;
+    ">
+
+      ${tipo ? "🎥 Vídeo" : "📞 Áudio"} com 
+      <b>${destinoNome}</b>
+      <br>
+      <small>${data}</small>
+
+    </div>
+
+  ` + lista.innerHTML;
+
+}
+function voltar(){
+  document.getElementById("telaChamada").style.display = "none";
+}
+function ligarAtual(){
+  if(!usuarioLigando){
+    alert("Nenhum usuário selecionado para ligar!");
+    return;
+  }
+
+  ligarPara(usuarioLigando, document.getElementById("nomeTopo").innerText, true);
 }
 </script>
 </body>
