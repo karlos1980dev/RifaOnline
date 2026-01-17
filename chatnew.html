@@ -228,30 +228,27 @@ input:checked + .slider:before {
 <script>
 const firebaseConfig = {
   databaseURL: "https://loteriasmj-274f9-default-rtdb.firebaseio.com/"
-  
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const db = firebase.database();
 const storage = firebase.storage();
+
 let mensagensNovas = 0;
 let somLiberado = false;
 
 // ===== FUNÇÕES AUXILIARES =====
 
 function detectarMencao(texto){
+  if(!texto) return null;
 
   let palavras = texto.split(" ");
 
   for(let p of palavras){
-
     if(p.startsWith("@")){
-
       let usuario = p.replace("@", "");
-
-      // remove possíveis vírgulas ou pontos
       usuario = usuario.replace(/[^a-zA-Z0-9]/g, "");
-
       return usuario.toLowerCase();
     }
   }
@@ -276,27 +273,14 @@ function gerarCor(nome){
   return cor;
 }
 
-function tocarSom(){
-  if(!somLiberado){
-    console.log("Som ainda não foi liberado pelo usuário");
-    return;
-  }
-
-  let audio = new Audio("https://www.myinstants.com/media/sounds/notification.mp3");
-
-  audio.play().catch(err => {
-    console.log("Erro ao tocar som:", err);
-  });
-}
 function destacarMencoes(texto){
-
   if(!texto) return "";
 
   return texto.replace(/@([a-zA-Z0-9]+)/g, function(match){
     return `<span style="color:#ffeb3b; font-weight:bold;">${match}</span>`;
   });
-
 }
+
 function toggleSom(){
 
   let check = document.getElementById("switchSom").checked;
@@ -311,6 +295,21 @@ function toggleSom(){
   }
 
 }
+
+function liberarSom(){
+
+  let audio = new Audio("https://www.myinstants.com/media/sounds/notification.mp3");
+
+  audio.play().then(() => {
+    somLiberado = true;
+    document.getElementById("statusSom").innerText = "Som ativado";
+  }).catch(() => {
+    alert("Clique novamente para liberar o som.");
+    document.getElementById("switchSom").checked = false;
+  });
+
+}
+
 // ===== IDENTIFICAÇÃO DO USUÁRIO =====
 
 let nome = localStorage.getItem("nomeChat");
@@ -368,7 +367,8 @@ function iniciarUsuario(){
       db.ref("usuarios/" + userId).set({
         nome: nome,
         status: "online",
-        total: 0
+        total: 0,
+        foto: "https://cdn-icons-png.flaticon.com/512/149/149071.png"
       });
     }
 
@@ -424,10 +424,6 @@ function enviar(){
 
   document.getElementById("mensagem").value = "";
   document.getElementById("imagem").value = "";
-
-  mensagensNovas = 0;
-  document.getElementById("alerta").style.display = "none";
-  document.title = "Chat on";
 }
 
 // ===== RECEBER MENSAGENS =====
@@ -443,6 +439,16 @@ db.ref("mensagens").on("value", function(snapshot){
     let msg = child.val();
 
     let corUsuario = gerarCor(msg.nome);
+
+    let fotoUsuario = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+    if(msg.userId){
+      db.ref("usuarios/" + msg.userId + "/foto").once("value", snap => {
+        if(snap.exists()){
+          fotoUsuario = snap.val();
+        }
+      });
+    }
 
     let conteudoImagem = "";
 
@@ -468,70 +474,46 @@ db.ref("mensagens").on("value", function(snapshot){
 
     let classe = "msg";
 
-let mencionado = detectarMencao(msg.texto);
+    let mencionado = detectarMencao(msg.texto);
 
-if(mencionado && mencionado === nome.toLowerCase()){
-  classe = "msg mencao";
-}
+    if(mencionado && mencionado === nome.toLowerCase()){
+      classe = "msg mencao";
+    }
 
-let textoFormatado = destacarMencoes(msg.texto);
+    let textoFormatado = destacarMencoes(msg.texto);
 
-chat.innerHTML += `
-  <div class="${classe}">
-    ${botoes}
-    <b style="color:${corUsuario}">${msg.nome}</b>
-    <br>
-    ${textoFormatado || ""}
-    ${conteudoImagem}
-    <br>
-    <small>${msg.data}</small>
-  </div>
-`;
+    chat.innerHTML += `
+      <div class="${classe}">
+
+        <div style="display:flex; align-items:center; gap:8px;">
+
+          <img src="${fotoUsuario}" 
+               style="width:35px; height:35px; border-radius:50%; border:2px solid ${corUsuario};">
+
+          <b style="color:${corUsuario}">${msg.nome}</b>
+
+          ${botoes}
+
+        </div>
+
+        <div style="margin-left:45px; margin-top:5px;">
+          ${textoFormatado || ""}
+          ${conteudoImagem}
+          <br>
+          <small>${msg.data}</small>
+        </div>
+
+      </div>
+    `;
 
   });
 
   chat.scrollTop = chat.scrollHeight;
 
 });
-// ===== ATUALIZAR USUÁRIOS EM TEMPO REAL =====
 
-db.ref("usuarios").on("value",     function(snapshot){
+// ===== EXCLUIR E EDITAR =====
 
-  let lista = document.getElementById("usuarios");
-  lista.innerHTML = "";
-
-  snapshot.forEach(function(child){
-
-    let u = child.val();
-    let total = u.total || 0;
-
-    if(u.status == "online"){
-
-      lista.innerHTML += `
-  <p style="color:#00ff9d">
-    ● ${u.nome} - online - ${total}
-    ${u.nome !== nome ? 
-      `<button onclick="ligarPara('${child.key}','${u.nome}')">📞 Ligar</button>` 
-      : ""}
-  </p>
-`;
-    }
-
-  });
-
-});
-
-// ===== ZERAR AO CLICAR NO CHAT =====
-
-document.getElementById("chat").addEventListener("click", function(){
-
-  mensagensNovas = 0;
-
-  document.getElementById("alerta").style.display = "none";
-
-  document.title = "Chat on";
-
-});
 function excluirMensagem(id, dono){
 
   if(dono !== userId){
@@ -539,12 +521,12 @@ function excluirMensagem(id, dono){
     return;
   }
 
-  let confirmar = confirm("Deseja excluir esta mensagem?");
+  if(confirm("Deseja excluir esta mensagem?")){
+    db.ref("mensagens/" + id).remove();
+  }
 
-  if(!confirmar) return;
-
-  db.ref("mensagens/" + id).remove();
 }
+
 function editarMensagem(id, dono, textoAtual){
 
   if(dono !== userId){
@@ -554,17 +536,58 @@ function editarMensagem(id, dono, textoAtual){
 
   let novoTexto = prompt("Editar mensagem:", textoAtual);
 
-  if(novoTexto === null || novoTexto === "") return;
+  if(novoTexto){
+    db.ref("mensagens/" + id).update({
+      texto: novoTexto + " (editado)"
+    });
+  }
 
-  db.ref("mensagens/" + id).update({
-    texto: novoTexto + " (editado)"
-  });
 }
-let usuarioAtual = null;
-let nomeAtual = null;
+
+// ===== LISTA DE USUÁRIOS =====
+
+db.ref("usuarios").on("value", function(snapshot){
+
+  let lista = document.getElementById("usuarios");
+  lista.innerHTML = "";
+
+  snapshot.forEach(function(child){
+
+    let u = child.val();
+
+    if(u.status == "online"){
+
+      lista.innerHTML += `
+        <p style="color:#00ff9d">
+          ● ${u.nome} - online
+
+          ${u.nome !== nome ? 
+            `<button onclick="ligarPara('${child.key}','${u.nome}')">📞 Ligar</button>` 
+            : ""}
+        </p>
+      `;
+    }
+
+  });
+
+});
+
+// ===== CARREGAR CONFIGURAÇÕES =====
+
+window.onload = function(){
+
+  let salvo = localStorage.getItem("somAtivo");
+
+  if(salvo === "sim"){
+    document.getElementById("switchSom").checked = true;
+    somLiberado = true;
+    document.getElementById("statusSom").innerText = "Som ativado";
+  }
+
+}
+let usuarioLigando = null;
 let peerConnection;
 let localStream;
-let usuarioLigando = null;
 
 const configRTC = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
@@ -706,9 +729,7 @@ async function aceitarChamada(){
 }
 
 function recusarChamada(){
-
   db.ref("chamadas/" + userId).remove();
-
   document.getElementById("telaChamada").style.display = "none";
 }
 
@@ -735,50 +756,6 @@ function encerrarChamada(){
 
   document.getElementById("infoChamada").innerText = "Ligação encerrada";
 }
-function ligarAtual(){
-
-  if(!usuarioAtual){
-    alert("Nenhum usuário selecionado!");
-    return;
-  }
-
-  ligarPara(usuarioAtual, nomeAtual);
-}
-function selecionarUsuario(id, nome){
-
-  usuarioAtual = id;
-  nomeAtual = nome;
-
-  document.getElementById("nomeTopo").innerText =
-    "Conversando com: " + nome;
-
-  alert("Usuário selecionado: " + nome);
-}
-function liberarSom(){
-
-  let audio = new Audio("https://www.myinstants.com/media/sounds/notification.mp3");
-
-  audio.play().then(() => {
-    somLiberado = true;
-    document.getElementById("statusSom").innerText = "Som ativado";
-  }).catch(() => {
-    alert("Clique novamente para liberar o som.");
-    document.getElementById("switchSom").checked = false;
-  });
-
-}
-window.onload = function(){
-
-  let salvo = localStorage.getItem("somAtivo");
-
-  if(salvo === "sim"){
-    document.getElementById("switchSom").checked = true;
-    somLiberado = true;
-    document.getElementById("statusSom").innerText = "Som ativado";
-  }
-
-}
-
 </script>
 </body>
 </html>
