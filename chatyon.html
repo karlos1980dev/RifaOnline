@@ -8,6 +8,19 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+
+<link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/telescsr.jpg" type="image/jpg">
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/telescsr.jpg" type="image/jpg">
+  
+  <link rel="icon" href="icone.png">
+  <link rel="apple-touch-icon" href="icone.png">
+  <link rel="shortcut icon" href="telescsr.jpg">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="telecsr">
+
+
 <style>
 
 body{
@@ -47,7 +60,7 @@ header{
 }
 
 #usuarios{
-  height:100px;
+  height:250px;
   overflow:auto;
 }
 
@@ -94,24 +107,101 @@ button:hover{
   justify-content: center;
   gap: 10px;
 }
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #555;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #00f2ff;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+.msg.mencao {
+  background:#1a2748;
+  border-left:3px solid #ffeb3b;
+}
 </style>
 </head>
 
 <body>
+    <header>
+  <h2>🚀 CHAT ON</h2>
+</header>
 
+
+  <div style="text-align:center;margin:10px;">
+  <label class="switch">
+    <input type="checkbox" id="switchSom" onchange="toggleSom()">
+    <span class="slider"></span>
+  </label>
+  <span id="statusSom">Som desligado</span>
+</div>
+  <div id="topoConversa">
+
+  <button style="display:none; onclick="voltar()">Voltar</button>
+
+  <span id="nomeTopo"></span>
+
+  <button style="display:none;"id="btnLigarTopo" onclick="ligarAtual()">📞 Ligar</button>
+</div>
+
+<div id="telaChamada" style="display:none; position:fixed; top:10%; left:0%; background:#101728; padding:20px; border:2px solid #00f2ff; z-index:999;">
+
+  <h3 id="infoChamada">Chamada</h3>
+
+  <div style="display:flex; gap:10px; margin:10px;">
+    <video id="videoLocal" autoplay muted style="width:150px; border:2px solid #00ff9d;"></video>
+    <video id="videoRemoto" autoplay style="width:150px; border:2px solid #00f2ff;"></video>
+  </div>
+
+  <div style="text-align:center;">
+    <button onclick="encerrarChamada()">Encerrar</button>
+  </div>
+
+</div>
 <div id="alerta" style="display:none; background:#ff9800; padding:10px; color:#fff; margin-bottom:10px;">
   Novas mensagens: <span id="totalNovas">0</span>
 </div>
 
-<header>
-  <h2>🚀 CHAT ON</h2>
-</header>
-<div style="text-align:center;margin:10px;">
-  <button style="width:80%;" onclick="ativarSom()">🔊 Ativar Som</button>
-</div>
+
 <div class="container">
 
-  <div class="painel">
+<!--  -->  <div class="painel">
 
     <div class="box">
       <h3>👥 Usuários</h3>
@@ -126,13 +216,15 @@ button:hover{
   </div>
 
   <div class="footer">
-  <input id="mensagem" placeholder="Digite sua mensagem...">
+  <input style="font-weight:bold;" id="mensagem" placeholder="Digite sua mensagem...">
   <input style="display:none;"type="file" id="imagem" accept="image/*">
   <button onclick="enviar()">Enviar</button>
 </div>
 
 </div>
-
+<footer style="text-align:center; margin:0px;">
+    <p>todos os direitos reservado : CSR Newtech</p>
+</footer>
 <script>
 const firebaseConfig = {
   databaseURL: "https://loteriasmj-274f9-default-rtdb.firebaseio.com/"
@@ -196,18 +288,29 @@ function tocarSom(){
     console.log("Erro ao tocar som:", err);
   });
 }
+function destacarMencoes(texto){
 
-function ativarSom(){
-  let audio = new Audio("https://www.myinstants.com/media/sounds/notification.mp3");
+  if(!texto) return "";
 
-  audio.play().then(() => {
-    somLiberado = true;
-    alert("Som ativado com sucesso!");
-  }).catch(() => {
-    alert("Clique novamente para liberar o som.");
+  return texto.replace(/@([a-zA-Z0-9]+)/g, function(match){
+    return `<span style="color:#ffeb3b; font-weight:bold;">${match}</span>`;
   });
-}
 
+}
+function toggleSom(){
+
+  let check = document.getElementById("switchSom").checked;
+
+  if(check){
+    liberarSom();
+    localStorage.setItem("somAtivo", "sim");
+  } else {
+    somLiberado = false;
+    document.getElementById("statusSom").innerText = "Som desligado";
+    localStorage.setItem("somAtivo", "nao");
+  }
+
+}
 // ===== IDENTIFICAÇÃO DO USUÁRIO =====
 
 let nome = localStorage.getItem("nomeChat");
@@ -363,17 +466,27 @@ db.ref("mensagens").on("value", function(snapshot){
       `;
     }
 
-    chat.innerHTML += `
-      <div class="msg">
-        ${botoes}
-        <b style="color:${corUsuario}">${msg.nome}</b>
-        <br>
-        ${msg.texto || ""}
-        ${conteudoImagem}
-        <br>
-        <small>${msg.data}</small>
-      </div>
-    `;
+    let classe = "msg";
+
+let mencionado = detectarMencao(msg.texto);
+
+if(mencionado && mencionado === nome.toLowerCase()){
+  classe = "msg mencao";
+}
+
+let textoFormatado = destacarMencoes(msg.texto);
+
+chat.innerHTML += `
+  <div class="${classe}">
+    ${botoes}
+    <b style="color:${corUsuario}">${msg.nome}</b>
+    <br>
+    ${textoFormatado || ""}
+    ${conteudoImagem}
+    <br>
+    <small>${msg.data}</small>
+  </div>
+`;
 
   });
 
@@ -395,10 +508,13 @@ db.ref("usuarios").on("value",     function(snapshot){
     if(u.status == "online"){
 
       lista.innerHTML += `
-        <p style="color:#00ff9d">
-          ● ${u.nome} - online - ${total}
-        </p>
-      `;
+  <p style="color:#00ff9d">
+    ● ${u.nome} - online - ${total}
+    ${u.nome !== nome ? 
+      `<button onclick="ligarPara('${child.key}','${u.nome}')">📞 Ligar</button>` 
+      : ""}
+  </p>
+`;
     }
 
   });
@@ -444,6 +560,225 @@ function editarMensagem(id, dono, textoAtual){
     texto: novoTexto + " (editado)"
   });
 }
+let usuarioAtual = null;
+let nomeAtual = null;
+let peerConnection;
+let localStream;
+let usuarioLigando = null;
+
+const configRTC = {
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+};
+
+async function ligarPara(idDestino, nomeDestino){
+
+  usuarioLigando = idDestino;
+
+  document.getElementById("telaChamada").style.display = "block";
+  document.getElementById("infoChamada").innerText = "Ligando para " + nomeDestino;
+
+  try{
+    localStream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: true
+    });
+  }catch(e){
+    alert("Permissão de câmera/microfone negada!");
+    return;
+  }
+
+  document.getElementById("videoLocal").srcObject = localStream;
+
+  peerConnection = new RTCPeerConnection(configRTC);
+
+  localStream.getTracks().forEach(track => {
+    peerConnection.addTrack(track, localStream);
+  });
+
+  peerConnection.onicecandidate = event => {
+    if(event.candidate){
+      db.ref("chamadas/" + idDestino).update({
+        tipo: "candidate",
+        candidate: event.candidate
+      });
+    }
+  };
+
+  peerConnection.ontrack = event => {
+    document.getElementById("videoRemoto").srcObject = event.streams[0];
+  };
+
+  let offer = await peerConnection.createOffer();
+  await peerConnection.setLocalDescription(offer);
+
+  db.ref("chamadas/" + idDestino).set({
+    tipo: "offer",
+    oferta: offer,
+    de: userId,
+    nome: nome
+  });
+
+}
+
+db.ref("chamadas/" + userId).on("value", async snap => {
+
+  let dados = snap.val();
+  if(!dados) return;
+
+  if(dados.tipo === "offer"){
+
+    usuarioLigando = dados.de;
+
+    document.getElementById("telaChamada").style.display = "block";
+
+    document.getElementById("infoChamada").innerHTML = `
+      📞 ${dados.nome} está ligando...<br><br>
+      <button onclick="aceitarChamada()">Aceitar</button>
+      <button onclick="recusarChamada()">Recusar</button>
+    `;
+
+    window.offerRecebida = dados;
+
+  }
+
+  if(dados.tipo === "answer"){
+    await peerConnection.setRemoteDescription(
+      new RTCSessionDescription(dados.resposta)
+    );
+  }
+
+  if(dados.tipo === "candidate"){
+    await peerConnection.addIceCandidate(dados.candidate);
+  }
+
+});
+
+async function aceitarChamada(){
+
+  let dados = window.offerRecebida;
+
+  document.getElementById("infoChamada").innerText =
+    "Em chamada com " + dados.nome;
+
+  try{
+    localStream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: true
+    });
+  }catch(e){
+    alert("Permissão negada!");
+    return;
+  }
+
+  document.getElementById("videoLocal").srcObject = localStream;
+
+  peerConnection = new RTCPeerConnection(configRTC);
+
+  localStream.getTracks().forEach(track => {
+    peerConnection.addTrack(track, localStream);
+  });
+
+  peerConnection.onicecandidate = event => {
+    if(event.candidate){
+      db.ref("chamadas/" + dados.de).update({
+        tipo: "candidate",
+        candidate: event.candidate
+      });
+    }
+  };
+
+  peerConnection.ontrack = event => {
+    document.getElementById("videoRemoto").srcObject = event.streams[0];
+  };
+
+  await peerConnection.setRemoteDescription(
+    new RTCSessionDescription(dados.oferta)
+  );
+
+  let answer = await peerConnection.createAnswer();
+  await peerConnection.setLocalDescription(answer);
+
+  db.ref("chamadas/" + dados.de).update({
+    tipo: "answer",
+    resposta: answer
+  });
+
+}
+
+function recusarChamada(){
+
+  db.ref("chamadas/" + userId).remove();
+
+  document.getElementById("telaChamada").style.display = "none";
+}
+
+function encerrarChamada(){
+
+  if(peerConnection){
+    peerConnection.close();
+  }
+
+  if(localStream){
+    localStream.getTracks().forEach(t => t.stop());
+  }
+
+  if(usuarioLigando){
+    db.ref("chamadas/" + usuarioLigando).remove();
+  }
+
+  db.ref("chamadas/" + userId).remove();
+
+  document.getElementById("telaChamada").style.display = "none";
+
+  document.getElementById("videoLocal").srcObject = null;
+  document.getElementById("videoRemoto").srcObject = null;
+
+  document.getElementById("infoChamada").innerText = "Ligação encerrada";
+}
+function ligarAtual(){
+
+  if(!usuarioAtual){
+    alert("Nenhum usuário selecionado!");
+    return;
+  }
+
+  ligarPara(usuarioAtual, nomeAtual);
+}
+function selecionarUsuario(id, nome){
+
+  usuarioAtual = id;
+  nomeAtual = nome;
+
+  document.getElementById("nomeTopo").innerText =
+    "Conversando com: " + nome;
+
+  alert("Usuário selecionado: " + nome);
+}
+function liberarSom(){
+
+  let audio = new Audio("https://www.myinstants.com/media/sounds/notification.mp3");
+
+  audio.play().then(() => {
+    somLiberado = true;
+    document.getElementById("statusSom").innerText = "Som ativado";
+  }).catch(() => {
+    alert("Clique novamente para liberar o som.");
+    document.getElementById("switchSom").checked = false;
+  });
+
+}
+window.onload = function(){
+
+  let salvo = localStorage.getItem("somAtivo");
+
+  if(salvo === "sim"){
+    document.getElementById("switchSom").checked = true;
+    somLiberado = true;
+    document.getElementById("statusSom").innerText = "Som ativado";
+  }
+
+}
+
 </script>
 </body>
 </html>
