@@ -151,6 +151,10 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(26px);
 }
+.msg.mencao {
+  background:#1a2748;
+  border-left:3px solid #ffeb3b;
+}
 </style>
 </head>
 
@@ -284,7 +288,15 @@ function tocarSom(){
     console.log("Erro ao tocar som:", err);
   });
 }
+function destacarMencoes(texto){
 
+  if(!texto) return "";
+
+  return texto.replace(/@([a-zA-Z0-9]+)/g, function(match){
+    return `<span style="color:#ffeb3b; font-weight:bold;">${match}</span>`;
+  });
+
+}
 function toggleSom(){
 
   let check = document.getElementById("switchSom").checked;
@@ -454,17 +466,27 @@ db.ref("mensagens").on("value", function(snapshot){
       `;
     }
 
-    chat.innerHTML += `
-      <div class="msg">
-        ${botoes}
-        <b style="color:${corUsuario}">${msg.nome}</b>
-        <br>
-        ${msg.texto || ""}
-        ${conteudoImagem}
-        <br>
-        <small>${msg.data}</small>
-      </div>
-    `;
+    let classe = "msg";
+
+let mencionado = detectarMencao(msg.texto);
+
+if(mencionado && mencionado === nome.toLowerCase()){
+  classe = "msg mencao";
+}
+
+let textoFormatado = destacarMencoes(msg.texto);
+
+chat.innerHTML += `
+  <div class="${classe}">
+    ${botoes}
+    <b style="color:${corUsuario}">${msg.nome}</b>
+    <br>
+    ${textoFormatado || ""}
+    ${conteudoImagem}
+    <br>
+    <small>${msg.data}</small>
+  </div>
+`;
 
   });
 
@@ -756,6 +778,7 @@ window.onload = function(){
   }
 
 }
+
 </script>
 </body>
 </html>
