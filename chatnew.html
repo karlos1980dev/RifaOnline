@@ -15,7 +15,7 @@
   <link rel="icon" href="icone.png">
   <link rel="apple-touch-icon" href="icone.png">
   <link rel="shortcut icon" href="telescsr.jpg">
-
+<link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="telecsr">
@@ -917,6 +917,15 @@ function ligarAtual(){
   }
 
   ligarPara(usuarioLigando, document.getElementById("nomeTopo").innerText, true);
+}
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+  .then(function() {
+    console.log("PWA registrado com sucesso!");
+  })
+  .catch(function(err) {
+    console.log("Erro ao registrar PWA:", err);
+  });
 }
 </script>
 </body>
