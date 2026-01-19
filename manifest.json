@@ -1,0 +1,21 @@
+{
+  "name": "Aposte e Ganhe",
+  "short_name": "Aposte",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#1f1c2c",
+  "theme_color": "#00ff9d",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icone.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icone.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
