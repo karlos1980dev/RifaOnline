@@ -600,36 +600,32 @@ db.ref("usuarios").on("value", function(snapshot){
 
   snapshot.forEach(function(child){
 
-    let u = child.val();
+  let u = child.val();
 
-    if(u.status == "online"){
+  lista.innerHTML += `
+    <div style="color:#00ff9d; margin-bottom:8px;">
 
-      lista.innerHTML += `
-        <div style="color:#00ff9d; margin-bottom:8px;">
+      <span>● ${u.nome} - ${u.status}</span>
 
-          <span>● ${u.nome} - online</span>
+      ${u.nome !== nome ? `
 
-          ${u.nome !== nome ? `
+      <div style="display:flex; gap:8px; margin-top:5px;">
 
-          <div style="display:flex; gap:8px; margin-top:5px;">
+        <button onclick="ligarPara('${child.key}','${u.nome}', false)">
+          📞 Áudio
+        </button>
 
-            <button onclick="ligarPara('${child.key}','${u.nome}', false)">
-              📞 Áudio
-            </button>
+        <button onclick="ligarPara('${child.key}','${u.nome}', true)">
+          🎥 Vídeo
+        </button>
 
-            <button onclick="ligarPara('${child.key}','${u.nome}', true)">
-              🎥 Vídeo
-            </button>
+      </div>
 
-          </div>
+      ` : ""}
 
-          ` : ""}
-
-        </div>
-      `;
-    }
-
-  });
+    </div>
+  `;
+});
 
 });
 // ===== CARREGAR CONFIGURAÇÕES =====
