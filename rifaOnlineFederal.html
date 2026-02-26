@@ -709,7 +709,7 @@
     </div>
   </div>
 </div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 /* ========================= FIREBASE CONFIG ========================= */
 const firebaseConfig = {
@@ -994,8 +994,8 @@ function atualizarTextareaReservasSemana(todasReservas) {
     }
 
     // Ordena os dias carregados
-    const diasOrdenados = Object.keys(todasReservas).sort();
-
+    const diasOrdenados = Object.keys(todasReservas).sort().reverse();
+    
     // Exibe cada dia da parte relevante
     diasOrdenados.forEach(dataStr => {
       const dadosDia = todasReservas[dataStr];
@@ -1004,28 +1004,48 @@ function atualizarTextareaReservasSemana(todasReservas) {
 
       html += ``;
 
-      const horariosOrdenados = Object.keys(dadosDia).sort();
-      horariosOrdenados.forEach(horario => {
-        html += `<br><strong>[ HORÁRIO ] => ${horario}</strong><br>`;
+ const horariosOrdenados = Object.keys(dadosDia).sort().reverse();
 
-        for (const k in dadosDia[horario]) {
-          const d = dadosDia[horario][k];
-          const countdownId = `countdown-${dataStr}-${horario}-${k}`.replace(/[^a-zA-Z0-9-_]/g, '');
-          const qtd = d.numeros.length;
-          const valor = (qtd * 1).toFixed(2).replace('.', ',');
+horariosOrdenados.forEach(horario => {
+  html += `<br><strong>[ HORÁRIO ] => ${horario}</strong><br>`;
 
-          let status = d.status || 'AGUARDANDO';
-          if (status.toUpperCase().includes('PAGO')) status = '✅ PAGO';
+  Object.keys(dadosDia[horario])
+    .sort()
+    .reverse()
+    .forEach(k => {
 
-          const resultado = d.resultado || 'AGUARDANDO';
+      const d = dadosDia[horario][k];
+      const countdownId = `countdown-${dataStr}-${horario}-${k}`.replace(/[^a-zA-Z0-9-_]/g, '');
+      const qtd = d.numeros.length;
+      const valor = (qtd * 1).toFixed(2).replace('.', ',');
 
-          const corStatus = status.includes('VALIDADO') || status.includes('PAGO') ? 'verde' : status.includes('CANCELADO') ? 'vermelho' : 'amarelo';
-          const corResultado = resultado.includes('GANHOU') ? 'verde' : resultado.includes('PERDEU') ? 'vermelho' : 'amarelo';
+      let status = d.status || 'AGUARDANDO';
+      if (status.toUpperCase().includes('PAGO')) status = '✅ PAGO';
 
-          let extrasTxt = d.dezenasExtras && d.dezenasExtras.length ? `<br></br><strong>🎁 Dzn extra:</strong> ${d.dezenasExtras.join('-')}` : '';
+      const resultado = d.resultado || 'AGUARDANDO';
 
-          html += `</br>Nome: <span class="verde">${d.nome}</span><br>
-Quantidade: ${qtd}</br>
+      const corStatus =
+        status.includes('VALIDADO') || status.includes('PAGO')
+          ? 'verde'
+          : status.includes('CANCELADO')
+          ? 'vermelho'
+          : 'amarelo';
+
+      const corResultado =
+        resultado.includes('GANHOU')
+          ? 'verde'
+          : resultado.includes('PERDEU')
+          ? 'vermelho'
+          : 'amarelo';
+
+      let extrasTxt =
+        d.dezenasExtras && d.dezenasExtras.length
+          ? `<br><strong>🎁 Dzn extra:</strong> ${d.dezenasExtras.join('-')}`
+          : '';
+
+      html += `
+Nome: <span class="verde">${d.nome}</span><br>
+Quantidade: ${qtd}<br>
 Dezena Escolhida : ${d.numeros.join('-')} ${extrasTxt}<br>
 Valor a pagar: R$ ${valor}<br>
 Status: <span class="${corStatus}">${status}</span>
@@ -1034,13 +1054,14 @@ Resultado: <span class="${corResultado}">${resultado}</span><br>
 ---------------------------<br>
 `;
 
-          setTimeout(() => {
-            const el = document.getElementById(countdownId);
-            if (el) gerarCountdown(countdownId, d.dataHora, d.status);
-          }, 50);
-        }
-      });
+      setTimeout(() => {
+        const el = document.getElementById(countdownId);
+        if (el) gerarCountdown(countdownId, d.dataHora, d.status);
+      }, 50);
+
     });
+});
+});
 
     codigo.innerHTML = html; // ATUALIZA O TEXTarea ANTES DE SALVAR
     salvarHistoricoAutomatico();
@@ -2035,6 +2056,63 @@ function embaralhar(lista) {
 }
 /* força uso da nova função total */
 atualizarTotais = atualizarTotaisComPacote;
+function gerarPixPayload(chave, nome, cidade, valor) {
+
+  function format(id, value) {
+    return id + value.length.toString().padStart(2, '0') + value;
+  }
+
+  const payload =
+    format("00", "01") +
+    format("26",
+      format("00", "BR.GOV.BCB.PIX") +
+      format("01", chave)
+    ) +
+    format("52", "0000") +
+    format("53", "986") +
+    format("54", valor.toFixed(2)) +
+    format("58", "BR") +
+    format("59", nome) +
+    format("60", cidade) +
+    format("62",
+      format("05", "***")
+    );
+
+  function crc16(str) {
+    let crc = 0xffff;
+    for (let c = 0; c < str.length; c++) {
+      crc ^= str.charCodeAt(c) << 8;
+      for (let i = 0; i < 8; i++) {
+        crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : crc << 1;
+      }
+    }
+    return (crc & 0xffff).toString(16).toUpperCase().padStart(4, '0');
+  }
+
+  const payloadFinal = payload + "6304";
+  return payloadFinal + crc16(payloadFinal);
+}
+function gerarQRCodePix(valor) {
+
+  const chavePix = "ce3a2d70-48ee-4c0d-b3ec-7184969521ac";
+  const nomeRecebedor = "Carlos Santos";
+  const cidade = "SALVADOR";
+
+  const payload = gerarPixPayload(
+    chavePix,
+    nomeRecebedor,
+    cidade,
+    parseFloat(valor)
+  );
+
+  document.getElementById("qrcode").innerHTML = "";
+
+  new QRCode(document.getElementById("qrcode"), {
+    text: payload,
+    width: 250,
+    height: 250
+  });
+}
 </script>
 </body>
 </html> 
