@@ -21,7 +21,12 @@
       --danger: #e74c3c;
       --text: #fff;
     }
-
+.contador {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 15px 0;
+  color:#ff000a;
+}
     *{box-sizing:border-box}
     body {
         font-family: Arial, sans-serif;
@@ -668,7 +673,9 @@
     
   </div>
 <p id="dataJogo" style="color:gold;font-weight:bold;"></p>
-  
+  <div class="contador">
+  Dezenas marcadas: <span id="contadorMarcadas">0</span>
+</div>
      
 <!-- ADICIONE ESTA LINHA A-->
 <p id="dezenaAtual" style="
@@ -883,7 +890,11 @@ function toggleNumero(btn, num) {
   }
 
   contadorMarcacoes = selecionados.length;
-  atualizarTotais();
+atualizarTotais();
+atualizarContador(); // 🔥 ADICIONE ISSO
+}
+function atualizarContador() {
+  document.getElementById('contadorMarcadas').textContent = selecionados.length;
 }
 /* ========================= TOTAIS ========================= */
 function atualizarTotais() {
@@ -1134,8 +1145,16 @@ function carregarReservasDaSemana() {
 
   
   salvarBtn.onclick = () => {
-  if (selecionados.length === 0) return alert('Selecione números');
-  if (!podeMarcarAgora()) return alert('Prazo encerrado');
+
+  if (selecionados.length === 0)
+    return alert('Selecione números');
+
+  // 🔥 REGRA MÚLTIPLO DE 5
+  if (selecionados.length % 5 !== 0)
+    return alert('Só é permitido salvar com 5, 10, 15, 20 dezenas...');
+
+  if (!podeMarcarAgora())
+    return alert('Prazo encerrado');
 
   const nome = localStorage.getItem('nomeJogador') || 'Sem nome';
   const horario = horariosSelect.value;
@@ -1157,25 +1176,38 @@ function carregarReservasDaSemana() {
 
   db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados)
   .then(() => {
+
     const updates = {};
+
     todosNumeros.forEach(n => {
       updates['numerosBloqueados/' + n] = {
         bloqueadoEm: Date.now(),
         extra: dezenasExtras.includes(n)
       };
     });
-    agendarAtualizacaoStatusParaPago(dados.dataHora, `compras-dia/${dataHoje}/${horario}/${chave}`);
+
+    agendarAtualizacaoStatusParaPago(
+      dados.dataHora,
+      `compras-dia/${dataHoje}/${horario}/${chave}`
+    );
+
     return db.ref().update(updates);
   })
   .then(() => {
+
     abrirModalPix();
+
+    // 🔥 LIMPAR TUDO CORRETAMENTE
     selecionados = [];
-    document.querySelectorAll('.numero').forEach(b => b.classList.remove('marcado'));
+
+    document.querySelectorAll('.numero')
+      .forEach(b => b.classList.remove('marcado'));
+
+    atualizarContador();
     atualizarTotais();
     atualizarBloqueados();
   });
 };
-
 function proximaDataDeJogo() {
   const hoje = new Date();
   const d = hoje.getDay();
@@ -2144,6 +2176,10 @@ function gerarQRCodePix(valor) {
     height: 250
   });
 }
+function atualizarContador() {
+  document.getElementById('contadorMarcadas').textContent = selecionados.length;
+}
+atualizarContador();
 </script>
 </body>
 </html> 
