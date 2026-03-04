@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fila PIX</title>
+<title>PIX MAIS</title>
 
 <style>
 body{
@@ -163,16 +163,6 @@ button:hover{
   from{transform:translateY(30px); opacity:0}
   to{transform:translateY(0); opacity:1}
 }
-/* Inputs lado a lado */
-.inputs-lado{
-  display:flex;
-  gap:10px;
-}
-
-.inputs-lado input{
-  width:100%;
-}
-
 </style>
 </head>
 <body>
@@ -189,12 +179,10 @@ button:hover{
 </div>
 <div class="container">
 
-<h2>PIX MAIS </h2>
+<h2>Entrar na Fila PIX</h2>
 
-<div class="inputs-lado">
-  <input type="text" id="nome" placeholder="Seu nome">
-  <input type="text" id="pix" placeholder="Seu PIX">
-</div>
+<input type="text" id="nome" placeholder="Seu nome">
+<input type="text" id="pix" placeholder="Seu PIX">
 
 <button id="btnSolicitar" onclick="enviar()">Solicitar Entrada</button>
 
@@ -255,11 +243,7 @@ window.enviar = async function(){
     return;
   }
 
-  await push(pendentesRef,{
-  nome,
-  pix,
-  timestamp: Date.now()
-});
+  await push(pendentesRef,{nome,pix});
 localStorage.setItem("ultimoEnvio", Date.now());
 verificarBloqueio();
   document.getElementById("status").innerText =
@@ -283,13 +267,7 @@ onValue(listaRef,(snapshot)=>{
     return;
   }
 
-  let ativos = Object.values(dados);
-
-// Ordena por data (mantém o primeiro fixo)
-ativos.sort((a,b)=> a.timestamp - b.timestamp);
-
-// Mantém apenas 4
-ativos = ativos.slice(0,4);
+  const ativos = Object.values(dados).slice(0,4);
 
   ativos.forEach((item,index)=>{
 
@@ -359,7 +337,7 @@ window.copiarPix = function(pix){
 
 window.compartilharSite = function(nome){
 
-  const linkSite = window.location.origin;
+  const linkSite =" https://mjonline.netlify.app/maispix";
 
   const mensagem =
 `Estou te indicando para investimento único.
