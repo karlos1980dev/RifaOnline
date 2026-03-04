@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fila PIX</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Segoe UI;
+  background:linear-gradient(135deg,#141e30,#243b55);
+  color:#fff;
+  text-align:center;
+}
+
+.container{
+  max-width:400px;
+  margin:auto;
+  margin-top:60px;
+  background:#ffffff10;
+  padding:25px;
+  border-radius:15px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 10px 30px rgba(0,0,0,0.5);
+}
+
+input{
+  width:95%;
+  padding:12px;
+  margin:10px 0;
+  border-radius:8px;
+  border:none;
+  font-size:15px;
+}
+
+button{
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#00c853;
+  color:#fff;
+  font-weight:bold;
+  width:100%;
+  cursor:pointer;
+  margin-top:5px;
+}
+
+button:hover{
+  opacity:0.9;
+}
+
+.lista{
+  margin-top:20px;
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:15px;
+}
+
+.item{
+  background:linear-gradient(145deg,#1e2a3a,#16202d);
+  padding:15px;
+  border-radius:15px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.5);
+  transition:0.3s;
+  position:relative;
+  overflow:hidden;
+}
+
+.item:hover{
+  transform:translateY(-5px);
+}
+
+.posicao{
+  font-size:18px;
+  font-weight:bold;
+  margin-bottom:5px;
+}
+
+.nome{
+  font-size:16px;
+  margin-bottom:5px;
+}
+
+.pix{
+  font-size:13px;
+  opacity:0.8;
+  margin-bottom:8px;
+}
+
+.primeiro{
+  border:2px solid gold;
+  background:linear-gradient(145deg,#3a2f00,#1f1600);
+}
+
+.copiar{
+  background:#2962ff;
+}
+
+.compartilhar{
+  background:#25D366;
+}
+
+.status{
+  margin-top:15px;
+  color:#ffcc00;
+  font-size:14px;
+}
+/* ================= MODAL ================= */
+
+.modal{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.7);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(5px);
+  z-index:999;
+  animation:fadeIn 0.4s ease;
+}
+
+.modal-content{
+  background:linear-gradient(145deg,#1e2a3a,#16202d);
+  padding:30px;
+  border-radius:15px;
+  width:90%;
+  max-width:350px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.6);
+  text-align:center;
+  animation:slideUp 0.4s ease;
+}
+
+.modal-content h2{
+  margin-top:0;
+  color:#ffcc00;
+}
+
+.modal-content p{
+  font-size:15px;
+  margin:20px 0;
+}
+
+.modal-content button{
+  background:#ff3d00;
+  padding:10px;
+  width:100%;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+}
+
+/* animações */
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+@keyframes slideUp{
+  from{transform:translateY(30px); opacity:0}
+  to{transform:translateY(0); opacity:1}
+}
+/* Inputs lado a lado */
+.inputs-lado{
+  display:flex;
+  gap:10px;
+}
+
+.inputs-lado input{
+  width:100%;
+}
+
+</style>
+</head>
+<body>
+<!-- MODAL AVISO -->
+<div id="modalAviso" class="modal">
+  <div class="modal-content">
+    <h2>⚠️ Atenção</h2>
+    <p>
+      FAÇA PIX PARA 04 PARTICIPANTES<br><br>
+      PARA EU ENTRAR NA LISTA
+    </p>
+    <button onclick="fecharModal()">Fechar</button>
+  </div>
+</div>
+<div class="container">
+
+<h2>PIX MAIS </h2>
+
+<div class="inputs-lado">
+  <input type="text" id="nome" placeholder="Seu nome">
+  <input type="text" id="pix" placeholder="Seu PIX">
+</div>
+
+<button id="btnSolicitar" onclick="enviar()">Solicitar Entrada</button>
+
+<div class="status" id="status"></div>
+
+<h3>Fila Atual (máx 4)</h3>
+<div class="lista" id="lista"></div>
+
+<h3>Fila de Espera (máx 6)</h3>
+<div class="lista" id="filaEspera"></div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, push, get } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCnqXmiLEMzH-GUN3nEkkdOTv_xrbxUj2A",
+  authDomain: "tudoaqui-b1d09.firebaseapp.com",
+  databaseURL: "https://tudoaqui-b1d09-default-rtdb.firebaseio.com",
+  projectId: "tudoaqui-b1d09",
+  storageBucket: "tudoaqui-b1d09.firebasestorage.app",
+  messagingSenderId: "588034588401",
+  appId: "1:588034588401:web:4731b181a31c4a354fb350"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const listaRef = ref(db,"lista");
+const pendentesRef = ref(db,"pendentes");
+
+// ======================
+// ENVIAR SOLICITAÇÃO
+// ======================
+
+window.enviar = async function(){
+
+  const nome = document.getElementById("nome").value.trim();
+  const pix = document.getElementById("pix").value.trim();
+
+  if(!nome || !pix){
+    alert("Preencha tudo");
+    return;
+  }
+
+  const snap = await get(listaRef);
+  const ativos = Object.values(snap.val() || {});
+  const existe = ativos.find(i => 
+      i.nome.toLowerCase() === nome.toLowerCase()
+  );
+
+  if(existe){
+    alert("Você já está na fila!");
+    return;
+  }
+
+  await push(pendentesRef,{
+  nome,
+  pix,
+  timestamp: Date.now()
+});
+localStorage.setItem("ultimoEnvio", Date.now());
+verificarBloqueio();
+  document.getElementById("status").innerText =
+  "Solicitação enviada! Aguarde aprovação.";
+
+  document.getElementById("nome").value="";
+  document.getElementById("pix").value="";
+}
+
+// ======================
+// FILA ATUAL (máx 4)
+// ======================
+
+onValue(listaRef,(snapshot)=>{
+  const dados = snapshot.val();
+  const div = document.getElementById("lista");
+  div.innerHTML="";
+
+  if(!dados){
+    div.innerHTML="Lista vazia";
+    return;
+  }
+
+  let ativos = Object.values(dados);
+
+// Ordena por data (mantém o primeiro fixo)
+ativos.sort((a,b)=> a.timestamp - b.timestamp);
+
+// Mantém apenas 4
+ativos = ativos.slice(0,4);
+
+  ativos.forEach((item,index)=>{
+
+    let medalha = "";
+    if(index === 0) medalha = "🥇";
+    if(index === 1) medalha = "🥈";
+    if(index === 2) medalha = "🥉";
+    if(index === 3) medalha = "🏅";
+
+    div.innerHTML+=`
+      <div class="item ${index === 0 ? "primeiro":""}">
+        <div class="posicao">${medalha} ${index+1}º Lugar</div>
+        <div class="nome">${item.nome}</div>
+        <div class="pix">PIX: ${item.pix}</div>
+
+        <button class="copiar" onclick="copiarPix('${item.pix}')">
+          Copiar PIX R$ 2.00
+        </button>
+
+        <button class="compartilhar"
+          onclick="compartilharSite('${item.nome}')">
+          Compartilhar
+        </button>
+      </div>
+    `;
+  });
+});
+
+// ======================
+// FILA DE ESPERA (máx 6)
+// ======================
+
+onValue(pendentesRef,(snapshot)=>{
+  const dados = snapshot.val();
+  const div = document.getElementById("filaEspera");
+  div.innerHTML="";
+
+  if(!dados){
+    div.innerHTML="Sem ninguém aguardando";
+    return;
+  }
+
+  const espera = Object.values(dados).slice(0,6);
+
+  espera.forEach((item,index)=>{
+    div.innerHTML+=`
+      <div class="item">
+        ${index+1}º - ${item.nome}
+      </div>
+    `;
+  });
+});
+
+// ======================
+// COPIAR PIX
+// ======================
+
+window.copiarPix = function(pix){
+  navigator.clipboard.writeText(pix)
+  .then(()=> alert("PIX copiado!"))
+  .catch(()=> alert("Erro ao copiar"));
+}
+
+// ======================
+// COMPARTILHAR SITE + NOME
+// ======================
+
+window.compartilharSite = function(nome){
+
+  const linkSite = window.location.origin;
+
+  const mensagem =
+`Estou te indicando para investimento único.
+
+Invista R$ 2,00 e ganhe até 950 por dia!
+
+Indicação: ${nome}
+
+Entre também:
+${linkSite}`;
+
+  if(navigator.share){
+    navigator.share({
+      title:"Fila PIX",
+      text:mensagem
+    });
+  }else{
+    const url = "https://wa.me/?text=" + encodeURIComponent(mensagem);
+    window.open(url,"_blank");
+  }
+}
+// ======================
+// BLOQUEIO 3 HORAS
+// ======================
+
+const TEMPO_BLOQUEIO = 3 * 60 * 60 * 1000; // 3 horas
+
+function verificarBloqueio(){
+
+  const ultimoEnvio = localStorage.getItem("ultimoEnvio");
+
+  if(!ultimoEnvio) return;
+
+  const agora = Date.now();
+  const diferenca = agora - parseInt(ultimoEnvio);
+
+  if(diferenca < TEMPO_BLOQUEIO){
+
+    const restante = TEMPO_BLOQUEIO - diferenca;
+    bloquearBotao(restante);
+
+  }
+}
+
+function bloquearBotao(tempoRestante){
+
+  const botao = document.getElementById("btnSolicitar");
+  botao.disabled = true;
+  botao.style.background = "#555";
+  botao.style.cursor = "not-allowed";
+
+  atualizarContador(tempoRestante);
+
+}
+
+function atualizarContador(tempoRestante){
+
+  const botao = document.getElementById("btnSolicitar");
+
+  const intervalo = setInterval(()=>{
+
+    tempoRestante -= 1000;
+
+    if(tempoRestante <= 0){
+      clearInterval(intervalo);
+      botao.disabled = false;
+      botao.innerText = "Solicitar Entrada";
+      botao.style.background = "#00c853";
+      botao.style.cursor = "pointer";
+      localStorage.removeItem("ultimoEnvio");
+      return;
+    }
+
+    const horas = Math.floor(tempoRestante / 3600000);
+    const minutos = Math.floor((tempoRestante % 3600000) / 60000);
+    const segundos = Math.floor((tempoRestante % 60000) / 1000);
+
+    botao.innerText =
+      `Aguarde ${horas}h ${minutos}m ${segundos}s`;
+
+  },1000);
+}
+// ======================
+// MODAL AUTOMÁTICO
+// ======================
+
+window.onload = function(){
+  document.getElementById("modalAviso").style.display = "flex";
+}
+
+window.fecharModal = function(){
+  document.getElementById("modalAviso").style.display = "none";
+}
+verificarBloqueio();
+</script>
+</body>
+</html>
