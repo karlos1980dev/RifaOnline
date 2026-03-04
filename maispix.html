@@ -285,12 +285,25 @@ onValue(listaRef,(snapshot)=>{
 
   let ativos = Object.values(dados);
 
-// Ordena por data (mantém o primeiro fixo)
+if(ativos.length === 0) return;
+
+// Ordena por timestamp
 ativos.sort((a,b)=> a.timestamp - b.timestamp);
 
-// Mantém apenas 4
-ativos = ativos.slice(0,4);
+// 🔒 Salva o primeiro fixo
+const primeiroFixo = ativos[0];
 
+// Remove ele da lista
+let restantes = ativos.slice(1);
+
+// Aqui você pode ordenar como quiser do 2º pra baixo
+restantes.sort((a,b)=> a.timestamp - b.timestamp);
+
+// Junta novamente mantendo o primeiro fixo
+ativos = [primeiroFixo, ...restantes];
+
+// Mantém só 4
+ativos = ativos.slice(0,4);
   ativos.forEach((item,index)=>{
 
     let medalha = "";
