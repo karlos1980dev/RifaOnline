@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fila PIX</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>raffle between friends</title>
+  <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/file_00000000939071f5989c5d8cdf243ef9.png" type="image/jpg">
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/file_00000000939071f5989c5d8cdf243ef9.png" type="image/jpg">
 
 <style>
 body{
@@ -172,7 +174,14 @@ button:hover{
 .inputs-lado input{
   width:100%;
 }
-
+.enviar{
+  background:#ff9800;
+  padding:10px;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+  display:block;
+}
 </style>
 </head>
 <body>
@@ -182,9 +191,9 @@ button:hover{
     <h2>⚠️ Atenção</h2>
     <p>
       FAÇA PIX PARA 04 PARTICIPANTES<br><br>
-      PARA EU ENTRAR NA LISTA
+      PARA ENTRAR NA LISTA e ENVIE O COMPROVANTE
     </p>
-    <button onclick="fecharModal()">Fechar</button>
+    <button id="btnFecharModal">Fechar</button>
   </div>
 </div>
 <div class="container">
@@ -205,11 +214,12 @@ button:hover{
 
 <h3>Fila de Espera (máx 6)</h3>
 <div class="lista" id="filaEspera"></div>
-
+<button onclick="funcionar()" style="widht:80%;color:bluer;">Como funcionar</button>
 </div>
 
 <script type="module">
-
+import { getStorage, ref as storageRef, uploadBytes }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, onValue, push, get } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -229,6 +239,7 @@ const db = getDatabase(app);
 
 const listaRef = ref(db,"lista");
 const pendentesRef = ref(db,"pendentes");
+const comprovantesRef = ref(db,"comprovantes");
 
 // ======================
 // ENVIAR SOLICITAÇÃO
@@ -264,7 +275,7 @@ localStorage.setItem("ultimoEnvio", Date.now());
 verificarBloqueio();
   document.getElementById("status").innerText =
   "Solicitação enviada! Aguarde aprovação.";
-
+  
   document.getElementById("nome").value="";
   document.getElementById("pix").value="";
 }
@@ -275,8 +286,8 @@ verificarBloqueio();
 
 onValue(listaRef,(snapshot)=>{
   const dados = snapshot.val();
-  const div = document.getElementById("lista");
-  div.innerHTML="";
+  const div = document.getElementById("lista")
+div.innerHTML="";
 
   if(!dados){
     div.innerHTML="Lista vazia";
@@ -322,11 +333,22 @@ ativos = ativos.slice(0,4);
           Copiar PIX R$ 2.00
         </button>
 
-        <button class="compartilhar"
-          onclick="compartilharSite('${item.nome}')">
-          Compartilhar
-        </button>
-      </div>
+        <div style="display:flex; gap:5px; flex-direction:column">
+
+  <button class="compartilhar"
+    onclick="compartilharSite('${item.nome}')">
+    Compartilhar
+  </button>
+
+  <label class="enviar">
+  Enviar comprovante
+  <input type="file"
+    accept="image/*,.pdf"
+    onchange="enviarComprovante(event,'${item.nome}')"
+    hidden>
+</label>
+
+</div>
     `;
   });
 });
@@ -459,6 +481,10 @@ function atualizarContador(tempoRestante){
 // MODAL AUTOMÁTICO
 // ======================
 
+// ======================
+// MODAL AUTOMÁTICO
+// ======================
+
 window.onload = function(){
   document.getElementById("modalAviso").style.display = "flex";
 }
@@ -467,6 +493,63 @@ window.fecharModal = function(){
   document.getElementById("modalAviso").style.display = "none";
 }
 verificarBloqueio();
+const storage = getStorage(app);
+
+import { getDownloadURL } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+window.enviarComprovante = async function(event,nome){
+
+const arquivo = event.target.files[0];
+
+if(!arquivo){
+  alert("Selecione um comprovante");
+  return;
+}
+
+try{
+
+const caminho = "comprovantes/" + nome + "_" + Date.now();
+
+const refArquivo = storageRef(storage,caminho);
+
+await uploadBytes(refArquivo,arquivo);
+
+// pega link da imagem
+const url = await getDownloadURL(refArquivo);
+
+await push(comprovantesRef,{
+  nome:nome,
+  arquivo:caminho,
+  url:url,
+  data:Date.now()
+});
+
+alert("Comprovante enviado com sucesso!");
+
+}catch(erro){
+console.log(erro);
+alert("Erro ao enviar comprovante");
+}
+
+};
+document.getElementById("btnFecharModal").onclick = function(){
+  document.getElementById("modalAviso").style.display = "none";
+}
+window.funcionar = function(){
+
+alert(`Como funciona o PIX MAIS:
+
+1️⃣ Entre na fila
+2️⃣ Copie o PIX dos 4 participantes
+3️⃣ Envie R$2 para cada um
+4️⃣ Envie os comprovantes
+
+Depois você entra na fila e outras pessoas fazem o mesmo.
+
+Assim você pode receber até R$550.00 ou mais.`);
+  
+}
 </script>
 </body>
 </html>
