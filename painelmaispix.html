@@ -6,40 +6,41 @@
 <title>Painel ADM</title>
 
 <style>
+
 body{
-  background:#111;
-  color:#fff;
-  font-family:Segoe UI;
-  text-align:center;
+background:#111;
+color:#fff;
+font-family:Segoe UI;
+text-align:center;
 }
 
 .container{
-  max-width:700px;
-  margin:auto;
-  margin-top:40px;
+max-width:700px;
+margin:auto;
+margin-top:40px;
 }
 
 .box{
-  background:#1c1c1c;
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:20px;
+background:#1c1c1c;
+padding:15px;
+border-radius:10px;
+margin-bottom:20px;
 }
 
 .item{
-  background:#222;
-  padding:12px;
-  margin:8px 0;
-  border-radius:8px;
+background:#222;
+padding:12px;
+margin:8px 0;
+border-radius:8px;
 }
 
 button{
-  padding:6px 12px;
-  margin:4px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  font-weight:bold;
+padding:6px 12px;
+margin:4px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
 }
 
 .aprovar{ background:#00c853; color:#fff; }
@@ -49,14 +50,22 @@ button{
 .liberar{ background:#00b0ff; color:#fff; }
 .desligar{ background:#555; color:#fff; }
 
-input{
-  padding:6px;
-  margin:4px;
-  border-radius:6px;
-  border:none;
+img{
+width:120px;
+border-radius:6px;
+margin-top:5px;
 }
+
+input{
+padding:6px;
+margin:4px;
+border-radius:6px;
+border:none;
+}
+
 </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -64,180 +73,379 @@ input{
 <h2>⚙️ Painel Administrativo</h2>
 
 <div class="box">
+
 <h3>Controle de Entrada</h3>
+
 <button class="liberar" onclick="liberarEntrada(true)">Liberar</button>
 <button class="desligar" onclick="liberarEntrada(false)">Fechar</button>
+
 <p id="statusEntrada"></p>
+
 </div>
 
+
 <div class="box">
+
 <h3>Pendentes</h3>
+
 <div id="pendentes"></div>
+
 </div>
 
+
 <div class="box">
+
 <h3>Fila Atual</h3>
+
 <div id="lista"></div>
+
+</div>
+
+
+<div class="box">
+
+<h3>Comprovantes Recebidos</h3>
+
+<div id="comprovantes"></div>
+
 </div>
 
 </div>
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { 
-  getDatabase, ref, onValue, push, get, remove, set, update 
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+onValue,
+push,
+get,
+remove,
+set,
+update
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+import {
+getStorage,
+ref as storageRef,
+uploadBytes,
+getDownloadURL
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCnqXmiLEMzH-GUN3nEkkdOTv_xrbxUj2A",
-  authDomain: "tudoaqui-b1d09.firebaseapp.com",
-  databaseURL: "https://tudoaqui-b1d09-default-rtdb.firebaseio.com",
-  projectId: "tudoaqui-b1d09",
-  storageBucket: "tudoaqui-b1d09.firebasestorage.app",
-  messagingSenderId: "588034588401",
-  appId: "1:588034588401:web:4731b181a31c4a354fb350"
+
+apiKey: "AIzaSyCnqXmiLEMzH-GUN3nEkkdOTv_xrbxUj2A",
+authDomain: "tudoaqui-b1d09.firebaseapp.com",
+databaseURL: "https://tudoaqui-b1d09-default-rtdb.firebaseio.com",
+projectId: "tudoaqui-b1d09",
+storageBucket: "tudoaqui-b1d09.firebasestorage.app",
+messagingSenderId: "588034588401",
+appId: "1:588034588401:web:4731b181a31c4a354fb350"
+
 };
+
 const app = initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
+const storage = getStorage(app);
 
 const pendentesRef = ref(db,"pendentes");
 const listaRef = ref(db,"lista");
 const configRef = ref(db,"config/entradaLiberada");
+const comprovantesRef = ref(db,"comprovantes");
 
 
-// =====================
-// LIBERAR ENTRADA
-// =====================
+
+/* LIBERAR ENTRADA */
 
 window.liberarEntrada = async function(status){
-  await set(configRef,status);
+
+await set(configRef,status);
+
 }
 
 onValue(configRef,(snap)=>{
-  document.getElementById("statusEntrada").innerText =
-    snap.val() ? "Entrada LIBERADA" : "Entrada FECHADA";
+
+document.getElementById("statusEntrada").innerText =
+snap.val() ? "Entrada LIBERADA" : "Entrada FECHADA";
+
 });
 
 
-// =====================
-// PENDENTES
-// =====================
+
+/* PENDENTES */
 
 onValue(pendentesRef,(snapshot)=>{
-  const dados = snapshot.val();
-  const div = document.getElementById("pendentes");
-  div.innerHTML="";
 
-  if(!dados){
-    div.innerHTML="Sem pendentes";
-    return;
-  }
+const dados = snapshot.val();
+const div = document.getElementById("pendentes");
 
-  Object.entries(dados).forEach(([key,item])=>{
-    div.innerHTML+=`
-      <div class="item">
-        <b>${item.nome}</b><br>
-        PIX: ${item.pix}<br>
-        <button class="aprovar" onclick="aprovar('${key}','${item.nome}','${item.pix}')">Aprovar</button>
-        <button class="recusar" onclick="recusar('${key}')">Recusar</button>
-      </div>
-    `;
-  });
+div.innerHTML="";
+
+if(!dados){
+
+div.innerHTML="Sem pendentes";
+return;
+
+}
+
+Object.entries(dados).forEach(([key,item])=>{
+
+div.innerHTML+=`
+
+<div class="item">
+
+<b>${item.nome}</b><br>
+
+PIX: ${item.pix}<br>
+
+<button class="aprovar"
+onclick="aprovar('${key}','${item.nome}','${item.pix}')">
+
+Aprovar
+
+</button>
+
+<button class="recusar"
+onclick="recusar('${key}')">
+
+Recusar
+
+</button>
+
+</div>
+
+`;
+
+});
+
 });
 
 
-// =====================
-// APROVAR
-// =====================
+
+/* APROVAR */
 
 window.aprovar = async function(id,nome,pix){
 
-  const snap = await get(listaRef);
-  let listaAtual = snap.val() ? Object.values(snap.val()) : [];
+const snap = await get(listaRef);
 
-  // coloca novo no início
-  listaAtual.unshift({nome,pix});
+let listaAtual = snap.val() ? Object.values(snap.val()) : [];
 
-  // limita 4 pessoas
-  if(listaAtual.length > 4){
-    listaAtual = listaAtual.slice(0,4);
-  }
+listaAtual.unshift({
+nome,
+pix,
+timestamp:Date.now()
+});
 
-  // apaga lista inteira
-  await remove(listaRef);
+if(listaAtual.length > 4){
 
-  // recria na ordem correta
-  for(let item of listaAtual){
-    await push(listaRef,item);
-  }
+listaAtual = listaAtual.slice(0,4);
 
-  // remove dos pendentes
-  await remove(ref(db,"pendentes/"+id));
+}
+
+await remove(listaRef);
+
+for(let item of listaAtual){
+
+await push(listaRef,item);
+
+}
+
+await remove(ref(db,"pendentes/"+id));
+
 }
 
 
-// =====================
-// RECUSAR
-// =====================
+
+/* RECUSAR */
 
 window.recusar = async function(id){
-  await remove(ref(db,"pendentes/"+id));
+
+await remove(ref(db,"pendentes/"+id));
+
 }
 
 
-// =====================
-// LISTA ATUAL
-// =====================
+
+/* LISTA ATUAL */
 
 onValue(listaRef,(snapshot)=>{
-  const dados = snapshot.val();
-  const div = document.getElementById("lista");
-  div.innerHTML="";
 
-  if(!dados){
-    div.innerHTML="Lista vazia";
-    return;
-  }
+const dados = snapshot.val();
+const div = document.getElementById("lista");
 
-  Object.entries(dados).forEach(([key,item],index)=>{
-    div.innerHTML+=`
-      <div class="item">
-        ${index+1}º - 
-        <input value="${item.nome}" id="nome_${key}">
-        <input value="${item.pix}" id="pix_${key}">
-        <br>
-        <button class="editar" onclick="editar('${key}')">Salvar</button>
-        <button class="remover" onclick="removerItem('${key}')">Remover</button>
-      </div>
-    `;
-  });
+div.innerHTML="";
+
+if(!dados){
+
+div.innerHTML="Lista vazia";
+
+return;
+
+}
+
+Object.entries(dados).forEach(([key,item],index)=>{
+
+div.innerHTML+=`
+
+<div class="item">
+
+${index+1}º -
+
+<input value="${item.nome}" id="nome_${key}">
+<input value="${item.pix}" id="pix_${key}">
+
+<br>
+
+<button class="editar"
+onclick="editar('${key}')">
+
+Salvar
+
+</button>
+
+<button class="remover"
+onclick="removerItem('${key}')">
+
+Remover
+
+</button>
+
+</div>
+
+`;
+
+});
+
 });
 
 
-// =====================
-// EDITAR
-// =====================
+
+/* EDITAR */
 
 window.editar = async function(key){
-  const nome = document.getElementById("nome_"+key).value;
-  const pix = document.getElementById("pix_"+key).value;
 
-  await update(ref(db,"lista/"+key),{
-    nome,
-    pix
-  });
+const nome = document.getElementById("nome_"+key).value;
+const pix = document.getElementById("pix_"+key).value;
 
-  alert("Atualizado!");
+await update(ref(db,"lista/"+key),{
+
+nome,
+pix
+
+});
+
+alert("Atualizado");
+
 }
 
 
-// =====================
-// REMOVER DA LISTA
-// =====================
+
+/* REMOVER */
 
 window.removerItem = async function(key){
-  await remove(ref(db,"lista/"+key));
+
+await remove(ref(db,"lista/"+key));
+
+}
+
+
+
+/* COMPROVANTES */
+
+onValue(comprovantesRef, async (snapshot)=>{
+
+const dados = snapshot.val();
+const div = document.getElementById("comprovantes");
+
+div.innerHTML="";
+
+if(!dados){
+
+div.innerHTML="Nenhum comprovante";
+
+return;
+
+}
+
+for(const [key,item] of Object.entries(dados)){
+
+const url = await getDownloadURL(
+storageRef(storage,item.arquivo)
+);
+
+div.innerHTML+=`
+
+<div class="item">
+
+<b>${item.nome}</b>
+
+<br>
+
+<img src="${url}">
+
+<br>
+
+<button class="aprovar"
+onclick="aprovarComprovante('${key}')">
+
+Aprovar
+
+</button>
+
+<button class="recusar"
+onclick="recusarComprovante('${key}')">
+
+Excluir
+
+</button>
+
+</div>
+
+`;
+
+}
+
+});
+
+
+
+/* APROVAR COMPROVANTE */
+
+window.aprovarComprovante = async function(id){
+
+const snap = await get(ref(db,"comprovantes/"+id));
+
+if(!snap.exists()) return;
+
+const dados = snap.val();
+
+await push(listaRef,{
+nome:dados.nome,
+pix:"PIX CONFIRMADO",
+timestamp:Date.now()
+});
+
+await remove(ref(db,"comprovantes/"+id));
+
+alert("Usuário aprovado");
+
+}
+
+
+
+/* RECUSAR COMPROVANTE */
+
+window.recusarComprovante = async function(id){
+
+await remove(ref(db,"comprovantes/"+id));
+
 }
 
 </script>
