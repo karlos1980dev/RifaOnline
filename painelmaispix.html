@@ -359,7 +359,7 @@ await remove(ref(db,"lista/"+key));
 
 /* COMPROVANTES */
 
-onValue(comprovantesRef, async (snapshot)=>{
+onValue(comprovantesRef,(snapshot)=>{
 
 const dados = snapshot.val();
 const div = document.getElementById("comprovantes");
@@ -367,18 +367,13 @@ const div = document.getElementById("comprovantes");
 div.innerHTML="";
 
 if(!dados){
-
 div.innerHTML="Nenhum comprovante";
-
 return;
-
 }
 
 for(const [key,item] of Object.entries(dados)){
 
-const url = await getDownloadURL(
-storageRef(storage,item.arquivo)
-);
+const url = item.url;
 
 div.innerHTML+=`
 
@@ -394,16 +389,12 @@ div.innerHTML+=`
 
 <button class="aprovar"
 onclick="aprovarComprovante('${key}')">
-
 Aprovar
-
 </button>
 
 <button class="recusar"
 onclick="recusarComprovante('${key}')">
-
 Excluir
-
 </button>
 
 </div>
@@ -413,7 +404,6 @@ Excluir
 }
 
 });
-
 
 
 /* APROVAR COMPROVANTE */
