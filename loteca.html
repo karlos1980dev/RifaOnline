@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogos</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            height: 100vh;
+            display: flex-inline;
+            text-align:center;
+            justify-content: center;
+            margin-left:20px;
+            flex-direction: column;
+            gap: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 10;
+        }
+
+        button {
+            color: white;
+            border: none;
+            width: 150px;
+            height: 80px;
+            margin:5px;
+            font-size: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        }
+
+        /* Cores diferentes para cada botão */
+        .lotinha {
+            background-color: #ff4b2b;
+        }
+        .lotinha:hover {
+            background-color: #ff6f61;
+        }
+
+        .seninha {
+            background-color: #ffb400;
+        }
+        .seninha:hover {
+            background-color: #ffd24d;
+        }
+
+        .quininha {
+            background-color: #00b894;
+        }
+        .quininha:hover {
+            background-color: #26c6da;
+        }
+
+        .supermania {
+            background-color: #0984e3;
+        }
+        .supermania:hover {
+            background-color: #74b9ff;
+        }
+
+        .jogobicho {
+            background-color: #6c5ce7;
+        }
+        .jogobicho:hover {
+            background-color: #a29bfe;
+        }
+
+        .marcouganhou {
+            background-color: #d63031;
+        }
+        .marcouganhou:hover {
+            background-color: #ff7675;
+        }
+
+        .apostaesportiva {
+        width:90%;
+            background-color: #fd79a8;
+        }
+        .apostaesportiva:hover {
+            background-color: #fab1a0;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 5px black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Escolha seu Jogo</h1>
+      <button class="lotinha" onclick="planilha()">PLANILHA MENSAL</button>
+    <button class="lotinha" onclick="lotinha()">LOTINHA</button>
+    <button class="seninha" onclick="seninha()">SENINHA</button>
+    <button class="quininha" onclick="quininha()">QUININHA</button>
+    <button class="supermania" onclick="supermania()">SUPER MANIA</button>
+    <button class="jogobicho" onclick="jogobicho()">JOGO DO BICHO</button>
+    <button class="marcouganhou" onclick="marcouganhou()">MARCOU GANHOU</button>
+    <button class="marcouganhou" onclick="keno()">KENO</button>
+    <button class="apostaesportiva" onclick="apostaesportiva()">APOSTA ESPORTIVA</button>
+
+    <script>
+        function lotinha() {
+            window.location.href = "https://lototecamultijogo.netlify.app/lotinha";
+        }
+
+        function seninha() {
+            window.location.href = "https://lototecamultijogo.netlify.app/seninha";
+        }
+
+        function quininha() {
+            window.location.href = "https://lototecamultijogo.netlify.app/quininha";
+        }
+
+        function supermania() {
+            window.location.href = "https://lototecamultijogo.netlify.app/supermania";
+        }
+
+        function jogobicho() {
+            window.location.href = "https://bichopix.netlify.app/multi_jogos_clientes";
+        }
+
+        function marcouganhou() {
+            window.location.href = "https://marcouganhou.netlify.app/";
+        }
+        function keno() {
+            window.location.href = "https://keno.netlify.app/";
+        }
+
+        function apostaesportiva() {
+            window.location.href = "https://WWW.DPSPORTE.COM";
+        }
+        function planilha() {
+            window.location.href = "https://https://lototecamultijogo.netlify.app/planilha";
+        }
+    </script>
+</body>
+</html>
