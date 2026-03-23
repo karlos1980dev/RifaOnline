@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -504,10 +505,11 @@ window.enviarComprovanteGeral = async function(event){
     return;
   }
 
-  const nome = prompt("Digite seu nome para identificar o comprovante:");
+  // 🔥 pega nome direto do input
+  const nome = document.getElementById("nome").value.trim();
 
   if(!nome){
-    alert("Nome obrigatório!");
+    alert("Digite seu nome de quem recebeu o pix");
     return;
   }
 
@@ -519,7 +521,11 @@ window.enviarComprovanteGeral = async function(event){
 
     await uploadBytes(refArquivo,arquivo);
 
+    console.log("UPLOAD OK"); // 🔥 DEBUG
+
     const url = await getDownloadURL(refArquivo);
+
+    console.log("URL:", url); // 🔥 DEBUG
 
     await push(comprovantesRef,{
       nome:nome,
@@ -528,12 +534,15 @@ window.enviarComprovanteGeral = async function(event){
       data:Date.now()
     });
 
+    console.log("SALVO NO BANCO"); // 🔥 DEBUG
+
     alert("Comprovante enviado com sucesso!");
 
   }catch(erro){
-    console.log(erro);
+    console.log("ERRO REAL:", erro); // 🔥 MOSTRA O ERRO
     alert("Erro ao enviar comprovante");
   }
+
 };
 document.getElementById("btnFecharModal").onclick = function(){
   document.getElementById("modalAviso").style.display = "none";
@@ -546,7 +555,7 @@ alert(`Como funciona o PIX MAIS:
 2️⃣ Copie o PIX dos 4 participantes.
 3️⃣ Envie R$2 para cada da fila uma única vez.
 4️⃣ Envie os comprovantes.
-5️⃣ Mesmo que não Indique vc recebe seu valor após entra na fila.
+5️⃣ Mesmo que não Indique vc recebe seu valor após entra na fila e outras pessoas fazem o mesmo.
 
 Assim você pode receber até R$550.00 ou mais.`);
   
