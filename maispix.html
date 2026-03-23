@@ -208,8 +208,14 @@ button:hover{
 <div class="status" id="status"></div>
 
 <h3>Fila Atual (máx 4)</h3>
+<label class="enviar">
+  📤 Enviar comprovante
+  <input type="file"
+    accept="image/*,.pdf"
+    onchange="enviarComprovanteGeral(event)"
+    hidden>
+</label>
 <div class="lista" id="lista"></div>
-
 <h3>Fila de Espera (máx 6)</h3>
 <div class="lista" id="filaEspera"></div></br>
 <button onclick="funcionar()" style="widht:80%;color:bluer;">Como funcionar</button>
@@ -337,15 +343,6 @@ ativos = ativos.slice(0,4);
     onclick="compartilharSite('${item.nome}')">
     Compartilhar
   </button>
-
-  <label class="enviar">
-  Enviar comprovante
-  <input type="file"
-    accept="image/*,.pdf"
-    onchange="enviarComprovante(event,'${item.nome}')"
-    hidden>
-</label>
-
 </div>
     `;
   });
@@ -498,40 +495,45 @@ const storage = getStorage(app);
 import { getDownloadURL } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-window.enviarComprovante = async function(event,nome){
+window.enviarComprovanteGeral = async function(event){
 
-const arquivo = event.target.files[0];
+  const arquivo = event.target.files[0];
 
-if(!arquivo){
-  alert("Selecione um comprovante");
-  return;
-}
+  if(!arquivo){
+    alert("Selecione um comprovante");
+    return;
+  }
 
-try{
+  const nome = prompt("Digite seu nome para identificar o comprovante:");
 
-const caminho = "comprovantes/" + nome + "_" + Date.now();
+  if(!nome){
+    alert("Nome obrigatório!");
+    return;
+  }
 
-const refArquivo = storageRef(storage,caminho);
+  try{
 
-await uploadBytes(refArquivo,arquivo);
+    const caminho = "comprovantes/" + nome + "_" + Date.now();
 
-// pega link da imagem
-const url = await getDownloadURL(refArquivo);
+    const refArquivo = storageRef(storage,caminho);
 
-await push(comprovantesRef,{
-  nome:nome,
-  arquivo:caminho,
-  url:url,
-  data:Date.now()
-});
+    await uploadBytes(refArquivo,arquivo);
 
-alert("Comprovante enviado com sucesso!");
+    const url = await getDownloadURL(refArquivo);
 
-}catch(erro){
-console.log(erro);
-alert("Erro ao enviar comprovante");
-}
+    await push(comprovantesRef,{
+      nome:nome,
+      arquivo:caminho,
+      url:url,
+      data:Date.now()
+    });
 
+    alert("Comprovante enviado com sucesso!");
+
+  }catch(erro){
+    console.log(erro);
+    alert("Erro ao enviar comprovante");
+  }
 };
 document.getElementById("btnFecharModal").onclick = function(){
   document.getElementById("modalAviso").style.display = "none";
@@ -544,7 +546,7 @@ alert(`Como funciona o PIX MAIS:
 2️⃣ Copie o PIX dos 4 participantes.
 3️⃣ Envie R$2 para cada da fila uma única vez.
 4️⃣ Envie os comprovantes.
-5️⃣ Mesmo que não Indique vc recebe seu valor após entra na fila e outras pessoas fazem o mesmo.
+5️⃣ Mesmo que não Indique vc recebe seu valor após entra na fila.
 
 Assim você pode receber até R$550.00 ou mais.`);
   
