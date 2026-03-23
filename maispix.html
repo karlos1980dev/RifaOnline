@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -184,6 +183,7 @@ button:hover{
 </style>
 </head>
 <body>
+    
 <!-- MODAL AVISO -->
 <div id="modalAviso" class="modal">
   <div class="modal-content">
@@ -226,15 +226,17 @@ button:hover{
 import { getStorage, ref as storageRef, uploadBytes }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import { getDatabase, ref, onValue, push, get } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyCnqXmiLEMzH-GUN3nEkkdOTv_xrbxUj2A",
   authDomain: "tudoaqui-b1d09.firebaseapp.com",
   databaseURL: "https://tudoaqui-b1d09-default-rtdb.firebaseio.com",
   projectId: "tudoaqui-b1d09",
-  storageBucket: "tudoaqui-b1d09.firebasestorage.app",
+  storageBucket: "tudoaqui-b1d09.appspot.com",
   messagingSenderId: "588034588401",
   appId: "1:588034588401:web:4731b181a31c4a354fb350"
 };
@@ -491,10 +493,7 @@ window.fecharModal = function(){
   document.getElementById("modalAviso").style.display = "none";
 }
 verificarBloqueio();
-const storage = getStorage(app);
-
-import { getDownloadURL } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+const storage = getStorage();
 
 window.enviarComprovanteGeral = async function(event){
 
