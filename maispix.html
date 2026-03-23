@@ -184,10 +184,136 @@ button:hover{
   cursor:pointer;
   display:block;
 }
+.topo h1{
+  margin:0;
+  font-size:26px;
+  color:#00ff88;
+}
+
+.topo p{
+  font-size:13px;
+  opacity:0.7;
+  margin-bottom:15px;
+}
+input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ffffff20;
+  background:#ffffff10;
+  color:#fff;
+  outline:none;
+}
+
+input::placeholder{
+  color:#ccc;
+}
+#btnSolicitar{
+  background:linear-gradient(135deg,#00c853,#00ff88);
+  font-size:16px;
+  letter-spacing:0.5px;
+  box-shadow:0 5px 15px rgba(0,255,136,0.3);
+}
+.item{
+  background:linear-gradient(160deg,#1e2a3a,#0f172a);
+  border:1px solid #ffffff10;
+  padding:15px;
+  border-radius:16px;
+}
+
+.posicao{
+  font-size:14px;
+  color:#00ff88;
+}
+.primeiro{
+  border:2px solid gold;
+  background:linear-gradient(145deg,#3a2f00,#1f1600);
+  box-shadow:0 0 15px gold;
+}
+.enviar{
+  background:linear-gradient(135deg,#ff9800,#ffb74d);
+  text-align:center;
+  margin-bottom:10px;
+}
+#status{
+  margin-top:10px;
+  padding:10px;
+  border-radius:8px;
+  background:#00000040;
+}
+.item{
+  transition: all 0.3s ease;
+}
+
+.item:hover{
+  transform:translateY(-6px) scale(1.02);
+}
+.topo-fixo{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  background:linear-gradient(135deg,#141e30,#243b55);
+  padding:10px;
+  z-index:9999;
+  box-shadow:0 5px 15px rgba(0,0,0,0.5);
+}
+
+.inputs-lado{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+/* inputs menores no topo */
+.topo-fixo input{
+  flex:1;
+  padding:10px;
+  font-size:13px;
+  border-radius:8px;
+}
+
+/* BOTÃO BONITO 🔥 */
+.enviar-topo{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  background:linear-gradient(135deg,#ff9800,#ff5722);
+  color:#fff;
+  font-weight:bold;
+  padding:10px;
+  border-radius:10px;
+  font-size:13px;
+  cursor:pointer;
+  min-width:90px;
+  transition:0.3s;
+  box-shadow:0 4px 10px rgba(255,152,0,0.4);
+}
+
+/* efeito hover */
+.enviar-topo:hover{
+  transform:scale(1.05);
+  box-shadow:0 6px 15px rgba(255,152,0,0.6);
+}
 </style>
 </head>
 <body>
-    
+    <div class="topo-fixo">
+  
+<div class="inputs-lado">
+  <input type="text" id="nome" placeholder="Seu nome">
+  <input type="text" id="pix" placeholder="Seu PIX">
+
+  <label class="enviar-topo">
+    📤 Enviar comprovante
+    <input type="file"
+      accept="image/*,.pdf"
+      onchange="enviarComprovanteGeral(event)"
+      hidden>
+  </label>
+</div>
+</div>
 <!-- MODAL AVISO -->
 <div id="modalAviso" class="modal">
   <div class="modal-content">
@@ -201,11 +327,9 @@ button:hover{
 </div>
 <div class="container">
 
-<h2>PIX MAIS </h2>
-
-<div class="inputs-lado">
-  <input type="text" id="nome" placeholder="Seu nome">
-  <input type="text" id="pix" placeholder="Seu PIX">
+<div class="topo">
+  <h1>💰 PIX MAIS</h1>
+  <p>Ganhe ajudando outros a crescer</p>
 </div>
 
 <button id="btnSolicitar" onclick="enviar()">Solicitar Entrada</button>
@@ -213,13 +337,7 @@ button:hover{
 <div class="status" id="status"></div>
 
 <h3>Fila Atual (máx 4)</h3>
-<label class="enviar">
-  📤 Enviar comprovante
-  <input type="file"
-    accept="image/*,.pdf"
-    onchange="enviarComprovanteGeral(event)"
-    hidden>
-</label>
+
 <div class="lista" id="lista"></div>
 <h3>Fila de Espera (máx 6)</h3>
 <div class="lista" id="filaEspera"></div></br>
@@ -358,7 +476,9 @@ ativos = ativos.slice(0,4);
 // ======================
 // FILA DE ESPERA (máx 6)
 // ======================
-
+window.addEventListener("error", e => {
+  console.log("ERRO GLOBAL:", e.message);
+});
 onValue(pendentesRef,(snapshot)=>{
   const dados = snapshot.val();
   const div = document.getElementById("filaEspera");
@@ -528,11 +648,13 @@ window.enviarComprovanteGeral = async function(event){
     const url = await getDownloadURL(refArquivo);
 
     await push(comprovantesRef,{
-      nome:nome,
-      arquivo:caminho,
-      url:url,
-      data:Date.now()
-    });
+  nome:nome,
+  arquivo:caminho,
+  url:url,
+  data:Date.now()
+});
+
+console.log("SALVO NO BANCO ✅");
 
     // ✅ FORÇA mensagem aparecer
     mostrarMensagem("✅ Comprovante enviado com sucesso!");
@@ -558,7 +680,7 @@ alert(`Como funciona o PIX MAIS:
 2️⃣ Copie o PIX dos 4 participantes.
 3️⃣ Envie R$2 para cada da fila uma única vez.
 4️⃣ Envie os comprovantes.
-5️⃣ Mesmo que não Indique vc recebe seu valor após entra na fila e outras pessoas fazem o mesmo.
+5️⃣ Mesmo que não Indique vc recebe seu valor após entra na fila.
 
 Assim você pode receber até R$550.00 ou mais.`);
   
@@ -572,8 +694,60 @@ function mostrarMensagem(msg, cor="#00c853"){
   setTimeout(()=>{
     status.innerText = "";
   }, 4000);
+  
 }
+let enviando = false;
 
+window.enviarComprovanteGeral = async function(event){
+
+  if(enviando) return; // 🔥 trava loop
+  enviando = true;
+
+  const arquivo = event.target.files[0];
+
+  if(!arquivo){
+    enviando = false;
+    return mostrarMensagem("❌ Selecione um comprovante", "#ff3d00");
+  }
+
+  const nome = document.getElementById("nome").value.trim();
+
+  if(!nome){
+    enviando = false;
+    return mostrarMensagem("❌ Digite seu nome antes", "#ff3d00");
+  }
+
+  try{
+
+    mostrarMensagem("⏳ Enviando...", "#ffcc00");
+
+    const caminho = "comprovantes/" + nome + "_" + Date.now();
+    const refArquivo = storageRef(storage, caminho);
+
+    await uploadBytes(refArquivo, arquivo);
+
+    const url = await getDownloadURL(refArquivo);
+
+    await push(comprovantesRef,{
+      nome,
+      arquivo:caminho,
+      url,
+      data:Date.now()
+    });
+
+    console.log("SALVO NO BANCO ✅");
+
+    mostrarMensagem("✅ Enviado com sucesso");
+
+    event.target.value = "";
+
+  }catch(erro){
+    console.log("ERRO REAL:", erro);
+    mostrarMensagem("❌ Erro ao enviar", "#ff3d00");
+  }
+
+  enviando = false;
+}
 </script>
 </body>
 </html>
