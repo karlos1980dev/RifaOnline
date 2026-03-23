@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Painel Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<style>
+body{
+  font-family:Arial;
+  background:#0f172a;
+  color:#fff;
+  margin:0;
+  text-align:center;
+}
+
+.container{
+  max-width:500px;
+  margin:auto;
+  padding:20px;
+}
+
+h2{
+  margin-bottom:10px;
+}
+
+.item{
+  background:#1e293b;
+  padding:15px;
+  margin:10px 0;
+  border-radius:12px;
+  text-align:left;
+  box-shadow:0 5px 15px rgba(0,0,0,0.4);
+}
+
+.nome{
+  font-weight:bold;
+  font-size:16px;
+}
+
+.data{
+  font-size:12px;
+  opacity:0.7;
+  margin-bottom:10px;
+}
+
+.botoes{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+button{
+  flex:1;
+  padding:8px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.ver{
+  background:#00c853;
+  color:#fff;
+}
+
+.excluir{
+  background:#ff3d00;
+  color:#fff;
+}
+
+.vazio{
+  opacity:0.6;
+  margin-top:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>📄 Painel de Comprovantes</h2>
+  <div id="lista"></div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// 🔥 SUA CONFIG (já está correta)
+const firebaseConfig = {
+  apiKey: "AIzaSyCnqXmiLEMzH-GUN3nEkkdOTv_xrbxUj2A",
+  authDomain: "tudoaqui-b1d09.firebaseapp.com",
+  databaseURL: "https://tudoaqui-b1d09-default-rtdb.firebaseio.com",
+  projectId: "tudoaqui-b1d09",
+  storageBucket: "tudoaqui-b1d09.firebasestorage.app",
+  messagingSenderId: "588034588401",
+  appId: "1:588034588401:web:4731b181a31c4a354fb350"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const listaDiv = document.getElementById("lista");
+const comprovantesRef = ref(db,"comprovantes");
+
+// 🔄 CARREGAR COMPROVANTES
+onValue(comprovantesRef,(snapshot)=>{
+
+  const dados = snapshot.val();
+  listaDiv.innerHTML = "";
+
+  if(!dados){
+    listaDiv.innerHTML = "<div class='vazio'>Nenhum comprovante</div>";
+    return;
+  }
+
+  const lista = Object.entries(dados).reverse();
+
+  lista.forEach(([id,item])=>{
+
+    const data = new Date(item.data).toLocaleString();
+
+    listaDiv.innerHTML += `
+      <div class="item">
+        <div class="nome">👤 ${item.nome}</div>
+        <div class="data">📅 ${data}</div>
+
+        <div class="botoes">
+          <button class="ver" onclick="ver('${item.url}')">
+            Ver
+          </button>
+
+          <button class="excluir" onclick="excluir('${id}')">
+            Excluir
+          </button>
+        </div>
+      </div>
+    `;
+  });
+
+});
+
+// 👁️ VER COMPROVANTE
+window.ver = function(url){
+  window.open(url,"_blank");
+}
+
+// 🗑️ EXCLUIR
+window.excluir = function(id){
+
+  if(!confirm("Deseja excluir este comprovante?")) return;
+
+  remove(ref(db,"comprovantes/"+id))
+  .then(()=> alert("Excluído"))
+  .catch(()=> alert("Erro ao excluir"));
+}
+
+</script>
+
+</body>
+</html>
