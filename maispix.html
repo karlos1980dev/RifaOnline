@@ -15,6 +15,10 @@ body{
   color:#fff;
   text-align:center;
 }
+#status{
+  transition: all 0.3s;
+  font-weight: bold;
+}
 .container{
   max-width:400px;
   margin:auto;
@@ -223,13 +227,13 @@ button:hover{
 </div>
 
 <script type="module">
-import { getStorage, ref as storageRef, uploadBytes }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import { getDatabase, ref, onValue, push, get } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCnqXmiLEMzH-GUN3nEkkdOTv_xrbxUj2A",
@@ -535,11 +539,11 @@ window.enviarComprovanteGeral = async function(event){
 
     console.log("SALVO NO BANCO"); // 🔥 DEBUG
 
-    alert("Comprovante enviado com sucesso!");
+    mostrarMensagem("✅ Comprovante enviado com sucesso!");
 
   }catch(erro){
     console.log("ERRO REAL:", erro); // 🔥 MOSTRA O ERRO
-    alert("Erro ao enviar comprovante");
+    mostrarMensagem("❌ Erro ao enviar comprovante", "#ff3d00");
   }
 
 };
@@ -558,6 +562,16 @@ alert(`Como funciona o PIX MAIS:
 
 Assim você pode receber até R$550.00 ou mais.`);
   
+}
+function mostrarMensagem(msg, cor="#00c853"){
+  const status = document.getElementById("status");
+
+  status.innerText = msg;
+  status.style.color = cor;
+
+  setTimeout(()=>{
+    status.innerText = "";
+  }, 4000);
 }
 </script>
 </body>
