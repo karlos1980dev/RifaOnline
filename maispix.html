@@ -497,38 +497,35 @@ window.fecharModal = function(){
   document.getElementById("modalAviso").style.display = "none";
 }
 verificarBloqueio();
-const storage = getStorage();
+const storage = getStorage(app);
 
 window.enviarComprovanteGeral = async function(event){
 
   const arquivo = event.target.files[0];
 
   if(!arquivo){
-    alert("Selecione um comprovante");
+    mostrarMensagem("❌ Selecione um comprovante", "#ff3d00");
     return;
   }
 
-  // 🔥 pega nome direto do input
   const nome = document.getElementById("nome").value.trim();
 
   if(!nome){
-    alert("Digite seu nome de quem recebeu o pix");
+    mostrarMensagem("❌ Digite seu nome antes", "#ff3d00");
     return;
   }
 
   try{
 
+    mostrarMensagem("⏳ Enviando comprovante...", "#ffcc00");
+
     const caminho = "comprovantes/" + nome + "_" + Date.now();
 
-    const refArquivo = storageRef(storage,caminho);
+    const refArquivo = storageRef(storage, caminho);
 
-    await uploadBytes(refArquivo,arquivo);
-
-    console.log("UPLOAD OK"); // 🔥 DEBUG
+    await uploadBytes(refArquivo, arquivo);
 
     const url = await getDownloadURL(refArquivo);
-
-    console.log("URL:", url); // 🔥 DEBUG
 
     await push(comprovantesRef,{
       nome:nome,
@@ -537,15 +534,18 @@ window.enviarComprovanteGeral = async function(event){
       data:Date.now()
     });
 
-    console.log("SALVO NO BANCO"); // 🔥 DEBUG
-
+    // ✅ FORÇA mensagem aparecer
     mostrarMensagem("✅ Comprovante enviado com sucesso!");
 
+    // 🔥 limpa o input (IMPORTANTE)
+    event.target.value = "";
+
   }catch(erro){
-    console.log("ERRO REAL:", erro); // 🔥 MOSTRA O ERRO
+
+    console.log("ERRO REAL:", erro);
+
     mostrarMensagem("❌ Erro ao enviar comprovante", "#ff3d00");
   }
-
 };
 document.getElementById("btnFecharModal").onclick = function(){
   document.getElementById("modalAviso").style.display = "none";
@@ -573,6 +573,7 @@ function mostrarMensagem(msg, cor="#00c853"){
     status.innerText = "";
   }, 4000);
 }
+
 </script>
 </body>
 </html>
