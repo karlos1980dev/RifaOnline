@@ -22,7 +22,7 @@ body{
 .container{
   max-width:400px;
   margin:auto;
-  margin-top:60px;
+  margin-top:80px;
   background:#ffffff10;
   padding:5px;
   border-radius:15px;
@@ -217,6 +217,7 @@ input::placeholder{
   background:linear-gradient(135deg,#00c853,#00ff88);
   font-size:16px;
   letter-spacing:0.5px;
+  width:50%;
   box-shadow:0 5px 15px rgba(0,255,136,0.3);
 }
 .item{
@@ -309,14 +310,8 @@ input::placeholder{
 <div class="inputs-lado">
   <input type="text" id="nome" placeholder="Seu nome">
   <input type="text" id="pix" placeholder="Seu PIX">
-
-  <label class="enviar-topo">
-    📤 Enviar comprovante
-    <input type="file"
-      accept="image/*,.pdf"
-      onchange="enviarComprovanteGeral(event)"
-      hidden>
-  </label>
+<button id="btnSolicitar" onclick="enviar()">Solicitar Entrada</button>
+  
 </div>
 </div>
 <!-- MODAL AVISO -->
@@ -338,7 +333,13 @@ input::placeholder{
   <p>Ganhe ajudando outros a crescer</p>
 </div>
 
-<button id="btnSolicitar" onclick="enviar()">Solicitar Entrada</button>
+<label class="enviar-topo">
+    📤 Enviar comprovante
+    <input type="file"
+      accept="image/*,.pdf"
+      onchange="enviarComprovanteGeral(event)"
+      hidden>
+  </label>
 
 <div class="status" id="status"></div>
 
