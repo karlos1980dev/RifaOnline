@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MAIS PIX</title>
+  <title>FILA PIX</title>
   <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/pixmais.jpg" type="image/jpg">
 <link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/pixmais.jpg" type="image/jpg">
 
@@ -24,7 +24,7 @@ body{
   margin:auto;
   margin-top:60px;
   background:#ffffff10;
-  padding:25px;
+  padding:5px;
   border-radius:15px;
   backdrop-filter:blur(10px);
   box-shadow:0 10px 30px rgba(0,0,0,0.5);
@@ -55,12 +55,17 @@ button:hover{
 }
 
 .lista{
-  margin-top:20px;
+  margin-top:0px;
   display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:15px;
+  grid-template-columns: repeat(3, 1fr);
+  gap:5px;
 }
-
+button{
+  padding:8px;
+  font-size:12px;
+  white-space:normal;   /* permite quebrar linha */
+  word-break:break-word; /* quebra palavras grandes */
+}
 .item{
   background:linear-gradient(145deg,#1e2a3a,#16202d);
   padding:15px;
@@ -319,7 +324,8 @@ input::placeholder{
   <div class="modal-content">
     <h2>⚠️ Atenção</h2>
     <p>
-      FAÇA PIX PARA 04 PARTICIPANTES<br><br>
+      FAÇA PIX PARA 04
+       PARTICIPANTES<br><br>
       PARA ENTRAR NA LISTA e ENVIE O COMPROVANTE
     </p>
     <button id="btnFecharModal">Fechar</button>
@@ -328,7 +334,7 @@ input::placeholder{
 <div class="container">
 
 <div class="topo">
-  <h1>💰 PIX MAIS</h1>
+  <h1>💰 FILA PIX</h1>
   <p>Ganhe ajudando outros a crescer</p>
 </div>
 
@@ -442,8 +448,8 @@ restantes.sort((a,b)=> a.timestamp - b.timestamp);
 // Junta novamente mantendo o primeiro fixo
 ativos = [primeiroFixo, ...restantes];
 
-// Mantém só 4
-ativos = ativos.slice(0,4);
+// Mantém só 5
+ativos = ativos.slice(0,5);
   ativos.forEach((item,index)=>{
 
     let medalha = "";
@@ -451,6 +457,7 @@ ativos = ativos.slice(0,4);
     if(index === 1) medalha = "🥈";
     if(index === 2) medalha = "🥉";
     if(index === 3) medalha = "🏅";
+    if(index === 4) medalha = "🏅";
 
     div.innerHTML+=`
       <div class="item ${index === 0 ? "primeiro":""}">
