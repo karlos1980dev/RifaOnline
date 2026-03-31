@@ -715,33 +715,30 @@ if (horariosSelecionados.length === 0) {
 };
 function controlarHorariosPorDia() {
   const hoje = new Date().getDay(); 
-  // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab
 
   document.querySelectorAll("#horariosCheckbox input").forEach(input => {
     const valor = input.value;
 
-    // 👉 QUARTA ou SÁBADO
     if (hoje === 3 || hoje === 6) {
-
+      // QUARTA ou SÁBADO
       if (valor === "FEDERAL") {
-        input.parentElement.style.display = "inline-block"; // mostra
+        input.parentElement.style.display = "inline-block";
       }
 
       if (valor === "19:00") {
-        input.parentElement.style.display = "none"; // esconde
-        input.checked = false;
+        input.parentElement.style.display = "none";
+        input.checked = false; // 🔥 FORÇA DESMARCAR
       }
 
     } else {
-      // 👉 OUTROS DIAS
-
+      // OUTROS DIAS
       if (valor === "FEDERAL") {
-        input.parentElement.style.display = "none"; // esconde
-        input.checked = false;
+        input.parentElement.style.display = "none";
+        input.checked = false; // 🔥 FORÇA DESMARCAR
       }
 
       if (valor === "19:00") {
-        input.parentElement.style.display = "inline-block"; // mostra
+        input.parentElement.style.display = "inline-block";
       }
     }
   });
@@ -801,9 +798,19 @@ function marcarProximoHorarioDisponivel() {
   let menorDiferenca = Infinity;
 
   document.querySelectorAll("#horariosCheckbox input[type='checkbox']").forEach(input => {
+    
+    // ❌ IGNORA SE ESTIVER ESCONDIDO
+    if (input.parentElement.style.display === "none") return;
+
     if (input.disabled) return;
 
-    const [hora, minuto] = input.value.split(":").map(Number);
+    const valor = input.value;
+
+    // ❌ IGNORA FEDERAL SE NÃO FOR QUARTA OU SÁBADO
+    const hoje = new Date().getDay();
+    if (valor === "FEDERAL" && hoje !== 3 && hoje !== 6) return;
+
+    const [hora, minuto] = valor.includes(":") ? valor.split(":").map(Number) : [0,0];
     const minutosHorario = hora * 60 + minuto;
 
     const diferenca = minutosHorario - minutosAgora;
