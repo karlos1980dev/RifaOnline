@@ -319,7 +319,7 @@ input::placeholder{
   <div class="modal-content">
     <h2>⚠️ Atenção</h2>
     <p>
-      FAÇA PIX PARA 04
+      FAÇA PIX PARA 06
        PARTICIPANTES<br><br>
       PARA ENTRAR NA LISTA e ENVIE O COMPROVANTE
     </p>
@@ -343,7 +343,7 @@ input::placeholder{
 
 <div class="status" id="status"></div>
 
-<h3>Fila Atual (máx 4)</h3>
+<h3>Fila Atual (máx 6)</h3>
 
 <div class="lista" id="lista"></div>
 <h3>Fila de Espera (máx 6)</h3>
@@ -450,18 +450,20 @@ let meio = ativos.slice(1, -1);
 // 1º fixo → novo entra em 2º → resto continua
 ativos = [primeiroFixo, ultimo, ...meio];
 
-// Limita a 5
-ativos = ativos.slice(0,5);
+
+// Limita a 6
+ativos = ativos.slice(0,6);
 
 
   ativos.forEach((item,index)=>{
 
     let medalha = "";
-    if(index === 0) medalha = "🥇";
-    if(index === 1) medalha = "🥈";
-    if(index === 2) medalha = "🥉";
-    if(index === 3) medalha = "🏅";
-    if(index === 4) medalha = "🏅";
+   if(index === 0) medalha = "🥇";
+if(index === 1) medalha = "🥈";
+if(index === 2) medalha = "🥉";
+if(index === 3) medalha = "🏅";
+if(index === 4) medalha = "🏅";
+if(index === 5) medalha = "🏅";
 
     div.innerHTML+=`
       <div class="item ${index === 0 ? "primeiro":""}">
