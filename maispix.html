@@ -434,23 +434,26 @@ div.innerHTML="";
 
 if(ativos.length === 0) return;
 
-// Ordena por timestamp
+// Ordena por timestamp (mais antigo primeiro)
 ativos.sort((a,b)=> a.timestamp - b.timestamp);
 
-// 🔒 Salva o primeiro fixo
+// 🔒 Primeiro fixo
 const primeiroFixo = ativos[0];
 
-// Remove ele da lista
-let restantes = ativos.slice(1);
+// 🔥 Último que entrou (mais recente)
+const ultimo = ativos[ativos.length - 1];
 
-// Aqui você pode ordenar como quiser do 2º pra baixo
-restantes.sort((a,b)=> a.timestamp - b.timestamp);
+// Remove primeiro e último da lista
+let meio = ativos.slice(1, -1);
 
-// Junta novamente mantendo o primeiro fixo
-ativos = [primeiroFixo, ...restantes];
+// Junta na nova ordem:
+// 1º fixo → novo entra em 2º → resto continua
+ativos = [primeiroFixo, ultimo, ...meio];
 
-// Mantém só 5
+// Limita a 5
 ativos = ativos.slice(0,5);
+
+
   ativos.forEach((item,index)=>{
 
     let medalha = "";
