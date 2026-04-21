@@ -346,7 +346,7 @@ input::placeholder{
 <h3>Fila Atual (máx 6)</h3>
 
 <div class="lista" id="lista"></div>
-<h3>Fila de Espera (máx 6)</h3>
+<h3>Fila de Espera (máx 12)</h3>
 <div class="lista" id="filaEspera"></div></br>
 <button onclick="funcionar()" style="widht:80%;color:bluer;">Como funcionar</button>
 </div>
@@ -487,7 +487,7 @@ if(index === 5) medalha = "🏅";
 });
 
 // ======================
-// FILA DE ESPERA (máx 6)
+// FILA DE ESPERA (máx 12)
 // ======================
 window.addEventListener("error", e => {
   console.log("ERRO GLOBAL:", e.message);
@@ -502,7 +502,7 @@ onValue(pendentesRef,(snapshot)=>{
     return;
   }
 
-  const espera = Object.values(dados).slice(0,6);
+  const espera = Object.values(dados).slice(0,12);
 
   espera.forEach((item,index)=>{
     div.innerHTML+=`
@@ -561,7 +561,8 @@ ${linkSite}`;
 // BLOQUEIO 3 HORAS
 // ======================
 
-const TEMPO_BLOQUEIO = 3 * 60 * 60 * 1000; // 3 horas
+const HORAS = 24;
+const TEMPO_BLOQUEIO = HORAS * 60 * 60 * 1000;
 
 function verificarBloqueio(){
 
