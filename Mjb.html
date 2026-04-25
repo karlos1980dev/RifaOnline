@@ -798,28 +798,28 @@ function marcarProximoHorarioDisponivel() {
   let menorDiferenca = Infinity;
 
   document.querySelectorAll("#horariosCheckbox input[type='checkbox']").forEach(input => {
-    
-    // ❌ IGNORA SE ESTIVER ESCONDIDO
-    if (input.parentElement.style.display === "none") return;
 
-    if (input.disabled) return;
+  if (input.parentElement.style.display === "none") return;
+  if (input.disabled) return;
 
-    const valor = input.value;
+  const valor = input.value;
 
-    // ❌ IGNORA FEDERAL SE NÃO FOR QUARTA OU SÁBADO
-    const hoje = new Date().getDay();
-    if (valor === "FEDERAL" && hoje !== 3 && hoje !== 6) return;
+  let minutosHorario;
 
-    const [hora, minuto] = valor.includes(":") ? valor.split(":").map(Number) : [0,0];
-    const minutosHorario = hora * 60 + minuto;
+  if (valor === "FEDERAL") {
+    minutosHorario = 20 * 60; // 👉 define horário da federal (20:00 por exemplo)
+  } else {
+    const [hora, minuto] = valor.split(":").map(Number);
+    minutosHorario = hora * 60 + minuto;
+  }
 
-    const diferenca = minutosHorario - minutosAgora;
+  const diferenca = minutosHorario - minutosAgora;
 
-    if (diferenca > 0 && diferenca < menorDiferenca) {
-      menorDiferenca = diferenca;
-      proximoCheckbox = input;
-    }
-  });
+  if (diferenca > 0 && diferenca < menorDiferenca) {
+    menorDiferenca = diferenca;
+    proximoCheckbox = input;
+  }
+});
 
   if (proximoCheckbox) {
     proximoCheckbox.checked = true;
