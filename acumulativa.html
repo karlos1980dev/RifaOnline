@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Rifa PRO</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+ 
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -18,39 +19,88 @@ body {
   color:#fff;
   font-family:Arial;
   text-align:center;
+  padding-top: 130px;
 }
 
 .grid {
   display:grid;
-  grid-template-columns:repeat(10,1fr);
+  grid-template-columns:repeat(8,1fr);
   gap:6px;
   max-width:400px;
   margin:20px auto;
 }
 
 button {
-  padding:12px;
+  
   border:none;
   border-radius:8px;
   font-weight:bold;
   cursor:pointer;
+  
+  padding:8px;
+  font-size:12px;
+
 }
 
 .livre { background:#333; color:#fff; }
 .ocupado { background:#ff3b3b; color:#fff; cursor:not-allowed; }
 .meu { background:#00ff88; color:#000; }
+#topoFixo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #000;
+  padding: 2px;
+  z-index: 1000;
+  border-bottom: 2px solid #00ff88;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* 👈 ALTERADO */
+  gap: 10px; /* controla distância */
+  flex-wrap: wrap;
+}
+
+#topoFixo button {
+  background:#00ff88;
+  color:#000;
+}
+
+#resTopo {
+  color: #ffaa00;
+  font-weight: bold;
+}
+
+#dataSorteio {
+  color: #00ff88;
+  font-weight: bold;
+}
+
+#nome {
+  font-size: 14px;
+}
+.lado-direito {
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap: wrap;
+}
+#qtdSelecionados {
+  color: #00ff88;
+  font-weight: bold;
+}
 </style>
 </head>
 <body>
 
-<h2>Rifa Acumulativa</h2>
-<p id="nome"></p>
-<button onclick="abrirResumo()">Salvar</button>
-<div id="topoValores" style="margin-top:10px;">
-  <p id="resTopo" style="color:#ffaa00; font-weight:bold;">
-    Reservado: R$ 0.00
-  </p>
-<p id="dataSorteio" style="color:#00ff88; font-weight:bold;"></p>
+<div id="topoFixo">
+  <p id="resTopo">Acumulado: R$ 0.00</p>
+  <p id="dataSorteio"></p>
+  <p id="nome"></p>
+  <p id="qtdSelecionados">Marcados: 0</p>
+
+  <button style="width:90%" onclick="abrirResumo()">APOSTA</button>
 </div>
 
 <div class="grid" id="grid"></div>
@@ -119,7 +169,7 @@ db.ref("rifa/numeros").on("value", snap => {
 
   const totalGeral = totalReservados + totalSelecionados;
 
-  const valorPorNumero = 7.2;
+  const valorPorNumero = 4.5;
 
   document.getElementById("resTopo").innerText =
     "Acumulado: R$ " + (totalGeral * valorPorNumero).toFixed(2);
@@ -128,8 +178,8 @@ db.ref("rifa/numeros").on("value", snap => {
   const grid = document.getElementById("grid");
   grid.innerHTML = "";
 
-  for (let i = 0; i < 100; i++) {
-    const num = i.toString().padStart(2, '0');
+  for (let i = 0; i < 1000; i++) {
+    const num = i.toString().padStart(3, '0');
     const btn = document.createElement("button");
     btn.innerText = num;
 
@@ -140,14 +190,16 @@ db.ref("rifa/numeros").on("value", snap => {
       btn.className = selecionados.includes(num) ? "meu" : "livre";
 
       btn.onclick = () => {
-        if (selecionados.includes(num)) {
-          selecionados = selecionados.filter(n => n !== num);
-        } else {
-          selecionados.push(num);
-        }
+  if (selecionados.includes(num)) {
+    selecionados = selecionados.filter(n => n !== num);
+  } else {
+    selecionados.push(num);
+  }
 
-        atualizarTela(numeros);
-      };
+  atualizarTela(numeros);
+  atualizarReservado();
+  atualizarContador(); // 👈 AQUI
+};
     }
 
     grid.appendChild(btn);
@@ -159,8 +211,8 @@ function atualizarTela(numeros) {
   const grid = document.getElementById("grid");
   grid.innerHTML = "";
 
-  for (let i = 0; i < 100; i++) {
-    const num = i.toString().padStart(2, '0');
+  for (let i = 0; i < 1000; i++) {
+    const num = i.toString().padStart(3, '0');
     const btn = document.createElement("button");
     btn.innerText = num;
 
@@ -179,7 +231,8 @@ function atualizarTela(numeros) {
   }
 
   atualizarTela(numeros);
-  atualizarReservado(); // 👈 AQUI
+  atualizarReservado();
+  atualizarContador(); // 👈 AQUI
 };
     }
 
@@ -197,7 +250,7 @@ function salvar() {
   selecionados.forEach(num => {
     db.ref("rifa/numeros/" + num).set({
       nome: nome,
-      valor: 10
+      valor: 5
     });
   });
 
@@ -209,7 +262,7 @@ function abrirResumo() {
     return;
   }
 
-  const valorPagamento = 10;
+  const valorPagamento = 5;
   const totalPagamento = selecionados.length * valorPagamento;
 
   document.getElementById("resNome").innerText =
@@ -228,8 +281,8 @@ function abrirResumo() {
 function confirmar() {
   if (selecionados.length === 0) return;
 
-  const valorReserva = 8;
-  const valorPagamento = 10;
+  const valorReserva = 4.5;
+  const valorPagamento = 5;
 
   const totalPagamento = selecionados.length * valorPagamento;
 
@@ -272,10 +325,11 @@ Total a pagar: R$ ${totalPagamento.toFixed(2)}`;
   }, 800);
 
   selecionados = [];
+  atualizarContador();
   fecharModal();
 }
 function atualizarTotalTopo() {
-  const valorUnitario = 10; // valor de pagamento
+  const valorUnitario = 5; // valor de pagamento
   const total = selecionados.length * valorUnitario;
 
   document.getElementById("totalTopo").innerText =
@@ -285,7 +339,7 @@ function fecharModal() {
   document.getElementById("modal").style.display = "none";
 }
 function atualizarReservado() {
-  const valorReserva = 8;
+  const valorReserva = 4.5;
   const total = selecionados.length * valorReserva;
 
   document.getElementById("resTopo").innerText =
@@ -313,7 +367,10 @@ function atualizarDataSabado() {
   document.getElementById("dataSorteio").innerText =
     "Sorteio: " + dataFormatada;
 }
-
+function atualizarContador() {
+  document.getElementById("qtdSelecionados").innerText =
+    "Marcados: " + selecionados.length;
+}
 atualizarDataSabado();
 setInterval(atualizarDataSabado, 60000); // a cada 1 min
 </script>
