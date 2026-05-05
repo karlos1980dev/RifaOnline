@@ -90,17 +90,62 @@ button {
   color: #00ff88;
   font-weight: bold;
 }
+#menuBtn {
+  font-size: 22px;
+  cursor: pointer;
+  color: #00ff88;
+}
+
+#menuLateral {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 80%;
+  height: 100%;
+  background: #000;
+  z-index: 2000;
+  padding: 15px;
+  overflow-y: auto;
+  transition: 0.3s;
+}
+
+#menuLateral.ativo {
+  left: 0;
+}
+
+#listaReservas {
+  margin-top: 10px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.linha-nome {
+  color: #00ff88;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+.linha-numeros {
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.divisor {
+  border-bottom: 1px solid #444;
+  margin: 10px 0;
+}
 </style>
 </head>
 <body>
 
 <div id="topoFixo">
+    <div id="menuBtn" onclick="toggleMenu()">☰</div></br>
   <p id="resTopo">Acumulado: R$ 0.00</p>
   <p id="dataSorteio"></p>
   <p id="nome"></p>
   <p id="qtdSelecionados">Marcados: 0</p>
 
-  <button style="width:90%" onclick="abrirResumo()">APOSTA</button>
+  <button style="width:100%" onclick="abrirResumo()">APOSTA</button>
 </div>
 
 <div class="grid" id="grid"></div>
@@ -131,6 +176,10 @@ button {
     <button onclick="confirmar()">Salvar</button>
     <button onclick="fecharModal()">Cancelar</button>
   </div>
+</div>
+<div id="menuLateral">
+  <h3>Reservas</h3>
+  <div id="listaReservas"></div>
 </div>
 <script>
 // 🔥 CONFIG FIREBASE
@@ -204,6 +253,47 @@ db.ref("rifa/numeros").on("value", snap => {
 
     grid.appendChild(btn);
   }
+  db.ref("rifa/numeros").on("value", snap => {
+  const numeros = snap.val() || {};
+
+  // ... SEU CÓDIGO NORMAL (grid, acumulado etc)
+
+  // 🔥 AGRUPAR POR NOME
+  let agrupado = {};
+
+  Object.keys(numeros).forEach(num => {
+    const pessoa = numeros[num].nome;
+
+    if (!agrupado[pessoa]) {
+      agrupado[pessoa] = [];
+    }
+
+    agrupado[pessoa].push(num);
+  });
+
+  // 🔥 MOSTRAR NO MENU
+  const lista = document.getElementById("listaReservas");
+  if (!lista) return;
+
+  lista.innerHTML = "";
+
+  Object.keys(agrupado).forEach(nomePessoa => {
+    const divNome = document.createElement("div");
+    divNome.className = "linha-nome";
+    divNome.innerText = nomePessoa;
+
+    const divNum = document.createElement("div");
+    divNum.className = "linha-numeros";
+    divNum.innerText = agrupado[nomePessoa].join(", ");
+
+    const divisor = document.createElement("div");
+    divisor.className = "divisor";
+
+    lista.appendChild(divNome);
+    lista.appendChild(divNum);
+    lista.appendChild(divisor);
+  });
+ });
 });
 
 // 🔄 ATUALIZA TELA
@@ -371,6 +461,19 @@ function atualizarContador() {
   document.getElementById("qtdSelecionados").innerText =
     "Marcados: " + selecionados.length;
 }
+function toggleMenu() {
+  const menu = document.getElementById("menuLateral");
+  menu.classList.toggle("ativo");
+}
+// 🔥 AGRUPAR POR NOME
+document.addEventListener("click", function(e) {
+  const menu = document.getElementById("menuLateral");
+  const btn = document.getElementById("menuBtn");
+
+  if (!menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.classList.remove("ativo");
+  }
+});
 atualizarDataSabado();
 setInterval(atualizarDataSabado, 60000); // a cada 1 min
 </script>
