@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Rifa PRO</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<style>
+    #resValor {
+  font-size:20px;
+  color:#00ff88;
+  font-weight:bold;
+}
+body {
+  background:#111;
+  color:#fff;
+  font-family:Arial;
+  text-align:center;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  gap:6px;
+  max-width:400px;
+  margin:20px auto;
+}
+
+button {
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.livre { background:#333; color:#fff; }
+.ocupado { background:#ff3b3b; color:#fff; cursor:not-allowed; }
+.meu { background:#00ff88; color:#000; }
+</style>
+</head>
+<body>
+
+<h2>Rifa Acumulativa</h2>
+<p id="nome"></p>
+<button onclick="abrirResumo()">Salvar</button>
+<div id="topoValores" style="margin-top:10px;">
+  <p id="resTopo" style="color:#ffaa00; font-weight:bold;">
+    Reservado: R$ 0.00
+  </p>
+<p id="dataSorteio" style="color:#00ff88; font-weight:bold;"></p>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div id="modal" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+">
+  <div style="
+    background:#111;
+    padding:20px;
+    border-radius:12px;
+    width:90%;
+    max-width:350px;
+    text-align:center;
+  ">
+    <h3>Resumo</h3>
+
+    <p id="resNome"></p>
+    <p id="resNumeros"></p>
+    <p id="resValor"></p>
+
+    <button onclick="confirmar()">Salvar</button>
+    <button onclick="fecharModal()">Cancelar</button>
+  </div>
+</div>
+<script>
+// 🔥 CONFIG FIREBASE
+const firebaseConfig = {
+  apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain: "rifa-782a3.firebaseapp.com",
+  databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId: "rifa-782a3",
+  storageBucket: "rifa-782a3.firebasestorage.app",
+  messagingSenderId: "88068598855",
+  appId: "1:88068598855:web:a230a06db76a4bbc125562"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// 👤 NOME
+let nome = localStorage.getItem("nome");
+if (!nome) {
+  nome = prompt("Digite seu nome:");
+  localStorage.setItem("nome", nome);
+}
+document.getElementById("nome").innerText = "Jogador: " + nome;
+
+// 🧠 LISTA TEMPORÁRIA
+let selecionados = [];
+
+// 🔄 ESCUTAR FIREBASE
+db.ref("rifa/numeros").on("value", snap => {
+  const numeros = snap.val() || {};
+
+  // 🔥 CONTA QUANTOS JÁ FORAM RESERVADOS
+  const totalReservados = Object.keys(numeros).length;
+
+  // 🔥 SOMA COM OS QUE VOCÊ ESTÁ MARCANDO
+  const totalSelecionados = selecionados.length;
+
+  const totalGeral = totalReservados + totalSelecionados;
+
+  const valorPorNumero = 7.2;
+
+  document.getElementById("resTopo").innerText =
+    "Acumulado: R$ " + (totalGeral * valorPorNumero).toFixed(2);
+
+  // 👇 CONTINUA SEU CÓDIGO NORMAL
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+
+  for (let i = 0; i < 100; i++) {
+    const num = i.toString().padStart(2, '0');
+    const btn = document.createElement("button");
+    btn.innerText = num;
+
+    if (numeros[num]) {
+      btn.className = numeros[num].nome === nome ? "meu" : "ocupado";
+      btn.disabled = true;
+    } else {
+      btn.className = selecionados.includes(num) ? "meu" : "livre";
+
+      btn.onclick = () => {
+        if (selecionados.includes(num)) {
+          selecionados = selecionados.filter(n => n !== num);
+        } else {
+          selecionados.push(num);
+        }
+
+        atualizarTela(numeros);
+      };
+    }
+
+    grid.appendChild(btn);
+  }
+});
+
+// 🔄 ATUALIZA TELA
+function atualizarTela(numeros) {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+
+  for (let i = 0; i < 100; i++) {
+    const num = i.toString().padStart(2, '0');
+    const btn = document.createElement("button");
+    btn.innerText = num;
+
+    if (numeros[num]) {
+      btn.className = numeros[num].nome === nome ? "meu" : "ocupado";
+      btn.disabled = true;
+
+    } else {
+      btn.className = selecionados.includes(num) ? "meu" : "livre";
+
+      btn.onclick = () => {
+  if (selecionados.includes(num)) {
+    selecionados = selecionados.filter(n => n !== num);
+  } else {
+    selecionados.push(num);
+  }
+
+  atualizarTela(numeros);
+  atualizarReservado(); // 👈 AQUI
+};
+    }
+
+    grid.appendChild(btn);
+  }
+}
+
+// 💾 SALVAR NO FIREBASE
+function salvar() {
+  if (selecionados.length === 0) {
+    alert("Selecione pelo menos um número!");
+    return;
+  }
+
+  selecionados.forEach(num => {
+    db.ref("rifa/numeros/" + num).set({
+      nome: nome,
+      valor: 10
+    });
+  });
+
+  selecionados = [];
+}
+function abrirResumo() {
+  if (selecionados.length === 0) {
+    alert("Selecione pelo menos um número!");
+    return;
+  }
+
+  const valorPagamento = 10;
+  const totalPagamento = selecionados.length * valorPagamento;
+
+  document.getElementById("resNome").innerText =
+    "Nome: " + nome;
+
+  document.getElementById("resNumeros").innerText =
+    "Dezenas: " + selecionados.join(", ");
+
+  document.getElementById("resValor").innerText =
+    "Total a pagar: R$ " + totalPagamento.toFixed(2);
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+// 💾 CONFIRMAR E SALVAR
+function confirmar() {
+  if (selecionados.length === 0) return;
+
+  const valorReserva = 8;
+  const valorPagamento = 10;
+
+  const totalPagamento = selecionados.length * valorPagamento;
+
+  let vendidos = [];
+
+  selecionados.forEach(num => {
+    const ref = db.ref("rifa/numeros/" + num);
+
+    ref.transaction(current => {
+      if (current === null) {
+        vendidos.push(num);
+        return {
+          nome: nome,
+          valor: valorReserva
+        };
+      } else {
+        return;
+      }
+    });
+  });
+
+  // Aguarda um pouco pra garantir que salvou
+  setTimeout(() => {
+
+    if (vendidos.length > 0) {
+
+      const mensagem =
+`*RIFA*
+Nome: ${nome}
+Números: ${vendidos.join(", ")}
+Total a pagar: R$ ${totalPagamento.toFixed(2)}`;
+
+      const telefone = "5571992290058";
+
+      const url = "https://wa.me/" + telefone + "?text=" + encodeURIComponent(mensagem);
+
+      window.open(url, "_blank");
+    }
+
+  }, 800);
+
+  selecionados = [];
+  fecharModal();
+}
+function atualizarTotalTopo() {
+  const valorUnitario = 10; // valor de pagamento
+  const total = selecionados.length * valorUnitario;
+
+  document.getElementById("totalTopo").innerText =
+    "Total: R$ " + total.toFixed(2);
+}
+function fecharModal() {
+  document.getElementById("modal").style.display = "none";
+}
+function atualizarReservado() {
+  const valorReserva = 8;
+  const total = selecionados.length * valorReserva;
+
+  document.getElementById("resTopo").innerText =
+    "Reservado: R$ " + total.toFixed(2);
+}
+function atualizarDataSabado() {
+  const hoje = new Date();
+
+  const diaSemana = hoje.getDay(); // 0 = domingo, 6 = sábado
+
+  // calcula quantos dias faltam pro sábado
+  const diasFaltando = (6 - diaSemana + 7) % 7;
+
+  // se hoje for sábado, pega o próximo sábado
+  const proximoSabado = new Date(hoje);
+  proximoSabado.setDate(hoje.getDate() + (diasFaltando === 0 ? 7 : diasFaltando));
+
+  // formatar data (BR)
+  const dataFormatada = proximoSabado.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+
+  document.getElementById("dataSorteio").innerText =
+    "Sorteio: " + dataFormatada;
+}
+
+atualizarDataSabado();
+setInterval(atualizarDataSabado, 60000); // a cada 1 min
+</script>
+
+</body>
+</html>
