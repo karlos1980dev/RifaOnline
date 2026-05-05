@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<style>
+body{
+  background:#111;
+  color:#fff;
+  font-family:Arial;
+  text-align:center;
+  padding-top:130px;
+}
+
+/* TOPO */
+#topo{
+  position:fixed;
+  top:0;
+  width:100%;
+  background:#000;
+  padding:10px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  border-bottom:2px solid #00ff88;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  gap:5px;
+  max-width:500px;
+  margin:auto;
+  max-height:70vh;
+  overflow:auto;
+}
+
+button{
+  padding:8px;
+  border:none;
+  border-radius:6px;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.livre{background:#333}
+.ocupado{background:red}
+.meu{background:#00ff88;color:#000}
+
+/* MENU */
+#menu{
+  position:fixed;
+  left:-100%;
+  top:0;
+  width:80%;
+  height:100%;
+  background:#000;
+  transition:.3s;
+  padding:10px;
+  overflow:auto;
+}
+
+#menu.ativo{left:0}
+
+/* ADMIN */
+#admin{
+  position:fixed;
+  bottom:-100%;
+  width:100%;
+  background:#000;
+  padding:15px;
+  transition:.3s;
+  max-height:50vh;
+  overflow:auto;
+}
+
+#admin.ativo{bottom:0}
+
+.item{
+  background:#111;
+  margin:5px;
+  padding:5px;
+}
+
+.excluir{
+  background:red;
+  color:#fff;
+  margin-left:10px;
+}
+</style>
+</head>
+<body>
+
+<!-- TOPO -->
+<div id="topo">
+  <button onclick="toggleMenu()">☰</button>
+  <button onclick="toggleAdmin()">ADMIN</button>
+
+  <p id="resTopo"></p>
+  <p id="qtd"></p>
+</div>
+
+<!-- GRID -->
+<div class="grid" id="grid"></div>
+
+<!-- MENU -->
+<div id="menu">
+  <h3>Reservas</h3>
+  <div id="listaMenu"></div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin">
+  <h3>Painel Admin</h3>
+
+  <input id="nomeAdmin" placeholder="Nome">
+  <input id="numeroAdmin" placeholder="Número">
+
+  <button onclick="adicionar()">Adicionar</button>
+
+  <hr>
+
+  <div id="listaAdmin"></div>
+</div>
+
+<script>
+// FIREBASE
+const firebaseConfig = {
+  apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain: "rifa-782a3.firebaseapp.com",
+  databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId: "rifa-782a3",
+  storageBucket: "rifa-782a3.firebasestorage.app",
+  messagingSenderId: "88068598855",
+  appId: "1:88068598855:web:a230a06db76a4bbc125562"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let selecionados = [];
+let nome = localStorage.getItem("nome") || prompt("Seu nome:");
+localStorage.setItem("nome", nome);
+
+// 🔄 REALTIME
+db.ref("rifa/numeros").on("value", snap=>{
+  const dados = snap.val() || {};
+
+  render(dados);
+  atualizarMenu(dados);
+  atualizarAdmin(dados);
+
+  const total = Object.keys(dados).length + selecionados.length;
+
+  document.getElementById("resTopo").innerText =
+    "Acumulado: R$ "+(total*5).toFixed(2);
+
+  document.getElementById("qtd").innerText =
+    "Marcados: "+selecionados.length;
+});
+
+// 🎯 GRID
+function render(dados){
+  const grid = document.getElementById("grid");
+  grid.innerHTML="";
+
+  for(let i=0;i<1000;i++){
+    const num = i.toString().padStart(3,'0');
+
+    const btn = document.createElement("button");
+    btn.innerText = num;
+
+    if(dados[num]){
+      btn.className = dados[num].nome===nome?"meu":"ocupado";
+      btn.disabled=true;
+    }else{
+      btn.className = selecionados.includes(num)?"meu":"livre";
+
+      btn.onclick=()=>{
+        if(selecionados.includes(num)){
+          selecionados=selecionados.filter(n=>n!==num);
+        }else{
+          selecionados.push(num);
+        }
+        render(dados);
+      }
+    }
+
+    grid.appendChild(btn);
+  }
+}
+
+// 📋 MENU AGRUPADO
+function atualizarMenu(dados){
+  let grupo={};
+
+  Object.keys(dados).forEach(num=>{
+    const n = dados[num].nome;
+    if(!grupo[n]) grupo[n]=[];
+    grupo[n].push(num);
+  });
+
+  const lista = document.getElementById("listaMenu");
+  lista.innerHTML="";
+
+  Object.keys(grupo).forEach(n=>{
+    lista.innerHTML+=`
+      <p style="color:#00ff88">${n}</p>
+      <p>${grupo[n].join(", ")}</p>
+      <hr>
+    `;
+  });
+}
+
+// 🛠 ADMIN LISTA
+function atualizarAdmin(dados){
+  const lista = document.getElementById("listaAdmin");
+  lista.innerHTML="";
+
+  Object.keys(dados).forEach(num=>{
+    lista.innerHTML+=`
+      <div class="item">
+        ${num} - ${dados[num].nome}
+        <button class="excluir" onclick="excluir('${num}')">X</button>
+      </div>
+    `;
+  });
+}
+
+// ➕ ADICIONAR
+function adicionar(){
+  let nomeA = document.getElementById("nomeAdmin").value;
+  let num = document.getElementById("numeroAdmin").value;
+
+  if(!nomeA || num===""){
+    alert("Preencha!");
+    return;
+  }
+
+  num = num.padStart(3,'0');
+
+  db.ref("rifa/numeros/"+num).set({
+    nome:nomeA
+  });
+}
+
+// ❌ EXCLUIR
+function excluir(num){
+  if(confirm("Excluir "+num+"?")){
+    db.ref("rifa/numeros/"+num).remove();
+  }
+}
+
+// UI
+function toggleMenu(){
+  document.getElementById("menu").classList.toggle("ativo");
+}
+
+function toggleAdmin(){
+  document.getElementById("admin").classList.toggle("ativo");
+}
+</script>
+
+</body>
+</html>
