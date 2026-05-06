@@ -7,8 +7,10 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
+<link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/file_00000000c28471fba60c52601e2a4d2c.png" type="image/jpg">
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/file_00000000c28471fba60c52601e2a4d2c.png" type="image/jpg">
 <style>
+    
     #resValor {
   font-size:20px;
   color:#00ff88;
@@ -180,6 +182,64 @@ button {
 <div id="menuLateral">
   <h3>Reservas</h3>
   <div id="listaReservas"></div>
+</div><div id="modalPix" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+">
+  <div style="
+    background:#111;
+    padding:20px;
+    border-radius:12px;
+    width:90%;
+    max-width:350px;
+    text-align:center;
+  ">
+    <h3>Pagamento via Pix</h3>
+
+    <p>Chave Pix:</p>
+    <p id="chavePix" style="color:#00ff88; font-weight:bold;">
+      71992290058
+    </p>
+
+    <div style="display:flex; gap:10px; justify-content:center; margin-top:15px;">
+  <button style="flex:1;" onclick="copiarPix()">Copiar</button>
+  <button style="flex:1; background:#ff3b3b; color:#fff;" onclick="fecharPix()">Fechar</button>
+</div>
+  </div>
+</div>
+<div id="modalPix" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+">
+  <div style="
+    background:#111;
+    padding:20px;
+    border-radius:12px;
+    width:90%;
+    max-width:350px;
+    text-align:center;
+  ">
+    <h3>Pagamento via Pix</h3>
+
+    <p>Chave Pix:</p>
+    <p id="chavePix" style="color:#00ff88; font-weight:bold;">
+      71992290058
+    </p>
+
+    <button onclick="copiarPix()">Copiar Chave</button>
+    <br><br>
+    <button onclick="fecharPix()">Fechar</button>
+  </div>
 </div>
 <script>
 // 🔥 CONFIG FIREBASE
@@ -373,7 +433,6 @@ function confirmar() {
 
   const valorReserva = 4.5;
   const valorPagamento = 5;
-
   const totalPagamento = selecionados.length * valorPagamento;
 
   let vendidos = [];
@@ -394,29 +453,18 @@ function confirmar() {
     });
   });
 
-  // Aguarda um pouco pra garantir que salvou
+  // ⏳ Aguarda salvar
   setTimeout(() => {
-
     if (vendidos.length > 0) {
-
-      const mensagem =
-`*RIFA*
-Nome: ${nome}
-Números: ${vendidos.join(", ")}
-Total a pagar: R$ ${totalPagamento.toFixed(2)}`;
-
-      const telefone = "5571992290058";
-
-      const url = "https://wa.me/" + telefone + "?text=" + encodeURIComponent(mensagem);
-
-      window.open(url, "_blank");
+      // 🔥 ABRE MODAL PIX
+      document.getElementById("modalPix").style.display = "flex";
     }
 
-  }, 800);
+    selecionados = [];
+    atualizarContador();
+    fecharModal();
 
-  selecionados = [];
-  atualizarContador();
-  fecharModal();
+  }, 800);
 }
 function atualizarTotalTopo() {
   const valorUnitario = 5; // valor de pagamento
@@ -474,6 +522,13 @@ document.addEventListener("click", function(e) {
     menu.classList.remove("ativo");
   }
 });
+function copiarPix() {
+  const chave = document.getElementById("chavePix").innerText;
+
+  navigator.clipboard.writeText(chave).then(() => {
+    alert("Chave Pix copiada!");
+  });
+}
 atualizarDataSabado();
 setInterval(atualizarDataSabado, 60000); // a cada 1 min
 </script>
