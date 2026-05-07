@@ -136,6 +136,12 @@ button {
   border-bottom: 1px solid #444;
   margin: 10px 0;
 }
+.brinde {
+  background: gold !important;
+  color: #000 !important;
+  font-weight: bold;
+  border: 2px solid #ffcc00;
+}
 </style>
 </head>
 <body>
@@ -252,6 +258,7 @@ const firebaseConfig = {
   messagingSenderId: "88068598855",
   appId: "1:88068598855:web:a230a06db76a4bbc125562"
 };
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
@@ -263,75 +270,99 @@ if (!nome) {
 }
 document.getElementById("nome").innerText = "Jogador: " + nome;
 
-// 🧠 LISTA TEMPORÁRIA
+// 🧠 VARIÁVEIS
 let selecionados = [];
-
-// 🔄 ESCUTAR FIREBASE
+let numerosCache = {};
+let meusNumeros = [];
+// 🔄 FIREBASE LISTENER (ÚNICO)
 db.ref("rifa/numeros").on("value", snap => {
   const numeros = snap.val() || {};
+  numerosCache = numeros;
 
-  // 🔥 CONTA QUANTOS JÁ FORAM RESERVADOS
-  const totalReservados = Object.keys(numeros).length;
+  // pegar números do usuário
+  meusNumeros = Object.keys(numeros).filter(n => numeros[n].nome === nome);
 
-  // 🔥 SOMA COM OS QUE VOCÊ ESTÁ MARCANDO
-  const totalSelecionados = selecionados.length;
+  atualizarGrid(numeros);
+  atualizarAcumulado(numeros);
+  atualizarContador();
+  atualizarMenu(numeros);
+});
 
-  const totalGeral = totalReservados + totalSelecionados;
+function calcularBrindes(total) {
+  return Math.floor(total / 4);
+}
 
-  const valorPorNumero = 4.5;
-
-  document.getElementById("resTopo").innerText =
-    "Acumulado: R$ " + (totalGeral * valorPorNumero).toFixed(2);
-
-  // 👇 CONTINUA SEU CÓDIGO NORMAL
+// 🎯 GRID
+function atualizarGrid(numeros) {
   const grid = document.getElementById("grid");
   grid.innerHTML = "";
 
   for (let i = 0; i < 1000; i++) {
-    const num = i.toString().padStart(3, '0');
+    const num = i.toString().padStart(3, "0");
     const btn = document.createElement("button");
     btn.innerText = num;
 
     if (numeros[num]) {
-      btn.className = numeros[num].nome === nome ? "meu" : "ocupado";
+      if (numeros[num].bonus) {
+        btn.className = "brinde";
+      } else {
+        btn.className = numeros[num].nome === nome ? "meu" : "ocupado";
+      }
       btn.disabled = true;
+
     } else {
       btn.className = selecionados.includes(num) ? "meu" : "livre";
 
       btn.onclick = () => {
-  if (selecionados.includes(num)) {
-    selecionados = selecionados.filter(n => n !== num);
-  } else {
-    selecionados.push(num);
-  }
-
-  atualizarTela(numeros);
-  atualizarReservado();
-  atualizarContador(); // 👈 AQUI
-};
+        if (selecionados.includes(num)) {
+          selecionados = selecionados.filter(n => n !== num);
+        } else {
+          selecionados.push(num);
+        }
+        atualizarContador();
+        atualizarGrid(numeros);
+      };
     }
 
     grid.appendChild(btn);
   }
-  db.ref("rifa/numeros").on("value", snap => {
-  const numeros = snap.val() || {};
+}
 
-  // ... SEU CÓDIGO NORMAL (grid, acumulado etc)
+// 💰 ACUMULADO
+function atualizarAcumulado(numeros) {
 
-  // 🔥 AGRUPAR POR NOME
+  let totalPago = 0;
+
+  Object.keys(numeros).forEach(num => {
+    const item = numeros[num];
+
+    // ❌ IGNORA BRINDE
+    if (item.bonus) return;
+
+    // ✔ só conta números pagos
+    totalPago += 4.5;
+  });
+
+  document.getElementById("resTopo").innerText =
+    "Acumulado: R$ " + totalPago.toFixed(2);
+}
+
+// 🔢 CONTADOR
+function atualizarContador() {
+  document.getElementById("qtdSelecionados").innerText =
+    "Marcados: " + selecionados.length;
+}
+
+// 📋 MENU
+function atualizarMenu(numeros) {
   let agrupado = {};
 
   Object.keys(numeros).forEach(num => {
     const pessoa = numeros[num].nome;
-
-    if (!agrupado[pessoa]) {
-      agrupado[pessoa] = [];
-    }
-
+    if (!agrupado[pessoa]) agrupado[pessoa] = [];
     agrupado[pessoa].push(num);
   });
 
-  // 🔥 MOSTRAR NO MENU
   const lista = document.getElementById("listaReservas");
   if (!lista) return;
 
@@ -344,7 +375,17 @@ db.ref("rifa/numeros").on("value", snap => {
 
     const divNum = document.createElement("div");
     divNum.className = "linha-numeros";
-    divNum.innerText = agrupado[nomePessoa].join(", ");
+
+    let listaNums = agrupado[nomePessoa].map(n =>
+      numeros[n]?.bonus ? "🎁 " + n : n
+    );
+
+    divNum.innerHTML = listaNums.map(n => {
+  if (n.includes("🎁")) {
+    return `<span style="color:gold;font-weight:bold">${n}</span>`;
+  }
+  return n;
+}).join(", ");
 
     const divisor = document.createElement("div");
     divisor.className = "divisor";
@@ -353,73 +394,33 @@ db.ref("rifa/numeros").on("value", snap => {
     lista.appendChild(divNum);
     lista.appendChild(divisor);
   });
- });
-});
-
-// 🔄 ATUALIZA TELA
-function atualizarTela(numeros) {
-  const grid = document.getElementById("grid");
-  grid.innerHTML = "";
-
-  for (let i = 0; i < 1000; i++) {
-    const num = i.toString().padStart(3, '0');
-    const btn = document.createElement("button");
-    btn.innerText = num;
-
-    if (numeros[num]) {
-      btn.className = numeros[num].nome === nome ? "meu" : "ocupado";
-      btn.disabled = true;
-
-    } else {
-      btn.className = selecionados.includes(num) ? "meu" : "livre";
-
-      btn.onclick = () => {
-  if (selecionados.includes(num)) {
-    selecionados = selecionados.filter(n => n !== num);
-  } else {
-    selecionados.push(num);
-  }
-
-  atualizarTela(numeros);
-  atualizarReservado();
-  atualizarContador(); // 👈 AQUI
-};
-    }
-
-    grid.appendChild(btn);
-  }
 }
 
-// 💾 SALVAR NO FIREBASE
-function salvar() {
-  if (selecionados.length === 0) {
-    alert("Selecione pelo menos um número!");
-    return;
-  }
-
-  selecionados.forEach(num => {
-    db.ref("rifa/numeros/" + num).set({
-      nome: nome,
-      valor: 5
-    });
-  });
-
-  selecionados = [];
-}
+// 🧾 ABRIR RESUMO
 function abrirResumo() {
   if (selecionados.length === 0) {
     alert("Selecione pelo menos um número!");
     return;
   }
 
-  const valorPagamento = 5;
-  const totalPagamento = selecionados.length * valorPagamento;
+  let quantidadeNova = selecionados.length;
+
+  let totalAntes = meusNumeros.length;
+  let totalDepois = totalAntes + quantidadeNova;
+
+  let brindesAntes = calcularBrindes(totalAntes);
+  let brindesDepois = calcularBrindes(totalDepois);
+
+  let novosBrindes = brindesDepois - brindesAntes;
+
+  let totalPagamento = quantidadeNova * 5;
 
   document.getElementById("resNome").innerText =
     "Nome: " + nome;
 
   document.getElementById("resNumeros").innerText =
-    "Dezenas: " + selecionados.join(", ");
+    "Dezenas: " + selecionados.join(", ") +
+    (novosBrindes > 0 ? " + " + novosBrindes + " brinde(s)" : "");
 
   document.getElementById("resValor").innerText =
     "Total a pagar: R$ " + totalPagamento.toFixed(2);
@@ -427,16 +428,23 @@ function abrirResumo() {
   document.getElementById("modal").style.display = "flex";
 }
 
-// 💾 CONFIRMAR E SALVAR
+// 💾 CONFIRMAR
 function confirmar() {
   if (selecionados.length === 0) return;
 
-  const valorReserva = 4.5;
-  const valorPagamento = 5;
-  const totalPagamento = selecionados.length * valorPagamento;
+  const valor = 5;
+
+  let totalAntes = meusNumeros.length;
+  let totalDepois = totalAntes + selecionados.length;
+
+  let brindesAntes = calcularBrindes(totalAntes);
+  let brindesDepois = calcularBrindes(totalDepois);
+
+  let novosBrindes = brindesDepois - brindesAntes;
 
   let vendidos = [];
 
+  // salvar números normais
   selecionados.forEach(num => {
     const ref = db.ref("rifa/numeros/" + num);
 
@@ -445,83 +453,48 @@ function confirmar() {
         vendidos.push(num);
         return {
           nome: nome,
-          valor: valorReserva
+          valor: valor
         };
-      } else {
-        return;
       }
     });
   });
 
-  // ⏳ Aguarda salvar
+  // 🎁 gerar brindes
+  for (let i = 0; i < novosBrindes; i++) {
+    let numeroBonus;
+
+    do {
+      numeroBonus = Math.floor(Math.random() * 1000)
+        .toString()
+        .padStart(3, "0");
+
+    } while (selecionados.includes(numeroBonus) || numerosCache[numeroBonus]);
+
+    db.ref("rifa/numeros/" + numeroBonus).set({
+      nome: nome,
+      valor: 0,
+      bonus: true,
+      tipo: "brinde"
+    });
+  }
+
   setTimeout(() => {
     if (vendidos.length > 0) {
-      // 🔥 ABRE MODAL PIX
       document.getElementById("modalPix").style.display = "flex";
     }
 
     selecionados = [];
     atualizarContador();
     fecharModal();
-
   }, 800);
 }
-function atualizarTotalTopo() {
-  const valorUnitario = 5; // valor de pagamento
-  const total = selecionados.length * valorUnitario;
 
-  document.getElementById("totalTopo").innerText =
-    "Total: R$ " + total.toFixed(2);
-}
+// ❌ FECHAR MODAL
 function fecharModal() {
   document.getElementById("modal").style.display = "none";
 }
-function atualizarReservado() {
-  const valorReserva = 4.5;
-  const total = selecionados.length * valorReserva;
 
-  document.getElementById("resTopo").innerText =
-    "Reservado: R$ " + total.toFixed(2);
-}
-function atualizarDataSabado() {
-  const hoje = new Date();
-
-  const diaSemana = hoje.getDay(); // 0 = domingo, 6 = sábado
-
-  // calcula quantos dias faltam pro sábado
-  const diasFaltando = (6 - diaSemana + 7) % 7;
-
-  // se hoje for sábado, pega o próximo sábado
-  const proximoSabado = new Date(hoje);
-  proximoSabado.setDate(hoje.getDate() + (diasFaltando === 0 ? 7 : diasFaltando));
-
-  // formatar data (BR)
-  const dataFormatada = proximoSabado.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
-  });
-
-  document.getElementById("dataSorteio").innerText =
-    "Sorteio: " + dataFormatada;
-}
-function atualizarContador() {
-  document.getElementById("qtdSelecionados").innerText =
-    "Marcados: " + selecionados.length;
-}
-function toggleMenu() {
-  const menu = document.getElementById("menuLateral");
-  menu.classList.toggle("ativo");
-}
-// 🔥 AGRUPAR POR NOME
-document.addEventListener("click", function(e) {
-  const menu = document.getElementById("menuLateral");
-  const btn = document.getElementById("menuBtn");
-
-  if (!menu.contains(e.target) && !btn.contains(e.target)) {
-    menu.classList.remove("ativo");
-  }
-});
+// 💳 PIX
 function copiarPix() {
   const chave = document.getElementById("chavePix").innerText;
 
@@ -529,8 +502,48 @@ function copiarPix() {
     alert("Chave Pix copiada!");
   });
 }
+
+function fecharPix() {
+  document.getElementById("modalPix").style.display = "none";
+}
+
+// 📅 DATA SORTEIO
+function atualizarDataSabado() {
+  const hoje = new Date();
+  const dia = hoje.getDay();
+  const diasFaltando = (6 - dia + 7) % 7;
+
+  const proximo = new Date(hoje);
+  proximo.setDate(hoje.getDate() + (diasFaltando === 0 ? 7 : diasFaltando));
+
+  const data = proximo.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+
+  document.getElementById("dataSorteio").innerText =
+    "Sorteio: " + data;
+}
+
+// 📱 MENU
+function toggleMenu() {
+  document.getElementById("menuLateral").classList.toggle("ativo");
+}
+
+// fechar menu ao clicar fora
+document.addEventListener("click", function (e) {
+  const menu = document.getElementById("menuLateral");
+  const btn = document.getElementById("menuBtn");
+
+  if (!menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.classList.remove("ativo");
+  }
+});
+
+// iniciar data
 atualizarDataSabado();
-setInterval(atualizarDataSabado, 60000); // a cada 1 min
+setInterval(atualizarDataSabado, 60000);
 </script>
 
 </body>
