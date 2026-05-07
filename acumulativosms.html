@@ -1,248 +1,349 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
- 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-<link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/file_00000000c28471fba60c52601e2a4d2c.png" type="image/jpg">
-<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/file_00000000c28471fba60c52601e2a4d2c.png" type="image/jpg">
+
+<title>Rifa Online</title>
+
 <style>
-    
-    #resValor {
-  font-size:20px;
-  color:#00ff88;
-  font-weight:bold;
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
 }
-body {
-  background:#111;
+
+body{
+  background:#0f172a;
   color:#fff;
   font-family:Arial;
-  text-align:center;
-  padding-top: 130px;
+  padding-top:140px;
 }
 
-.grid {
-  display:grid;
-  grid-template-columns:repeat(8,1fr);
-  gap:6px;
-  max-width:400px;
-  margin:20px auto;
+/* TOPO */
+
+#topo{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  background:#020617;
+  border-bottom:2px solid #00ff88;
+  padding:12px;
+  z-index:999;
 }
 
-button {
-  
+.topo-box{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.topo-info{
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+  font-size:14px;
+  font-weight:bold;
+}
+
+#resTopo{
+  color:#00ff88;
+}
+
+#qtd{
+  color:#ffd700;
+}
+
+.topo-buttons{
+  display:flex;
+  gap:10px;
+}
+
+.topo-buttons button{
+  background:#00ff88;
+  color:#000;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
+  padding:10px 14px;
   font-weight:bold;
   cursor:pointer;
-  
-  padding:8px;
-  font-size:12px;
-
+  transition:.2s;
 }
 
-.livre { background:#333; color:#fff; }
-.ocupado { background:#ff3b3b; color:#fff; cursor:not-allowed; }
-.meu { background:#00ff88; color:#000; }
-#topoFixo {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: #000;
-  padding: 2px;
-  z-index: 1000;
-  border-bottom: 2px solid #00ff88;
-
-  display: flex;
-  align-items: center;
-  justify-content: flex-start; /* 👈 ALTERADO */
-  gap: 10px; /* controla distância */
-  flex-wrap: wrap;
+.topo-buttons button:hover{
+  transform:scale(1.05);
 }
 
-#topoFixo button {
+/* GRID */
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:8px;
+  padding:10px;
+  max-width:600px;
+  margin:auto;
+}
+
+@media(min-width:600px){
+  .grid{
+    grid-template-columns:repeat(8,1fr);
+  }
+}
+
+.numero{
+  padding:12px 5px;
+  border:none;
+  border-radius:12px;
+  font-size:13px;
+  font-weight:bold;
+  transition:.2s;
+}
+
+.numero:hover{
+  transform:scale(1.05);
+}
+
+.livre{
+  background:#1e293b;
+  color:#fff;
+}
+
+.ocupado{
+  background:#ef4444;
+  color:#fff;
+}
+
+.meu{
   background:#00ff88;
   color:#000;
 }
 
-#resTopo {
-  color: #ffaa00;
-  font-weight: bold;
+.brinde{
+  background:gold;
+  color:#000;
+  border:2px solid #fff;
 }
 
-#dataSorteio {
-  color: #00ff88;
-  font-weight: bold;
+/* MENU */
+
+#menu{
+  position:fixed;
+  top:0;
+  left:-100%;
+  width:85%;
+  max-width:350px;
+  height:100%;
+  background:#020617;
+  z-index:1000;
+  transition:.3s;
+  overflow:auto;
+  padding:20px;
 }
 
-#nome {
-  font-size: 14px;
+#menu.ativo{
+  left:0;
 }
-.lado-direito {
+
+.menu-topo{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.fechar{
+  background:red;
+  color:#fff;
+  border:none;
+  padding:8px 12px;
+  border-radius:8px;
+}
+
+.card{
+  background:#111827;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:12px;
+}
+
+.card-nome{
+  color:#00ff88;
+  font-weight:bold;
+  margin-bottom:5px;
+}
+
+/* ADMIN */
+
+#admin{
+  position:fixed;
+  bottom:-100%;
+  left:0;
+  width:100%;
+  background:#020617;
+  border-top:2px solid #00ff88;
+  transition:.3s;
+  z-index:1000;
+  max-height:85vh;
+  overflow:auto;
+  padding:20px;
+  border-radius:20px 20px 0 0;
+}
+
+#admin.ativo{
+  bottom:0;
+}
+
+.admin-topo{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+.inputs{
   display:flex;
   gap:10px;
+  margin-bottom:15px;
+}
+
+.inputs input{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#111827;
+  color:#fff;
+}
+
+.btn-add{
+  width:100%;
+  background:#00ff88;
+  color:#000;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  font-weight:bold;
+  margin-bottom:20px;
+}
+
+/* LISTA ADMIN */
+
+.item{
+  background:#111827;
+  padding:12px;
+  border-radius:12px;
+  margin-bottom:10px;
+
+  display:flex;
+  justify-content:space-between;
   align-items:center;
-  flex-wrap: wrap;
-}
-#qtdSelecionados {
-  color: #00ff88;
-  font-weight: bold;
-}
-#menuBtn {
-  font-size: 22px;
-  cursor: pointer;
-  color: #00ff88;
 }
 
-#menuLateral {
-  position: fixed;
-  top: 0;
-  left: -100%;
-  width: 80%;
-  height: 100%;
-  background: #000;
-  z-index: 2000;
-  padding: 15px;
-  overflow-y: auto;
-  transition: 0.3s;
+.item-info{
+  display:flex;
+  flex-direction:column;
+  text-align:left;
 }
 
-#menuLateral.ativo {
-  left: 0;
+.item-num{
+  color:#00ff88;
+  font-weight:bold;
 }
 
-#listaReservas {
-  margin-top: 10px;
-  text-align: left;
-  font-size: 14px;
+.excluir{
+  background:red;
+  color:#fff;
+  border:none;
+  padding:8px 12px;
+  border-radius:8px;
 }
 
-.linha-nome {
-  color: #00ff88;
-  margin-top: 15px;
-  font-weight: bold;
+/* SCROLL */
+
+::-webkit-scrollbar{
+  width:6px;
 }
 
-.linha-numeros {
-  color: #fff;
-  margin-bottom: 10px;
+::-webkit-scrollbar-thumb{
+  background:#00ff88;
+  border-radius:10px;
 }
 
-.divisor {
-  border-bottom: 1px solid #444;
-  margin: 10px 0;
-}
 </style>
 </head>
 <body>
 
-<div id="topoFixo">
-    <div id="menuBtn" onclick="toggleMenu()">☰</div></br>
-  <p id="resTopo">Acumulado: R$ 0.00</p>
-  <p id="dataSorteio"></p>
-  <p id="nome"></p>
-  <p id="qtdSelecionados">Marcados: 0</p>
+<!-- TOPO -->
 
-  <button style="width:100%" onclick="abrirResumo()">APOSTA</button>
+<div id="topo">
+
+  <div class="topo-box">
+
+    <div class="topo-buttons">
+      <button onclick="toggleMenu()">☰ MENU</button>
+      <button onclick="toggleAdmin()">⚙ ADMIN</button>
+    </div>
+
+    <div class="topo-info">
+      <p id="resTopo">Acumulado: R$ 0.00</p>
+      <p id="qtd">Marcados: 0</p>
+    </div>
+
+  </div>
+
 </div>
+
+<!-- GRID -->
 
 <div class="grid" id="grid"></div>
 
-<div id="modal" style="
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-">
-  <div style="
-    background:#111;
-    padding:20px;
-    border-radius:12px;
-    width:90%;
-    max-width:350px;
-    text-align:center;
-  ">
-    <h3>Resumo</h3>
+<!-- MENU -->
 
-    <p id="resNome"></p>
-    <p id="resNumeros"></p>
-    <p id="resValor"></p>
+<div id="menu">
 
-    <button onclick="confirmar()">Salvar</button>
-    <button onclick="fecharModal()">Cancelar</button>
+  <div class="menu-topo">
+    <h2>Reservas</h2>
+    <button class="fechar" onclick="toggleMenu()">X</button>
   </div>
-</div>
-<div id="menuLateral">
-  <h3>Reservas</h3>
-  <div id="listaReservas"></div>
-</div><div id="modalPix" style="
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-">
-  <div style="
-    background:#111;
-    padding:20px;
-    border-radius:12px;
-    width:90%;
-    max-width:350px;
-    text-align:center;
-  ">
-    <h3>Pagamento via Pix</h3>
 
-    <p>Chave Pix:</p>
-    <p id="chavePix" style="color:#00ff88; font-weight:bold;">
-      71992290058
-    </p>
+  <div id="listaMenu"></div>
 
-    <div style="display:flex; gap:10px; justify-content:center; margin-top:15px;">
-  <button style="flex:1;" onclick="copiarPix()">Copiar</button>
-  <button style="flex:1; background:#ff3b3b; color:#fff;" onclick="fecharPix()">Fechar</button>
 </div>
+
+<!-- ADMIN -->
+
+<div id="admin">
+
+  <div class="admin-topo">
+    <h2>Painel Admin</h2>
+    <button class="fechar" onclick="toggleAdmin()">Fechar</button>
   </div>
-</div>
-<div id="modalPix" style="
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-">
-  <div style="
-    background:#111;
-    padding:20px;
-    border-radius:12px;
-    width:90%;
-    max-width:350px;
-    text-align:center;
-  ">
-    <h3>Pagamento via Pix</h3>
 
-    <p>Chave Pix:</p>
-    <p id="chavePix" style="color:#00ff88; font-weight:bold;">
-      71992290058
-    </p>
-
-    <button onclick="copiarPix()">Copiar Chave</button>
-    <br><br>
-    <button onclick="fecharPix()">Fechar</button>
+  <div class="inputs">
+    <input id="nomeAdmin" placeholder="Nome">
+    <input id="numeroAdmin" placeholder="Número">
   </div>
+
+  <button class="btn-add" onclick="adicionar()">
+    Adicionar Número
+  </button>
+
+  <div id="listaAdmin"></div>
+
 </div>
+
 <script>
-// 🔥 CONFIG FIREBASE
+
+// FIREBASE
+
 const firebaseConfig = {
   apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
   authDomain: "rifa-782a3.firebaseapp.com",
@@ -252,285 +353,240 @@ const firebaseConfig = {
   messagingSenderId: "88068598855",
   appId: "1:88068598855:web:a230a06db76a4bbc125562"
 };
+
 firebase.initializeApp(firebaseConfig);
+
 const db = firebase.database();
 
-// 👤 NOME
-let nome = localStorage.getItem("nome");
-if (!nome) {
-  nome = prompt("Digite seu nome:");
-  localStorage.setItem("nome", nome);
-}
-document.getElementById("nome").innerText = "Jogador: " + nome;
-
-// 🧠 LISTA TEMPORÁRIA
 let selecionados = [];
 
-// 🔄 ESCUTAR FIREBASE
-db.ref("rifa/numeros").on("value", snap => {
-  const numeros = snap.val() || {};
+let nome =
+localStorage.getItem("nome") ||
+prompt("Digite seu nome:");
 
-  // 🔥 CONTA QUANTOS JÁ FORAM RESERVADOS
-  const totalReservados = Object.keys(numeros).length;
+localStorage.setItem("nome", nome);
 
-  // 🔥 SOMA COM OS QUE VOCÊ ESTÁ MARCANDO
-  const totalSelecionados = selecionados.length;
+// REALTIME
 
-  const totalGeral = totalReservados + totalSelecionados;
+db.ref("rifa/numeros").on("value", snap=>{
 
-  const valorPorNumero = 4.5;
+  const dados = snap.val() || {};
+
+  render(dados);
+
+  atualizarMenu(dados);
+
+  atualizarAdmin(dados);
+
+  let acumulado = 0;
+
+  Object.keys(dados).forEach(num=>{
+
+    if(!dados[num].bonus){
+      acumulado += 4.5;
+    }
+
+  });
 
   document.getElementById("resTopo").innerText =
-    "Acumulado: R$ " + (totalGeral * valorPorNumero).toFixed(2);
+  "Acumulado: R$ "+acumulado.toFixed(2);
 
-  // 👇 CONTINUA SEU CÓDIGO NORMAL
-  const grid = document.getElementById("grid");
-  grid.innerHTML = "";
+  document.getElementById("qtd").innerText =
+  "Marcados: "+selecionados.length;
 
-  for (let i = 0; i < 1000; i++) {
-    const num = i.toString().padStart(3, '0');
-    const btn = document.createElement("button");
-    btn.innerText = num;
-
-    if (numeros[num]) {
-      btn.className = numeros[num].nome === nome ? "meu" : "ocupado";
-      btn.disabled = true;
-    } else {
-      btn.className = selecionados.includes(num) ? "meu" : "livre";
-
-      btn.onclick = () => {
-  if (selecionados.includes(num)) {
-    selecionados = selecionados.filter(n => n !== num);
-  } else {
-    selecionados.push(num);
-  }
-
-  atualizarTela(numeros);
-  atualizarReservado();
-  atualizarContador(); // 👈 AQUI
-};
-    }
-
-    grid.appendChild(btn);
-  }
-  db.ref("rifa/numeros").on("value", snap => {
-  const numeros = snap.val() || {};
-
-  // ... SEU CÓDIGO NORMAL (grid, acumulado etc)
-
-  // 🔥 AGRUPAR POR NOME
-  let agrupado = {};
-
-  Object.keys(numeros).forEach(num => {
-    const pessoa = numeros[num].nome;
-
-    if (!agrupado[pessoa]) {
-      agrupado[pessoa] = [];
-    }
-
-    agrupado[pessoa].push(num);
-  });
-
-  // 🔥 MOSTRAR NO MENU
-  const lista = document.getElementById("listaReservas");
-  if (!lista) return;
-
-  lista.innerHTML = "";
-
-  Object.keys(agrupado).forEach(nomePessoa => {
-    const divNome = document.createElement("div");
-    divNome.className = "linha-nome";
-    divNome.innerText = nomePessoa;
-
-    const divNum = document.createElement("div");
-    divNum.className = "linha-numeros";
-    divNum.innerText = agrupado[nomePessoa].join(", ");
-
-    const divisor = document.createElement("div");
-    divisor.className = "divisor";
-
-    lista.appendChild(divNome);
-    lista.appendChild(divNum);
-    lista.appendChild(divisor);
-  });
- });
 });
 
-// 🔄 ATUALIZA TELA
-function atualizarTela(numeros) {
-  const grid = document.getElementById("grid");
-  grid.innerHTML = "";
+// GRID
 
-  for (let i = 0; i < 1000; i++) {
-    const num = i.toString().padStart(3, '0');
+function render(dados){
+
+  const grid = document.getElementById("grid");
+
+  grid.innerHTML="";
+
+  for(let i=0;i<1000;i++){
+
+    const num = i.toString().padStart(3,"0");
+
     const btn = document.createElement("button");
+
     btn.innerText = num;
 
-    if (numeros[num]) {
-      btn.className = numeros[num].nome === nome ? "meu" : "ocupado";
-      btn.disabled = true;
+    btn.classList.add("numero");
 
-    } else {
-      btn.className = selecionados.includes(num) ? "meu" : "livre";
+    if(dados[num]){
 
-      btn.onclick = () => {
-  if (selecionados.includes(num)) {
-    selecionados = selecionados.filter(n => n !== num);
-  } else {
-    selecionados.push(num);
-  }
-
-  atualizarTela(numeros);
-  atualizarReservado();
-  atualizarContador(); // 👈 AQUI
-};
-    }
-
-    grid.appendChild(btn);
-  }
-}
-
-// 💾 SALVAR NO FIREBASE
-function salvar() {
-  if (selecionados.length === 0) {
-    alert("Selecione pelo menos um número!");
-    return;
-  }
-
-  selecionados.forEach(num => {
-    db.ref("rifa/numeros/" + num).set({
-      nome: nome,
-      valor: 5
-    });
-  });
-
-  selecionados = [];
-}
-function abrirResumo() {
-  if (selecionados.length === 0) {
-    alert("Selecione pelo menos um número!");
-    return;
-  }
-
-  const valorPagamento = 5;
-  const totalPagamento = selecionados.length * valorPagamento;
-
-  document.getElementById("resNome").innerText =
-    "Nome: " + nome;
-
-  document.getElementById("resNumeros").innerText =
-    "Dezenas: " + selecionados.join(", ");
-
-  document.getElementById("resValor").innerText =
-    "Total a pagar: R$ " + totalPagamento.toFixed(2);
-
-  document.getElementById("modal").style.display = "flex";
-}
-
-// 💾 CONFIRMAR E SALVAR
-function confirmar() {
-  if (selecionados.length === 0) return;
-
-  const valorReserva = 4.5;
-  const valorPagamento = 5;
-  const totalPagamento = selecionados.length * valorPagamento;
-
-  let vendidos = [];
-
-  selecionados.forEach(num => {
-    const ref = db.ref("rifa/numeros/" + num);
-
-    ref.transaction(current => {
-      if (current === null) {
-        vendidos.push(num);
-        return {
-          nome: nome,
-          valor: valorReserva
-        };
-      } else {
-        return;
+      if(dados[num].bonus){
+        btn.classList.add("brinde");
       }
-    });
-  });
+      else{
+        btn.classList.add(
+          dados[num].nome===nome ? "meu":"ocupado"
+        );
+      }
 
-  // ⏳ Aguarda salvar
-  setTimeout(() => {
-    if (vendidos.length > 0) {
-      // 🔥 ABRE MODAL PIX
-      document.getElementById("modalPix").style.display = "flex";
+      btn.disabled = true;
+
+    }else{
+
+      btn.classList.add(
+        selecionados.includes(num)
+        ? "meu"
+        : "livre"
+      );
+
+      btn.onclick=()=>{
+
+        if(selecionados.includes(num)){
+
+          selecionados =
+          selecionados.filter(n=>n!==num);
+
+        }else{
+
+          selecionados.push(num);
+
+        }
+
+        render(dados);
+
+      }
+
     }
 
-    selecionados = [];
-    atualizarContador();
-    fecharModal();
+    grid.appendChild(btn);
 
-  }, 800);
-}
-function atualizarTotalTopo() {
-  const valorUnitario = 5; // valor de pagamento
-  const total = selecionados.length * valorUnitario;
-
-  document.getElementById("totalTopo").innerText =
-    "Total: R$ " + total.toFixed(2);
-}
-function fecharModal() {
-  document.getElementById("modal").style.display = "none";
-}
-function atualizarReservado() {
-  const valorReserva = 4.5;
-  const total = selecionados.length * valorReserva;
-
-  document.getElementById("resTopo").innerText =
-    "Reservado: R$ " + total.toFixed(2);
-}
-function atualizarDataSabado() {
-  const hoje = new Date();
-
-  const diaSemana = hoje.getDay(); // 0 = domingo, 6 = sábado
-
-  // calcula quantos dias faltam pro sábado
-  const diasFaltando = (6 - diaSemana + 7) % 7;
-
-  // se hoje for sábado, pega o próximo sábado
-  const proximoSabado = new Date(hoje);
-  proximoSabado.setDate(hoje.getDate() + (diasFaltando === 0 ? 7 : diasFaltando));
-
-  // formatar data (BR)
-  const dataFormatada = proximoSabado.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
-  });
-
-  document.getElementById("dataSorteio").innerText =
-    "Sorteio: " + dataFormatada;
-}
-function atualizarContador() {
-  document.getElementById("qtdSelecionados").innerText =
-    "Marcados: " + selecionados.length;
-}
-function toggleMenu() {
-  const menu = document.getElementById("menuLateral");
-  menu.classList.toggle("ativo");
-}
-// 🔥 AGRUPAR POR NOME
-document.addEventListener("click", function(e) {
-  const menu = document.getElementById("menuLateral");
-  const btn = document.getElementById("menuBtn");
-
-  if (!menu.contains(e.target) && !btn.contains(e.target)) {
-    menu.classList.remove("ativo");
   }
-});
-function copiarPix() {
-  const chave = document.getElementById("chavePix").innerText;
 
-  navigator.clipboard.writeText(chave).then(() => {
-    alert("Chave Pix copiada!");
-  });
 }
-atualizarDataSabado();
-setInterval(atualizarDataSabado, 60000); // a cada 1 min
+
+// MENU
+
+function atualizarMenu(dados){
+
+  let grupo = {};
+
+  Object.keys(dados).forEach(num=>{
+
+    const pessoa = dados[num].nome;
+
+    if(!grupo[pessoa]){
+      grupo[pessoa]=[];
+    }
+
+    grupo[pessoa].push(num);
+
+  });
+
+  const lista = document.getElementById("listaMenu");
+
+  lista.innerHTML="";
+
+  Object.keys(grupo).forEach(pessoa=>{
+
+    let numeros = grupo[pessoa].map(n=>{
+
+      if(dados[n].bonus){
+        return "🎁 "+n;
+      }
+
+      return n;
+
+    });
+
+    lista.innerHTML += `
+      <div class="card">
+        <div class="card-nome">${pessoa}</div>
+        <div>${numeros.join(", ")}</div>
+      </div>
+    `;
+
+  });
+
+}
+
+// ADMIN
+
+function atualizarAdmin(dados){
+
+  const lista = document.getElementById("listaAdmin");
+
+  lista.innerHTML="";
+
+  Object.keys(dados).forEach(num=>{
+
+    lista.innerHTML += `
+
+      <div class="item">
+
+        <div class="item-info">
+          <span class="item-num">${num}</span>
+          <span>${dados[num].nome}</span>
+        </div>
+
+        <button
+        class="excluir"
+        onclick="excluir('${num}')">
+        X
+        </button>
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+// ADD
+
+function adicionar(){
+
+  let nomeA =
+  document.getElementById("nomeAdmin").value;
+
+  let num =
+  document.getElementById("numeroAdmin").value;
+
+  if(!nomeA || num===""){
+    alert("Preencha!");
+    return;
+  }
+
+  num = num.padStart(3,"0");
+
+  db.ref("rifa/numeros/"+num).set({
+    nome:nomeA
+  });
+
+}
+
+// REMOVE
+
+function excluir(num){
+
+  if(confirm("Excluir "+num+" ?")){
+
+    db.ref("rifa/numeros/"+num).remove();
+
+  }
+
+}
+
+// UI
+
+function toggleMenu(){
+  document
+  .getElementById("menu")
+  .classList.toggle("ativo");
+}
+
+function toggleAdmin(){
+  document
+  .getElementById("admin")
+  .classList.toggle("ativo");
+}
+
 </script>
 
 </body>
