@@ -329,9 +329,11 @@ function atualizarGrid(numeros) {
 }
 
 // 💰 ACUMULADO
+// 💰 ACUMULADO
 function atualizarAcumulado(numeros) {
 
-  let totalPago = 0;
+  // 👇 começa com 2000
+  let totalPago = 2000;
 
   Object.keys(numeros).forEach(num => {
     const item = numeros[num];
@@ -339,14 +341,13 @@ function atualizarAcumulado(numeros) {
     // ❌ IGNORA BRINDE
     if (item.bonus) return;
 
-    // ✔ só conta números pagos
+    // ✔ soma números pagos
     totalPago += 4.5;
   });
 
   document.getElementById("resTopo").innerText =
     "Acumulado: R$ " + totalPago.toFixed(2);
 }
-
 // 🔢 CONTADOR
 function atualizarContador() {
   document.getElementById("qtdSelecionados").innerText =
