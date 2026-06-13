@@ -7,8 +7,8 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-<link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/file_00000000c28471fba60c52601e2a4d2c.png" type="image/jpg">
-<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/file_00000000c28471fba60c52601e2a4d2c.png" type="image/jpg">
+<link rel="shortcut icon" href="https://res.cloudinary.com/dtw3turzb/image/upload/v1780643411/img-20260605-wa0066.jpg" type="image/jpg">
+<link rel="icon" href="https://res.cloudinary.com/dtw3turzb/image/upload/v1780643411/img-20260605-wa0066.jpg" type="image/jpg">
 <style>
     
     #resValor {
@@ -268,7 +268,9 @@ const db = firebase.database();
 // 👤 NOME
 let nome = localStorage.getItem("nome");
 if (!nome) {
+  while (!nome || nome.trim() === "") {
   nome = prompt("Digite seu nome:");
+}
   localStorage.setItem("nome", nome);
 }
 document.getElementById("nome").innerText = "Jogador: " + nome;
@@ -277,6 +279,7 @@ document.getElementById("nome").innerText = "Jogador: " + nome;
 let selecionados = [];
 let numerosCache = {};
 let meusNumeros = [];
+
 // 🔄 FIREBASE LISTENER (ÚNICO)
 db.ref("rifa/numeros").on("value", snap => {
   const numeros = snap.val() || {};
@@ -292,7 +295,7 @@ db.ref("rifa/numeros").on("value", snap => {
 });
 
 function calcularBrindes(total) {
-  return Math.floor(total / 4);
+  return Math.floor(total / 10);
 }
 
 // 🎯 GRID
@@ -336,7 +339,7 @@ function atualizarGrid(numeros) {
 function atualizarAcumulado(numeros) {
 
   // 👇 começa com 100
-  let totalPago = 100;
+  let totalPago = 3;
 
   Object.keys(numeros).forEach(num => {
     const item = numeros[num];
@@ -417,7 +420,7 @@ function abrirResumo() {
 
   let novosBrindes = brindesDepois - brindesAntes;
 
-  let totalPagamento = quantidadeNova * 3;
+  let totalPagamento = quantidadeNova * 1;
 
   document.getElementById("resNome").innerText =
     "Nome: " + nome;
@@ -436,7 +439,7 @@ function abrirResumo() {
 function confirmar() {
   if (selecionados.length === 0) return;
 
-  const valor = 3;
+  const valor = 1;
 
   let totalAntes = meusNumeros.length;
   let totalDepois = totalAntes + selecionados.length;
@@ -468,9 +471,9 @@ function confirmar() {
     let numeroBonus;
 
     do {
-      numeroBonus = Math.floor(Math.random() * 1000)
+      numeroBonus = Math.floor(Math.random() * 100)
         .toString()
-        .padStart(3, "0");
+        .padStart(2, "0");
 
     } while (selecionados.includes(numeroBonus) || numerosCache[numeroBonus]);
 
