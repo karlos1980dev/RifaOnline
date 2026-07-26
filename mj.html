@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<link rel="shortcut icon" type="image/jpg" href="https://raw.githubusercontent.com/Savanty/AE/refs/heads/main/download.jpeg">
+
+
+<link rel="icon" href="https://raw.githubusercontent.com/Savanty/AE/refs/heads/main/download.jpeg" type="image/jpg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<link rel="stylesheet" type="text/css" href="stylesheet.css" media="screen" />
+  <meta charset="UTF-8" />
+  <title>APOSTE e GANHE</title>
+  <style>
+      
+      .topo-fixo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #1f1c2c;
+  color: #fff;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 9999;
+  gap: 12px;
+  border-bottom: 2px solid #25d366;
+}
+
+.topo-fixo input {
+  padding: 8px;
+  width: 100px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+.topo-fixo button {
+  background-color: #25d366;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+
+    body {
+      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      color: #f0f0f5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: #2c2a3a;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    .container:hover {
+      transform: translateY(-5px);
+    }
+
+    h2 {
+      font-weight: 700;
+      margin-bottom: 25px;
+      color: #fff;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-shadow: 0 0 5px #25d366;
+    }
+
+    .valoresInput, select {
+      width: 100%;
+      padding: 12px 15px;
+      text-align:center;
+      border: 2px solid #444358;
+      border-radius: 8px;
+      background-color: #3a3950;
+      color: #eee;
+      font-size: 1rem;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .valoresInput::placeholder {
+      color: #aaaabb;
+    }
+
+    .valoresInput:focus, select:focus {
+      outline: none;
+      border-color: #25d366;
+      box-shadow: 0 0 8px #25d366;
+      background-color: #2a2a3d;
+      color: #fff;
+    }
+
+    button {
+      background-color: #25d366;
+      border: none;
+      padding: 14px 0;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 5px 12px rgba(37,211,102,0.6);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      width: 100%;
+      margin-top: 10px;
+      user-select: none;
+    }
+
+    button:hover {
+      background-color: #1e9e58;
+      box-shadow: 0 8px 18px rgba(30,158,88,0.8);
+    }
+
+    button:disabled, button[disabled] {
+      background-color: #555666;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    #milharContainer > div,
+    #centenaContainer > div,
+    #dezenaContainer > div,
+    #grupoContainer > div {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    #milharContainer input,
+    #centenaContainer input,
+    #dezenaContainer input,
+    #grupoContainer input {
+      flex: 2;
+        text-align:center
+    }
+
+    #milharContainer select,
+    #centenaContainer select,
+    #dezenaContainer select,
+    #grupoContainer select {
+      flex: 1.2;
+      cursor: pointer;
+      text-align:center;
+    }
+    /* Total Pagar / Receber */
+    .resultado {
+      margin-top: 20px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ddd;
+      line-height: 1.6;
+      user-select: none;
+    }
+
+    /* Modal Erro */
+    #modalErro {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right:0; bottom: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+
+    #modalErro > div {
+      background-color: #1e1c2c;
+      color: #eee;
+      padding: 25px 30px;
+      border-radius: 12px;
+      max-width: 320px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.8);
+      position: relative;
+    }
+
+    #modalErro h3 {
+      margin-bottom: 18px;
+      font-weight: 800;
+      color: #ff4c4c;
+      text-shadow: 0 0 6px #ff4c4c;
+    }
+
+    #modalErro button {
+      width: 100%;
+      padding: 12px 0;
+      margin-top: 15px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      user-select: none;
+      border: none;
+      cursor: pointer;
+      background-color: #ff4c4c;
+      color: white;
+      box-shadow: 0 5px 12px rgba(255,76,76,0.7);
+    }
+    #modalErro button:hover {
+      background-color: #cc3b3b;
+    }
+
+    #modalErro span {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      font-size: 22px;
+      font-weight: 900;
+      cursor: pointer;
+      color: #ff4c4c;
+      user-select: none;
+      transition: color 0.2s ease;
+    }
+    #modalErro span:hover {
+      color: #ff0000;
+    }
+
+    /* Responsividade */
+    @media(max-width: 520px) {
+      .container {
+        padding: 25px 20px;
+      }
+      h2 {
+        font-size: 1.6rem;
+      }
+      .resultado {
+        font-size: 1rem;
+      }
+      button, input, select {
+        font-size: 1rem;
+      }
+    }
+    input, select, button {
+      padding: 5px; margin: 2px 0; width:100%; border-radius: 4px; border: 1px solid #ccc;
+    }
+    input.numero { width: 100%; box-sizing: border-box; }
+#horariosCheckbox {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+#horariosCheckbox label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 45px;
+
+  background: #3a3950;
+  border-radius: 10px;
+  cursor: pointer;
+
+  font-weight: bold;
+  color: #fff;
+
+  border: 2px solid transparent;
+  transition: 0.25s;
+
+  overflow: hidden; /* 🔥 NÃO deixa sair */
+}
+
+/* esconder checkbox padrão */
+#horariosCheckbox input {
+  display: none;
+}
+
+/* texto */
+#horariosCheckbox span {
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  white-space: nowrap; /* 🔥 impede quebrar linha */
+}
+
+/* hover */
+#horariosCheckbox label:hover {
+  background: #25d366;
+  color: #000;
+}
+
+/* selecionado */
+#horariosCheckbox input:checked + span {
+  background: #25d366;
+  color: #000;
+  border-radius: 6px;
+  padding: 5px;
+}
+
+/* desabilitado */
+#horariosCheckbox input:disabled + span {
+  opacity: 0.4;
+}
+.container {
+  overflow: hidden; /* 🔥 evita sair pra fora */
+}
+  </style>
+
+  <!-- Firebase -->
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  // 🔧 Configuração do Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyDlWGPUuGyugzvvQt_Wd5GI3IBFH90hUgQ",
+    authDomain: "multijogo.firebaseapp.com",
+    databaseURL: "https://multijogo-default-rtdb.firebaseio.com",
+    projectId: "multijogo",
+    storageBucket: "multijogo.appspot.com",
+    messagingSenderId: "328198585423",
+    appId: "1:328198585423:web:ae370bf8e7716ec2f17e3a"
+  };
+
+  // ✅ Inicializar Firebase somente se ainda não tiver sido inicializado
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+
+  // 🔌 Conectar ao Realtime Database
+  const db = firebase.database();
+
+    const valoresPremio = {
+      milhar: 5000, centena: 600, dezena: 60, grupo: 16, duque: 300
+    };
+
+    function adicionarCampos(tipo, qtd) {
+  const container = document.getElementById(tipo + "Container");
+  for (let i = 0; i < qtd; i++) {
+    const div = document.createElement("div");
+    const input = document.createElement("input");
+    input.type = "number";
+    input.placeholder = tipo;
+
+    input.oninput = () => {
+      if (tipo === "milhar") input.value = input.value.slice(0, 4);
+      if (tipo === "centena") input.value = input.value.slice(0, 3);
+      if (tipo === "dezena") input.value = input.value.slice(0, 2);
+      if (tipo === "grupo") {
+        input.value = input.value.slice(0, 2);
+        if (parseInt(input.value) > 25) input.value = "25";
+      }
+      calcularTotal();
+    };
+
+    const select = document.createElement("select");
+    ["1", "5", "10"].forEach(v => {
+      const option = document.createElement("option");
+      option.value = v;
+      option.textContent = `1º ao ${v}º`;
+      select.appendChild(option);
+    });
+
+    select.onchange = calcularTotal;
+
+    div.appendChild(input);
+    div.appendChild(select);
+    container.appendChild(div);
+  }
+}
+    function adicionarCamposDuque() {
+  const container = document.getElementById("duqueContainer");
+  const div = document.createElement("div");
+  const input1 = document.createElement("input");
+  const input2 = document.createElement("input");
+
+  input1.type = "number";
+  input1.placeholder = "Ex: 22";
+  input1.style.width = "40%";
+  input1.oninput = () => {
+    input1.value = input1.value.slice(0, 2);
+    calcularTotal();
+  };
+
+  input2.type = "number";
+  input2.placeholder = "Ex: 44";
+  input2.style.width = "40%";
+  input2.oninput = () => {
+    input2.value = input2.value.slice(0, 2);
+    calcularTotal();
+  };
+
+  div.appendChild(input1);
+  div.appendChild(document.createTextNode(" x "));
+  div.appendChild(input2);
+  container.appendChild(div);
+}
+
+    function montarTexto(tipo, premio, label) {
+  const valorUnit = parseFloat(document.getElementById("valorUnico").value) || 0;
+  const container = document.getElementById(tipo + "Container");
+  let texto = "";
+
+  container.querySelectorAll("div").forEach(grupo => {
+    const input = grupo.querySelector("input");
+    const select = grupo.querySelector("select");
+
+    if (input && input.value.trim() !== "") {
+      const numero = input.value.trim();
+      const pos = select.value;
+
+      let multiplicador = 0;
+
+      if (pos === "1") multiplicador = premio;
+      else if (pos === "5") multiplicador = premio / 5;
+      else if (pos === "10") multiplicador = premio / 10;
+
+      const valorReceber = valorUnit * multiplicador;
+
+      texto += `${label} ${numero} - R$${valorUnit.toFixed(2)} - 1º ao ${pos}º = R$ ${valorReceber.toFixed(2)}\n`;
+    }
+  });
+
+  return texto;
+}
+function sincronizarValor() {
+  const valorTopo = document.getElementById("valorUnicoTopo").value;
+  document.getElementById("valorUnico").value = valorTopo;
+  calcularTotal();
+}
+function calcularTotal() {
+  const valorUnitario = parseFloat(document.getElementById("valorUnico").value) || 0;
+
+  // Contar quantos horários foram marcados
+  const horariosMarcados = document.querySelectorAll("#horariosCheckbox input[type='checkbox']:checked").length || 1;
+
+  let totalPagar = 0;
+  let totalReceber = 0;
+  const tipos = ['milhar', 'centena', 'dezena', 'grupo'];
+
+  tipos.forEach(tipo => {
+    const container = document.getElementById(tipo + 'Container');
+    let inputsPreenchidos = 0;
+
+    container.querySelectorAll('input').forEach(input => {
+      if (input.value.trim() !== '') {
+        inputsPreenchidos++;
+      }
+    });
+
+    if (inputsPreenchidos > 0) {
+      // 👇 AQUI MULTIPLICA PELOS HORÁRIOS MARCADOS
+      totalPagar += valorUnitario * inputsPreenchidos * horariosMarcados;
+
+      if (tipo === 'milhar') totalReceber += 5000;
+      if (tipo === 'centena') totalReceber += 600;
+      if (tipo === 'dezena') totalReceber += 60;
+      if (tipo === 'grupo') totalReceber += 16;
+    }
+  });
+
+  // DUQUE DE DEZENA
+  const duqueDivs = document.querySelectorAll('#duqueContainer > div');
+  let duquePreenchido = 0;
+
+  duqueDivs.forEach(div => {
+    const [input1, input2] = div.querySelectorAll('input');
+    if (input1?.value && input2?.value) {
+      duquePreenchido++;
+    }
+  });
+
+  if (duquePreenchido > 0) {
+    // 👇 TAMBÉM MULTIPLICA PELOS HORÁRIOS
+    totalPagar += valorUnitario * duquePreenchido * horariosMarcados;
+    totalReceber += 300;
+  }
+
+  // Atualizar valores no TOPO
+  const totalFinalEl = document.getElementById("totalFinal");
+  if (totalFinalEl) {
+    totalFinalEl.textContent = ` Total: ${totalPagar.toFixed(2)}`;
+  }
+
+  const totalReceberTopo = document.getElementById("totalReceberTopo");
+  if (totalReceberTopo) {
+    totalReceberTopo.textContent = `🎯 Receber: R$ ${totalReceber.toFixed(2)}`;
+  }
+
+  const totalPagarEl = document.getElementById("totalPagar");
+  if (totalPagarEl) {
+    totalPagarEl.textContent = totalPagar.toFixed(2);
+  }
+}
+
+    function gerarCodigoAposta() {
+      return `MJ-${Date.now()}`;
+    }
+
+    function abrirModal(msg) {
+      document.getElementById("mensagemModal").innerText = msg;
+      document.getElementById("modalErro").style.display = "flex";
+    }
+
+    function fecharModal() {
+      document.getElementById("modalErro").style.display = "none";
+    }
+
+
+
+let dadosParaSalvar = null;
+
+function enviarWhatsApp() {
+const dataHoje = new Date().toLocaleDateString("pt-BR");
+  const agora = new Date();
+  const horaAgora = agora.getHours();
+
+  if (horaAgora >= 21) {
+    abrirModal("Apostas não são permitidas após as 21:00.");
+    return;
+  }
+
+  const codigo = gerarCodigoAposta(); // 🔑 Gera código aqui!
+
+  // 🔍 Função interna de validação
+  function validarCampos() {
+    let validado = false;
+
+    function validarTipo(tipo, tamanhoEsperado, max = null) {
+      const container = document.getElementById(tipo + "Container");
+      const inputs = container.querySelectorAll("input");
+
+      for (let input of inputs) {
+        const valor = input.value.trim();
+        if (valor !== "") {
+          validado = true;
+          if (valor.length !== tamanhoEsperado) {
+            abrirModal(`${tipo.toUpperCase()} deve ter ${tamanhoEsperado} dígitos.`);
+            return false;
+          }
+          if (max && parseInt(valor) > max) {
+            abrirModal(`${tipo.toUpperCase()} deve ser no máximo ${max}.`);
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    if (!validarTipo("milhar", 4)) return false;
+if (!validarTipo("centena", 3)) return false;
+if (!validarTipo("dezena", 2)) return false;
+if (!validarTipo("grupo", 2, 25)) return false;
+
+    // Validar Duque
+    const duques = document.querySelectorAll("#duqueContainer > div");
+    for (let duque of duques) {
+      const inputs = duque.querySelectorAll("input");
+      const v1 = inputs[0].value.trim();
+      const v2 = inputs[1].value.trim();
+      if (v1 !== "" || v2 !== "") {
+        validado = true;
+        if (v1.length !== 2 || v2.length !== 2 || parseInt(v1) > 99 || parseInt(v2) > 99) {
+          abrirModal("Duque deve conter dois números de 2 dígitos (máx. 25).");
+          return false;
+        }
+      }
+    }
+
+    if (!validado) {
+      abrirModal("Preencha pelo menos um campo para apostar.");
+      return false;
+    }
+
+    return true;
+  }
+
+  if (!validarCampos()) return;
+
+  const totalPagar = parseFloat(document.getElementById("totalPagar").textContent) || 0;
+  const valorUnico = parseFloat(document.getElementById("valorUnico").value) || 0;
+  const checkboxes = document.querySelectorAll("#horariosCheckbox input[type='checkbox']:checked");
+const horariosSelecionados = Array.from(checkboxes).map(cb => cb.value);
+const horario = horariosSelecionados.join(', ');
+if (horariosSelecionados.length === 0) {
+  abrirModal("Selecione pelo menos um horário.");
+  return;
+}
+  const apostas = [];
+  const tipos = ["milhar", "centena", "dezena", "grupo"];
+
+  tipos.forEach(tipo => {
+    const container = document.getElementById(tipo + "Container");
+    container.querySelectorAll("div").forEach(div => {
+      const input = div.querySelector("input");
+      const select = div.querySelector("select");
+
+      if (input && input.value.trim() !== "") {
+        apostas.push({
+  tipo: tipo,
+  numero: input.value.trim(),
+  posicao: select.value,
+  valor: valorUnico,
+  horario: horario,
+  data: dataHoje,
+});
+      }
+    });
+  });
+
+  const duques = [];
+  document.querySelectorAll("#duqueContainer > div").forEach(div => {
+    const inputs = div.querySelectorAll("input");
+    const val1 = inputs[0].value.trim();
+    const val2 = inputs[1].value.trim();
+    if (val1 && val2) {
+      duques.push({
+        numeros: `${val1}-${val2}`,
+        valor: valorUnico,
+        horario: horario,
+        data: dataHoje,
+      });
+    }
+  });
+
+  // ✅ Criar texto do WhatsApp
+  let textoWhatsApp = `*Código da aposta:* ${codigo}\n*Horários:* ${horariosSelecionados.join(', ')}\n\n`;
+  const titulos = {
+    milhar: "Milhar 5000",
+    centena: "Centena 600",
+    dezena: "Dezena 60",
+    grupo: "Grupo 16"
+  };
+
+  tipos.forEach(tipo => {
+    const selecionados = apostas.filter(a => a.tipo === tipo);
+    if (selecionados.length > 0) {
+      textoWhatsApp += `*${titulos[tipo]}*\n`;
+      selecionados.forEach(ap => {
+        textoWhatsApp += `${ap.numero} R$ ${ap.valor.toFixed(2)} 1ao${ap.posicao}\n`;
+      });
+      textoWhatsApp += `\n`;
+    }
+  });
+
+  if (duques.length > 0) {
+    textoWhatsApp += `*Duque 300*\n`;
+    duques.forEach(d => {
+      textoWhatsApp += `${d.numeros} R$ ${d.valor.toFixed(2)} 1ao5\n`;
+    });
+    textoWhatsApp += `\n`;
+  }
+
+  textoWhatsApp += `💰 *Total a Pagar:* R$ ${totalPagar.toFixed(2)}`;
+
+  // ✅ Mostrar modal
+  document.getElementById("resumoTexto").textContent = textoWhatsApp;
+  document.getElementById("modalResumo").style.display = "flex";
+
+  // ✅ Preparar objeto Firebase
+  
+
+  dadosParaSalvar = {
+  codigo,
+  firebaseData: {
+    codigo,
+    horario,
+    valorUnico,
+    totalPagar,
+    timestamp: Date.now(),
+    data: dataHoje,
+    apostas,
+    duques,
+    status: "pendente" // ou "aguardando", valor inicial
+  },
+  textoWhatsApp
+};
+}
+    window.onload = () => {
+  document.querySelectorAll("#horariosCheckbox input[type='checkbox']").forEach(cb => {
+    cb.onchange = calcularTotal;
+  });
+
+  
+  adicionarCampos("milhar", 3);
+  adicionarCampos("centena", 3);
+  adicionarCampos("dezena", 3);
+  adicionarCampos("grupo", 3);
+  adicionarCamposDuque();
+
+  controlarHorariosPorDia(); // 👈 NOVO
+
+  bloquearHorariosPassados();
+  calcularTotal();
+  setInterval(verificarSePodeEnviar, 500);
+
+
+  bloquearHorariosPassados();
+
+  // 👉 NOVA LINHA AQUI
+  marcarProximoHorarioDisponivel();
+
+  calcularTotal();
+  setInterval(verificarSePodeEnviar, 500);
+};
+function controlarHorariosPorDia() {
+  const hoje = new Date().getDay(); // 0=Domingo
+
+  document.querySelectorAll("#horariosCheckbox input").forEach(input => {
+    const valor = input.value;
+
+    // Esconde todos primeiro
+    input.parentElement.style.display = "none";
+    input.checked = false;
+
+    if (hoje === 0) {
+      // DOMINGO
+      if (
+        valor === "10:00" ||
+        valor === "11:00 FEDERAL" ||
+        valor === "12:00" ||
+        valor === "15:00"
+      ) {
+        input.parentElement.style.display = "inline-block";
+      }
+
+    } else if (hoje === 3 || hoje === 6) {
+      // QUARTA E SÁBADO
+      if (
+        valor === "10:00" ||
+        valor === "12:00" ||
+        valor === "15:00" ||
+        valor === "11:00 FEDERAL" ||
+        valor === "21:00"
+      ) {
+        input.parentElement.style.display = "inline-block";
+      }
+
+    } else {
+      // SEG, TER, QUI, SEX
+      if (
+        valor === "10:00" ||
+        valor === "12:00" ||
+        valor === "15:00" ||
+        valor === "19:00" ||
+        valor === "21:00"
+      ) {
+        input.parentElement.style.display = "inline-block";
+      }
+    }
+  });
+}
+    function bloquearHorariosPassados() {
+  const agora = new Date();
+  const horaAtual = agora.getHours();
+  const minutoAtual = agora.getMinutes();
+
+  document.querySelectorAll("#horariosCheckbox input").forEach(input => {
+    const [hora, minuto] = input.value.split(":").map(Number);
+    const minutosHorario = hora * 60 + minuto;
+    const minutosAgora = horaAtual * 60 + minutoAtual;
+
+    if (minutosHorario <= minutosAgora) {
+      input.disabled = true;
+      input.parentElement.style.opacity = 0.4;
+      const span = input.parentElement.querySelector("span");
+span.textContent += "";
+    }
+  });
+
+ 
+    }
+    function fecharResumo() {
+  document.getElementById("modalResumo").style.display = "none";
+}
+
+function confirmarEnvio() {
+  const { codigo, firebaseData } = dadosParaSalvar;
+
+  db.ref(`apostas/${codigo}`).set(firebaseData);
+
+  fecharResumo();
+  window.open(`https://wa.me/5571992290058?text=*Código da aposta:* ${codigo}`, "_blank");
+  
+}
+function verificarSePodeEnviar() {
+  const valor = parseFloat(document.getElementById("valorUnico").value) || 0;
+  let preenchido = false;
+
+  document.querySelectorAll("#milharContainer input, #centenaContainer input, #dezenaContainer input, #grupoContainer input, #duqueContainer input").forEach(input => {
+    if (input.value.trim() !== "") {
+      preenchido = true;
+    }
+  });
+
+  document.getElementById("apostarBtn").disabled = !(valor > 0 && preenchido);
+}
+function marcarProximoHorarioDisponivel() {
+  const agora = new Date();
+  const horaAtual = agora.getHours();
+  const minutoAtual = agora.getMinutes();
+  const minutosAgora = horaAtual * 60 + minutoAtual;
+
+  let proximoCheckbox = null;
+  let menorDiferenca = Infinity;
+
+  document.querySelectorAll("#horariosCheckbox input[type='checkbox']").forEach(input => {
+
+  if (input.parentElement.style.display === "none") return;
+  if (input.disabled) return;
+
+  const valor = input.value;
+
+  let minutosHorario;
+
+  if (valor === "FEDERAL") {
+    minutosHorario = 20 * 60; // 👉 define horário da federal (20:00 por exemplo)
+  } else {
+    const [hora, minuto] = valor.split(":").map(Number);
+    minutosHorario = hora * 60 + minuto;
+  }
+
+  const diferenca = minutosHorario - minutosAgora;
+
+  if (diferenca > 0 && diferenca < menorDiferenca) {
+    menorDiferenca = diferenca;
+    proximoCheckbox = input;
+  }
+});
+
+  if (proximoCheckbox) {
+    proximoCheckbox.checked = true;
+  }
+}
+  </script>
+</head>
+
+<body><!-- Modal de Resumo -->
+<div class="topo-fixo">
+  <input type="number" id="valorUnicoTopo" placeholder="Valor (R$)" min="1" oninput="sincronizarValor()" />
+  <input type="hidden" id="valorUnico" />
+
+  <span id="totalFinal">Total:0,00</span>
+ 
+
+  <button id="apostarBtn" onclick="enviarWhatsApp()">Apostar</button>
+</div>
+
+
+<div id="modalResumo" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; padding:20px;">
+  <div style="background:#2c2a3a; padding:20px; border-radius:10px; max-width:90%; width:400px; color:#fff; text-align:left; box-shadow:0 8px 20px rgba(0,0,0,0.5); position:relative;">
+    <span onclick="fecharResumo()" style="position:absolute; top:10px; right:14px; font-size:22px; font-weight:900; cursor:pointer; color:#ff4c4c;">✖</span>
+    <h3 style="text-align:center; color:#25d366; margin-bottom:10px;">Resumo da Aposta</h3>
+  <pre id="resumoTexto" style="white-space:pre-wrap; font-family:'Segoe UI', sans-serif; font-size:0.95rem; line-height:1.5; max-height:300px; overflow-y:auto; padding-right:8px;"></pre>
+    <button onclick="confirmarEnvio()" style="margin-top:10px;">CONFIRMAR ENVIO</button>
+  </div>
+</div>
+  <div class="container">
+    <h2>Multijogo</h2>
+
+ <div id="horariosCheckbox">
+  <label><input type="checkbox" value="10:00"><span>10:00</span></label>
+  <label><input type="checkbox" value="11:00 FEDERAL"><span>11:00 FEDERAL</span></label>
+  <label><input type="checkbox" value="12:00"><span>12:00</span></label>
+  <label><input type="checkbox" value="15:00"><span>15:00</span></label>
+  <label><input type="checkbox" value="19:00"><span>19:00</span></label>
+  <label><input type="checkbox" value="21:00"><span>21:00</span></label>
+</div>
+   <button onclick="adicionarCampos('milhar',1)">+ Milhar</button>
+    <div id="milharContainer"></div>
+  
+  <button onclick="adicionarCampos('centena',1)">+ Centena</button>
+    <div id="centenaContainer"></div>
+  
+  <button onclick="adicionarCampos('dezena',1)">+ Dezena</button>
+    <div id="dezenaContainer"></div>
+  
+  <button onclick="adicionarCampos('grupo',1)">+ Grupo</button>
+    <div id="grupoContainer"></div>
+  
+ <button onclick="adicionarCamposDuque()">+ Duque</button>
+    <div id="duqueContainer"></div></br>
+   <button style="color:white;background:#25d366;">SORTE TEM QUEM NELA ACREDITA</button>
+</br>
+<!-- Elementos ocultos para evitar erro -->
+<span id="totalPagar" style="display:none"></span>
+<span id="totalReceber" style="display:none"></span>
+    <button onclick="enviarWhatsApp()"style="display:none">VALIDAR PULE</button>    
+  </div>
+
+  <!-- Modal -->
+  <div id="modalErro">
+    <div>
+      <span onclick="fecharModal()">✖</span>
+      <h3>Erro</h3>
+      <p id="mensagemModal"></p>
+      <button onclick="fecharModal()">OK</button>
+    </div>
+  </div>
+</body>
+</html>
