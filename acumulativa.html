@@ -263,13 +263,29 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 // 👤 NOME
+// 👤 NOME OBRIGATÓRIO
 let nome = localStorage.getItem("nome");
-if (!nome) {
-  nome = prompt("Digite seu nome:");
-  localStorage.setItem("nome", nome);
-}
-document.getElementById("nome").innerText = "Jogador: " + nome;
 
+while (!nome || nome.trim() === "") {
+
+  nome = prompt("Digite seu nome para participar da rifa:");
+
+  if (nome === null) {
+    alert("É obrigatório informar seu nome para marcar números.");
+    continue;
+  }
+
+  nome = nome.trim();
+
+  if (nome === "") {
+    alert("Digite um nome válido.");
+  }
+}
+
+localStorage.setItem("nome", nome);
+
+document.getElementById("nome").innerText =
+  "Jogador: " + nome;
 // 🧠 VARIÁVEIS
 let selecionados = [];
 let numerosCache = {};
@@ -293,47 +309,114 @@ function calcularBrindes(total) {
 }
 
 // 🎯 GRID
+// 🎯 GRID
 function atualizarGrid(numeros) {
+
   const grid = document.getElementById("grid");
   grid.innerHTML = "";
 
   for (let i = 0; i < 1000; i++) {
-    const num = i.toString().padStart(3, "0");
-    const btn = document.createElement("button");
-    btn.innerText = num;
 
+    const num = i.toString().padStart(3, "0");
+
+    const btn = document.createElement("button");
+
+    // =========================
+    // NÚMERO OCUPADO
+    // =========================
     if (numeros[num]) {
+
+      const jogador = numeros[num].nome || "Sem nome";
+
+      btn.innerHTML = `
+        <strong>${num}</strong>
+        <small>${jogador}</small>
+      `;
+
+      // 🎁 BRINDE
       if (numeros[num].bonus) {
+
         btn.className = "brinde";
-      } else {
-        btn.className = numeros[num].nome === nome ? "meu" : "ocupado";
+
       }
+
+      // 👤 MEU NÚMERO
+      else if (jogador === nome) {
+
+        btn.className = "meu";
+
+      }
+
+      // 👤 OUTRO JOGADOR
+      else {
+
+        btn.className = "ocupado";
+
+      }
+
       btn.disabled = true;
 
-    } else {
-      btn.className = selecionados.includes(num) ? "meu" : "livre";
+    }
+
+    // =========================
+    // NÚMERO LIVRE
+    // =========================
+    else {
+
+      if (selecionados.includes(num)) {
+
+        btn.className = "meu";
+
+        btn.innerHTML = `
+          <strong>${num}</strong>
+          <small>${nome}</small>
+        `;
+
+      }
+
+      else {
+
+        btn.className = "livre";
+
+        btn.innerHTML = `
+          <strong>${num}</strong>
+          <small>LIVRE</small>
+        `;
+
+      }
 
       btn.onclick = () => {
+
         if (selecionados.includes(num)) {
-          selecionados = selecionados.filter(n => n !== num);
-        } else {
-          selecionados.push(num);
+
+          selecionados =
+            selecionados.filter(n => n !== num);
+
         }
+
+        else {
+
+          selecionados.push(num);
+
+        }
+
         atualizarContador();
+
         atualizarGrid(numeros);
+
       };
+
     }
 
     grid.appendChild(btn);
   }
 }
-
 // 💰 ACUMULADO
 // 💰 ACUMULADO
 function atualizarAcumulado(numeros) {
 
-  // 👇 começa com 2000
-  let totalPago = 9;
+  // 👇 começa com 3000
+  let totalPago = 3000;
 
   Object.keys(numeros).forEach(num => {
     const item = numeros[num];
@@ -431,8 +514,18 @@ function abrirResumo() {
 
 // 💾 CONFIRMAR
 function confirmar() {
-  if (selecionados.length === 0) return;
 
+  if (!nome || nome.trim() === "") {
+    alert("Digite seu nome antes de continuar.");
+    return;
+  }
+
+  if (selecionados.length === 0) {
+    alert("Selecione pelo menos um número!");
+    return;
+  }
+
+  const nomeJogador = nome.trim();
   const valor = 5;
 
   let totalAntes = meusNumeros.length;
@@ -445,49 +538,71 @@ function confirmar() {
 
   let vendidos = [];
 
-  // salvar números normais
   selecionados.forEach(num => {
+
     const ref = db.ref("rifa/numeros/" + num);
 
     ref.transaction(current => {
-      if (current === null) {
-        vendidos.push(num);
-        return {
-          nome: nome,
-          valor: valor
-        };
+
+      // Número já ocupado
+      if (current !== null) {
+        return;
       }
+
+      // Número livre
+      vendidos.push(num);
+
+      return {
+        nome: nomeJogador,
+        valor: valor,
+        data: new Date().toISOString()
+      };
+
     });
+
   });
 
-  // 🎁 gerar brindes
+  // 🎁 BRINDES
   for (let i = 0; i < novosBrindes; i++) {
+
     let numeroBonus;
 
     do {
+
       numeroBonus = Math.floor(Math.random() * 1000)
         .toString()
         .padStart(3, "0");
 
-    } while (selecionados.includes(numeroBonus) || numerosCache[numeroBonus]);
+    } while (
+      numerosCache[numeroBonus] ||
+      selecionados.includes(numeroBonus)
+    );
 
     db.ref("rifa/numeros/" + numeroBonus).set({
-      nome: nome,
+
+      nome: nomeJogador,
       valor: 0,
       bonus: true,
-      tipo: "brinde"
+      tipo: "brinde",
+      data: new Date().toISOString()
+
     });
+
   }
 
   setTimeout(() => {
+
+    selecionados = [];
+
+    atualizarContador();
+
+    fecharModal();
+
     if (vendidos.length > 0) {
       document.getElementById("modalPix").style.display = "flex";
     }
 
-    selecionados = [];
-    atualizarContador();
-    fecharModal();
-  }, 800);
+  }, 1000);
 }
 
 // ❌ FECHAR MODAL
