@@ -17,19 +17,54 @@
   font-weight:bold;
 }
 body {
-  background:#111;
-  color:#fff;
-  font-family:Arial;
-  text-align:center;
-  padding-top: 130px;
+  background: #111;
+  color: #fff;
+  font-family: Arial;
+  text-align: center;
+  margin: 0;
+  padding-top: 150px;
 }
 
 .grid {
-  display:grid;
-  grid-template-columns:repeat(8,1fr);
-  gap:6px;
-  max-width:400px;
-  margin:20px auto;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 2 auto;
+  box-sizing: border-box;
+}
+
+.grid button {
+  position: relative;
+  width: 100%;
+  min-width: 100;
+  height: 42px;
+  padding: 3px 3px;
+  box-sizing: border-box;
+}
+
+.grid button strong {
+  display: block;
+  font-size: 13px;
+  margin-top: 14px;
+}
+
+.grid button small {
+  position: absolute;
+  top: 5px;
+  right: 3px;
+  left: 3px;
+
+  display: block;
+  text-align: right;
+
+  font-size: 7px;
+  line-height: 9px;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 button {
@@ -52,21 +87,55 @@ button {
   top: 0;
   left: 0;
   width: 100%;
+  min-height: 145px;
   background: #000;
-  padding: 2px;
+  padding: 8px;
+  box-sizing: border-box;
   z-index: 1000;
   border-bottom: 2px solid #00ff88;
 
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: flex-start; /* 👈 ALTERADO */
-  gap: 10px; /* controla distância */
-  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+}
+.brinde {
+  background: linear-gradient(135deg, #ffd700, #ffb300) !important;
+  color: #000 !important;
+  border: 2px solid #fff000 !important;
+  box-shadow: 0 0 10px #ffd700, inset 0 0 8px rgba(255,255,255,0.5);
+  font-weight: bold;
+  animation: brilhoBrinde 1.2s infinite alternate;
 }
 
-#topoFixo button {
-  background:#00ff88;
-  color:#000;
+.brinde strong {
+  color: #000 !important;
+  font-size: 15px !important;
+}
+
+.brinde small {
+  color: #000 !important;
+  font-weight: bold;
+}
+
+@keyframes brilhoBrinde {
+  from {
+    box-shadow: 0 0 5px #ffd700;
+  }
+  to {
+    box-shadow: 0 0 18px #ffd700;
+  }
+}
+#topoFixo p {
+  margin: 0;
+  padding: 0;
+}
+
+#menuBtn {
+  position: absolute;
+  top: 8px;
+  left: 10px;
 }
 
 #resTopo {
@@ -80,17 +149,21 @@ button {
 }
 
 #nome {
+  color: #fff;
   font-size: 14px;
 }
-.lado-direito {
-  display:flex;
-  gap:10px;
-  align-items:center;
-  flex-wrap: wrap;
-}
+
 #qtdSelecionados {
   color: #00ff88;
   font-weight: bold;
+}
+
+#topoFixo button {
+  width: 90% !important;
+  max-width: 400px;
+  background: #00ff88;
+  color: #000;
+  padding: 8px;
 }
 #menuBtn {
   font-size: 22px;
@@ -336,9 +409,15 @@ function atualizarGrid(numeros) {
       // 🎁 BRINDE
       if (numeros[num].bonus) {
 
-        btn.className = "brinde";
+  btn.className = "brinde";
 
-      }
+  btn.innerHTML = `
+    <strong>${num}</strong>
+    <small>${jogador}</small>
+    <small>🎁 BRINDE</small>
+  `;
+
+}
 
       // 👤 MEU NÚMERO
       else if (jogador === nome) {
@@ -624,13 +703,28 @@ function fecharPix() {
 }
 
 // 📅 DATA SORTEIO
+// 📅 DATA E HORÁRIO DO SORTEIO — SÁBADO ÀS 19:00
 function atualizarDataSabado() {
-  const hoje = new Date();
-  const dia = hoje.getDay();
-  const diasFaltando = (6 - dia + 7) % 7;
+  const agora = new Date();
 
-  const proximo = new Date(hoje);
-  proximo.setDate(hoje.getDate() + (diasFaltando === 0 ? 7 : diasFaltando));
+  const proximo = new Date(agora);
+  const dia = agora.getDay(); // 0=domingo ... 6=sábado
+
+  let diasFaltando = 6 - dia;
+
+  // Se já for sábado e passou das 19:00,
+  // mostra o próximo sábado
+  if (dia === 6) {
+    const horarioSorteio = new Date(agora);
+    horarioSorteio.setHours(19, 0, 0, 0);
+
+    if (agora >= horarioSorteio) {
+      diasFaltando = 7;
+    }
+  }
+
+  proximo.setDate(agora.getDate() + diasFaltando);
+  proximo.setHours(19, 0, 0, 0);
 
   const data = proximo.toLocaleDateString("pt-BR", {
     day: "2-digit",
@@ -639,7 +733,7 @@ function atualizarDataSabado() {
   });
 
   document.getElementById("dataSorteio").innerText =
-    "Sorteio: " + data;
+    "Sorteio: Sábado " + data + " às 19:00";
 }
 
 // 📱 MENU
