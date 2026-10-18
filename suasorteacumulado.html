@@ -7,100 +7,92 @@
 <meta name="theme-color" content="#000000">
 <title>Rifa Online</title>
 
-<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/file_00000000c28471fba60c52601e2a4d2c.png">
-
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
-* { box-sizing:border-box; }
+*{box-sizing:border-box}
 
-body {
+body{
+  margin:0;
+  padding:200px 5px 25px;
   background:#111;
   color:#fff;
   font-family:Arial,sans-serif;
   text-align:center;
-  margin:0;
-  padding:158px 5px 20px;
 }
 
-button {
+button{
   border:0;
   border-radius:8px;
   padding:10px;
+  font-size:12px;
   font-weight:bold;
   cursor:pointer;
-  font-size:12px;
 }
 
-button:disabled {
-  cursor:not-allowed;
-  opacity:.8;
-}
+button:disabled{opacity:.6;cursor:not-allowed}
 
-#topoFixo {
+#topoFixo{
   position:fixed;
+  z-index:1000;
   top:0;
   left:0;
   width:100%;
-  min-height:150px;
-  background:#000;
+  min-height:190px;
   padding:8px;
-  z-index:1000;
+  background:#000;
   border-bottom:2px solid #00ff88;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:4px;
+  gap:6px;
 }
 
-#topoFixo p {
-  margin:0;
-  padding:0;
-}
+#topoFixo p{margin:0}
 
-#menuBtn {
+#menuBtn{
   position:absolute;
-  top:8px;
   left:12px;
-  font-size:23px;
+  top:8px;
   color:#00ff88;
+  font-size:25px;
   cursor:pointer;
 }
 
-#resTopo {
-  color:#ffaa00;
+#resTopo{
+  color:#ffb020;
+  font-size:16px;
   font-weight:bold;
-  margin-top:18px !important;
+  margin-top:20px!important;
 }
 
-#dataSorteio {
+#dataSorteio{
   color:#00ff88;
   font-size:12px;
   font-weight:bold;
 }
 
-#nome {
+#nomeTopo,#pixTopo{
   color:#fff;
-  font-size:12px;
+  font-size:11px;
+  max-width:95%;
+  overflow-wrap:anywhere;
 }
 
-#qtdSelecionados {
-  color:#00ff88;
-  font-weight:bold;
-}
+#qtdSelecionados{color:#00ff88;font-weight:bold}
 
-#topoFixo button {
-  width:90%;
+#topoFixo button{
+  width:95%;
   max-width:400px;
   background:#00ff88;
   color:#000;
   padding:9px;
 }
 
-.grid {
+.grid{
   display:grid;
   grid-template-columns:repeat(10,minmax(0,1fr));
   gap:4px;
@@ -109,302 +101,412 @@ button:disabled {
   margin:0 auto;
 }
 
-.grid button {
+.grid button{
   position:relative;
   width:100%;
   min-width:0;
-  height:43px;
+  height:48px;
   padding:2px;
   overflow:hidden;
 }
 
-.grid button strong {
+.grid button strong{
   display:block;
+  margin-top:12px;
   font-size:clamp(9px,2.6vw,13px);
-  margin-top:13px;
 }
 
-.grid button small {
+.grid button small{
   position:absolute;
   top:3px;
   left:2px;
   right:2px;
-  display:block;
-  text-align:right;
   font-size:7px;
   line-height:9px;
-  overflow:hidden;
   white-space:nowrap;
+  overflow:hidden;
   text-overflow:ellipsis;
 }
 
-.livre { background:#333;color:#fff; }
-.ocupado { background:#ff3b3b;color:#fff; }
-.meu { background:#00ff88;color:#000; }
+.grid button small.statusMini{
+  top:auto;
+  bottom:2px;
+  font-size:6px;
+  line-height:8px;
+  font-weight:bold;
+}
 
-.brinde {
+.livre{background:#333;color:#fff}
+.ocupado{background:#ff3b3b;color:#fff}
+.meu{background:#00ff88;color:#000}
+
+.brinde{
   background:linear-gradient(135deg,#ffd700,#ffb300)!important;
   color:#000!important;
-  border:1px solid #fff000!important;
+  border:1px solid #fff000;
   box-shadow:0 0 5px #ffd700;
-  animation:brilho 1.2s infinite alternate;
 }
 
-.brinde strong,.brinde small { color:#000!important; }
-
-@keyframes brilho {
-  to { box-shadow:0 0 12px #ffd700; }
-}
-
-#menuLateral {
+#menuLateral{
   position:fixed;
+  z-index:3000;
   top:0;
   left:-110%;
   width:85%;
   max-width:380px;
   height:100%;
-  background:#000;
-  z-index:3000;
   padding:18px;
-  overflow-y:auto;
-  transition:left .25s;
+  background:#000;
   border-right:2px solid #00ff88;
+  overflow-y:auto;
   text-align:left;
+  transition:left .25s;
 }
 
-#menuLateral.ativo { left:0; }
+#menuLateral.ativo{left:0}
+#menuLateral h3{color:#00ff88}
 
-#menuLateral h3 { color:#00ff88; }
-
-#fecharMenu {
+#fecharMenu{
   float:right;
   background:#ff3b3b;
   color:#fff;
 }
 
-#listaReservas {
-  margin-top:15px;
-  font-size:13px;
-}
-
-.linha-nome {
+.linhaNome{
   color:#00ff88;
-  margin-top:15px;
   font-weight:bold;
+  margin-top:15px;
   overflow-wrap:anywhere;
 }
 
-.linha-numeros {
-  color:#fff;
+.linhaPix{
+  color:#ccc;
+  font-size:11px;
+  margin-top:4px;
+  overflow-wrap:anywhere;
+}
+
+.linhaNumeros{
   line-height:1.8;
   overflow-wrap:anywhere;
 }
 
-.divisor {
-  border-bottom:1px solid #444;
-  margin:10px 0;
+.divisor{border-bottom:1px solid #444;margin:10px 0}
+
+/* MINHAS RESERVAS */
+
+#minhasReservas{
+  max-width:650px;
+  margin:22px auto;
+  padding:15px;
+  background:#171717;
+  border:1px solid #00ff88;
+  border-radius:12px;
+  text-align:left;
 }
 
-.overlay {
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.88);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:5000;
-  padding:12px;
-}
-
-.caixa {
-  width:100%;
-  max-width:380px;
-  max-height:94vh;
-  overflow-y:auto;
-  background:#111;
-  color:#fff;
-  border:2px solid #00ff88;
-  border-radius:15px;
-  padding:20px;
+#minhasReservas h3{
+  color:#00ff88;
   text-align:center;
 }
 
-.caixa h3 { color:#00ff88; }
-
-#resNumeros {
+#nomeParticipante{
+  color:#fff;
+  font-weight:bold;
+  text-align:center;
   overflow-wrap:anywhere;
-  line-height:1.6;
 }
 
-#resValor {
-  font-size:22px;
+#pixParticipante{
+  color:#ccc;
+  font-size:12px;
+  text-align:center;
+  overflow-wrap:anywhere;
+  margin:8px 0 14px;
+}
+
+.reservaPessoa{
+  padding:12px;
+  margin:10px 0;
+  background:#252525;
+  border-radius:8px;
+}
+
+.reservaNumero{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  padding:10px 0;
+  border-bottom:1px solid #444;
+}
+
+.reservaNumero:last-child{border-bottom:0}
+
+.statusPago{
   color:#00ff88;
+  font-size:11px;
   font-weight:bold;
 }
 
-.btnVerde {
+.statusPendente{
+  color:#ffb020;
+  font-size:11px;
+  font-weight:bold;
+}
+
+.statusBrinde{
+  color:#ffd700;
+  font-size:11px;
+  font-weight:bold;
+}
+
+.btnEditarCadastro{
+  display:block;
+  width:100%;
+  margin:10px 0;
+  background:#292929;
+  color:#00ff88;
+  border:1px solid #00ff88;
+}
+
+/* MODAIS */
+
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:5000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+  background:rgba(0,0,0,.88);
+}
+
+.caixa{
+  width:100%;
+  max-width:390px;
+  max-height:94vh;
+  overflow-y:auto;
+  padding:20px;
+  background:#111;
+  border:2px solid #00ff88;
+  border-radius:15px;
+  color:#fff;
+  text-align:center;
+}
+
+.caixa h3{color:#00ff88}
+
+.caixa label{
+  display:block;
+  margin-top:12px;
+  text-align:left;
+  font-size:12px;
+  color:#ddd;
+}
+
+.caixa input{
+  display:block;
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border:1px solid #444;
+  border-radius:8px;
+  background:#222;
+  color:#fff;
+  outline-color:#00ff88;
+  font-size:14px;
+}
+
+#resNumeros{overflow-wrap:anywhere;line-height:1.7}
+
+#resValor{
+  color:#00ff88;
+  font-size:22px;
+  font-weight:bold;
+}
+
+.btnVerde{
+  width:100%;
+  margin-top:10px;
+  padding:12px;
   background:#00ff88;
   color:#000;
-  width:100%;
-  padding:12px;
-  margin-top:10px;
 }
 
-.btnVermelho {
+.btnVermelho{
+  width:100%;
+  margin-top:8px;
+  padding:12px;
   background:#ff3b3b;
   color:#fff;
-  width:100%;
-  padding:12px;
-  margin-top:8px;
 }
 
-.btnWhats {
-  background:#25D366;
-  color:#fff;
-  width:100%;
-  padding:12px;
-  margin-top:8px;
-}
-
-#valorPix {
+#valorPix{
   color:#00ff88;
-  font-size:30px;
+  font-size:28px;
   font-weight:bold;
-  margin:12px 0;
 }
 
-#qrcode {
+#qrcode{
   display:flex;
   justify-content:center;
   align-items:center;
-  background:#fff;
-  padding:12px;
   width:max-content;
   max-width:100%;
-  margin:15px auto;
-  border-radius:8px;
   min-height:20px;
+  padding:12px;
+  margin:15px auto;
+  background:#fff;
+  border-radius:8px;
 }
 
-#qrcode img,#qrcode canvas {
-  max-width:100%;
-  height:auto;
-}
+#qrcode img,#qrcode canvas{max-width:100%;height:auto}
 
-#pixCopiaCola {
+#pixCopiaCola{
   display:block;
   width:100%;
-  height:95px;
-  resize:none;
+  height:100px;
   padding:10px;
-  border-radius:8px;
+  resize:none;
   border:1px solid #444;
+  border-radius:8px;
   background:#222;
   color:#fff;
   font-size:11px;
   overflow-wrap:anywhere;
 }
 
-.aviso {
-  font-size:12px;
+.botoesPix{display:flex;gap:10px;margin-top:15px}
+.botoesPix button{flex:1;min-width:0;margin:0}
+
+.aviso{
   color:#bbb;
-  line-height:1.5;
+  font-size:12px;
+  line-height:1.6;
   margin-top:12px;
 }
 
-@media(max-width:350px) {
-  .grid { gap:2px; }
-  .grid button { height:38px; }
-}
-.botoesPix {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-  margin-top:15px;
-}
-
-.botoesPix button {
-  flex: 1;
-  min-width: 0;
-  margin: 0;
+@media(max-width:350px){
+  .grid{gap:2px}
+  .grid button{height:44px}
+  .reservaNumero{gap:5px}
 }
 </style>
 </head>
 
 <body>
 
-<div id="topoFixo">
+<!-- TOPO ORIGINAL -->
+
+<header id="topoFixo">
   <div id="menuBtn" onclick="toggleMenu()">☰</div>
+
   <p id="resTopo">Acumulado: R$ 3.000,00</p>
   <p id="dataSorteio"></p>
-  <p id="nome"></p>
+  <p id="nomeTopo"></p>
+  <p id="pixTopo"></p>
   <p id="qtdSelecionados">Marcados: 0</p>
-  <button onclick="abrirResumo()">APOSTA</button>
-</div>
+
+  <button onclick="abrirResumo()">APOSTAR NOS NÚMEROS</button>
+</header>
+
+<!-- GRADE -->
 
 <div class="grid" id="grid"></div>
 
-<!-- MENU DE RESERVAS -->
+<!-- MINHAS RESERVAS -->
+
+<section style="display:none"id="minhasReservas">
+  <h3>📋 Minhas reservas</h3>
+  <p id="nomeParticipante"></p>
+  <p id="pixParticipante"></p>
+  <button class="btnEditarCadastro" onclick="editarCadastro()">
+    ✏️ Editar meu nome e Pix
+  </button>
+  <div id="listaMinhasReservas">Carregando reservas...</div>
+</section>
+
+<!-- MENU LATERAL ORIGINAL -->
+
 <div id="menuLateral">
   <button id="fecharMenu" onclick="toggleMenu()">FECHAR ✕</button>
-  <h3>Reservas</h3>
+  <h3>📋 Números reservados</h3>
   <div id="listaReservas">Carregando...</div>
 </div>
 
-<!-- RESUMO DA APOSTA -->
+<!-- MODAL CADASTRO -->
+
+<div id="modalCadastro" class="overlay">
+  <div class="caixa">
+    <h3>👤 Dados do participante</h3>
+    <p class="aviso">
+      Informe seu nome e sua chave Pix. Esses dados ficam salvos neste dispositivo.
+    </p>
+
+    <form id="formCadastro">
+      <label for="campoNome">Seu nome completo</label>
+      <input id="campoNome" type="text" maxlength="100"
+        autocomplete="name" required placeholder="Digite seu nome">
+
+      <label for="campoPix">Sua chave Pix</label>
+      <input id="campoPix" type="text" maxlength="150"
+        required placeholder="CPF, telefone, e-mail ou chave aleatória">
+
+      <button class="btnVerde" type="submit">SALVAR MEUS DADOS</button>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL RESUMO ORIGINAL -->
+
 <div id="modalResumo" class="overlay">
   <div class="caixa">
     <h3>Resumo da aposta</h3>
     <p id="resNome"></p>
     <p id="resNumeros"></p>
     <p id="resValor"></p>
-    <p class="aviso">
-      Confira os números e o valor antes de continuar.
-    </p>
+
+    <p class="aviso">Confira os números e o valor antes de continuar.</p>
+
     <button class="btnVerde" id="btnConfirmar" onclick="confirmar()">
       RESERVAR E GERAR PIX
     </button>
+
     <button class="btnVermelho" onclick="fecharModal()">
       CANCELAR
     </button>
   </div>
 </div>
 
-<!-- PIX -->
+<!-- MODAL PIX ORIGINAL -->
+
 <div id="modalPix" class="overlay">
   <div class="caixa">
-    <h3>PAGAMENTO VIA PIX</h3>
+    <h3>💚 PAGAMENTO VIA PIX</h3>
     <p>Valor da aposta:</p>
     <p id="valorPix">R$ 0,00</p>
 
     <div id="qrcode"></div>
 
-    <p style="color:#00ff88;font-weight:bold;margin:12px 0">
-      Pix Copia e Cola
-    </p>
-
+    <p style="color:#00ff88;font-weight:bold">PIX COPIA E COLA</p>
     <textarea id="pixCopiaCola" readonly></textarea>
 
     <div class="botoesPix">
-  <button class="btnVerde" onclick="copiarPix()">
-    COPIAR PIX
-  </button>
-
-  <button class="btnVermelho" onclick="fecharPix()">
-    FECHAR
-  </button>
-</div>
+      <button class="btnVerde" onclick="copiarPix()">COPIAR PIX</button>
+      <button class="btnVermelho" onclick="fecharPix()">FECHAR</button>
+    </div>
 
     <p class="aviso">
-  ⚠️ CONFIRME SUA PARTICIPAÇÃO
+        ⚠️ CONFIRME SUA PARTICIPAÇÃO ⚠️ <br>
 
 Para garantir sua participação na rifa, realize o pagamento via Pix utilizando o código Copia e Cola ou o QR Code disponibilizado.
 
-Após efetuar o pagamento,A reserva do número não garante a participação até que o pagamento seja confirmado.
+Após efetuar o pagamento,A reserva do número garante a participação no valor acumulado.</br>
 
 💚 Obrigado por participar! Boa sorte!
-
-
     </p>
   </div>
 </div>
@@ -412,12 +514,12 @@ Após efetuar o pagamento,A reserva do número não garante a participação at�
 <script>
 "use strict";
 
-/* =========================================
-   CONFIGURAÇÃO FIREBASE
-========================================= */
+/* ========================================
+   FIREBASE ORIGINAL
+======================================== */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+  apiKey: "AIzaSyCIDFHMzgkN3HGLn-XA8ieC_5DDBvbJ7o",
   authDomain: "rifa-782a3.firebaseapp.com",
   databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
   projectId: "rifa-782a3",
@@ -432,70 +534,131 @@ if (!firebase.apps.length) {
 
 const db = firebase.database();
 
-/* =========================================
-   CONFIGURAÇÃO DA RIFA
-========================================= */
+/* ========================================
+   CONFIGURAÇÕES ORIGINAIS
+======================================== */
 
 const VALOR_NUMERO = 5;
-const VALOR_ACUMULADO_POR_NUMERO = 4.5;
+const VALOR_ACUMULADO_POR_NUMERO = 4.50;
 const ACUMULADO_INICIAL = 3000;
 
-const PIX_CHAVE = "02562631595";
+const PIX_CHAVE = "6f360f91-71c7-40da-b610-5a70ba3213dd";
 const PIX_NOME = "CARLOS DOS SANTOS REIS";
 const PIX_CIDADE = "SALVADOR";
 
+const CAMINHO_NUMEROS = "rifa/numeros";
+const CAMINHO_PARTICIPANTES = "rifa/participantes";
+
 let nome = "";
+let pixParticipante = "";
+let participanteId = "";
 let selecionados = [];
 let numerosCache = {};
 let meusNumeros = [];
-let processando = false;
 let dadosCarregados = false;
+let processando = false;
 
-/* =========================================
-   NOME DO JOGADOR
-========================================= */
+/* ========================================
+   CADASTRO ÚNICO DE NOME E PIX
+======================================== */
 
-function obterNome() {
-  let salvo = localStorage.getItem("nome");
+function gerarIdParticipante() {
+  let id = localStorage.getItem("rifaParticipanteId");
 
-  while (!salvo || !salvo.trim()) {
-    const digitado = prompt("Digite seu nome para participar da rifa:");
-
-    if (digitado === null) {
-      alert("É necessário informar seu nome para continuar.");
-      continue;
+  if (!id) {
+    if (window.crypto && crypto.randomUUID) {
+      id = crypto.randomUUID();
+    } else {
+      id = "P" + Date.now() + Math.random().toString(36).slice(2);
     }
 
-    salvo = digitado.trim();
-
-    if (!salvo) {
-      alert("Digite um nome válido.");
-    }
+    localStorage.setItem("rifaParticipanteId", id);
   }
 
-  return salvo.trim();
+  return id;
 }
 
-nome = obterNome();
-localStorage.setItem("nome", nome);
+participanteId = gerarIdParticipante();
 
-document.getElementById("nome").textContent = "Jogador: " + nome;
+function carregarCadastroLocal() {
+  nome = (localStorage.getItem("rifaNome") || "").trim();
+  pixParticipante = (localStorage.getItem("rifaPix") || "").trim();
 
-/* =========================================
+  // Se o nome já estava salvo, mas o Pix ainda não,
+  // será solicitado somente o Pix.
+  if (!nome || !pixParticipante) {
+    abrirCadastro();
+  } else {
+    mostrarDadosParticipante();
+  }
+}
+
+function abrirCadastro() {
+  document.getElementById("campoNome").value = nome;
+  document.getElementById("campoPix").value = pixParticipante;
+  document.getElementById("modalCadastro").style.display = "flex";
+}
+
+function editarCadastro() {
+  abrirCadastro();
+}
+
+function mostrarDadosParticipante() {
+  document.getElementById("nomeTopo").textContent =
+    "Participante: " + nome;
+
+  document.getElementById("pixTopo").textContent =
+    "Minha chave Pix: " + pixParticipante;
+
+  document.getElementById("nomeParticipante").textContent =
+    "Participante: " + nome;
+
+  document.getElementById("pixParticipante").textContent =
+    "Minha chave Pix: " + pixParticipante;
+}
+
+document.getElementById("formCadastro").addEventListener("submit", async function(evento) {
+  evento.preventDefault();
+
+  const nomeDigitado =
+    document.getElementById("campoNome").value.trim();
+
+  const pixDigitado =
+    document.getElementById("campoPix").value.trim();
+
+  if (!nomeDigitado || !pixDigitado) {
+    alert("Informe seu nome e sua chave Pix.");
+    return;
+  }
+
+  nome = nomeDigitado;
+  pixParticipante = pixDigitado;
+
+  localStorage.setItem("rifaNome", nome);
+  localStorage.setItem("rifaPix", pixParticipante);
+
+  mostrarDadosParticipante();
+  document.getElementById("modalCadastro").style.display = "none";
+
+  try {
+    await db.ref(CAMINHO_PARTICIPANTES + "/" + participanteId).update({
+      nome: nome,
+      pix: pixParticipante,
+      atualizadoEm: firebase.database.ServerValue.TIMESTAMP
+    });
+  } catch (erro) {
+    console.error("Erro ao salvar cadastro no Firebase:", erro);
+    alert("Os dados ficaram salvos neste dispositivo, mas não foi possível sincronizá-los com o Firebase. Verifique as regras do banco.");
+  }
+
+  atualizarGrid();
+  atualizarMenu();
+  atualizarMinhasReservas();
+});
+
+/* ========================================
    UTILITÁRIOS
-========================================= */
-
-function escaparHTML(texto) {
-  return String(texto).replace(/[&<>"']/g, function(c) {
-    return {
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#39;"
-    }[c];
-  });
-}
+======================================== */
 
 function dinheiro(valor) {
   return Number(valor).toLocaleString("pt-BR", {
@@ -504,36 +667,50 @@ function dinheiro(valor) {
   });
 }
 
+function criarElemento(tag, classe, texto) {
+  const el = document.createElement(tag);
+  if (classe) el.className = classe;
+  if (texto !== undefined) el.textContent = texto;
+  return el;
+}
+
 function calcularBrindes(total) {
   return Math.floor(total / 4);
 }
 
-/* =========================================
-   FIREBASE: ESCUTAR NÚMEROS
-========================================= */
+/* ========================================
+   FIREBASE EM TEMPO REAL
+======================================== */
 
-db.ref("rifa/numeros").on("value", function(snap) {
-  numerosCache = snap.val() || {};
-
-  meusNumeros = Object.keys(numerosCache).filter(function(n) {
-    return numerosCache[n] &&
-      numerosCache[n].nome === nome;
-  });
-
+db.ref(CAMINHO_NUMEROS).on("value", function(snapshot) {
+  numerosCache = snapshot.val() || {};
   dadosCarregados = true;
+
+  meusNumeros = Object.keys(numerosCache).filter(function(numero) {
+    const item = numerosCache[numero];
+    return item &&
+      item.nome === nome &&
+      item.bonus !== true;
+  });
 
   atualizarGrid();
   atualizarAcumulado();
   atualizarContador();
   atualizarMenu();
-}, function(error) {
-  console.error("Erro Firebase:", error);
-  alert("Não foi possível carregar a rifa. Confira sua conexão.");
+  atualizarMinhasReservas();
+
+}, function(erro) {
+  console.error("Erro ao carregar rifa:", erro);
+
+  document.getElementById("listaMinhasReservas").textContent =
+    "Não foi possível carregar suas reservas. Verifique sua conexão.";
+
+  alert("Erro ao conectar à rifa. Verifique sua internet.");
 });
 
-/* =========================================
-   GRID 000 ATÉ 999
-========================================= */
+/* ========================================
+   GRADE ORIGINAL + STATUS ABAIXO DO NOME
+======================================== */
 
 function atualizarGrid() {
   const grid = document.getElementById("grid");
@@ -542,109 +719,234 @@ function atualizarGrid() {
   grid.innerHTML = "";
 
   for (let i = 0; i < 1000; i++) {
-    const num = String(i).padStart(3, "0");
-    const item = numerosCache[num];
-    const btn = document.createElement("button");
+    const numero = String(i).padStart(3, "0");
+    const item = numerosCache[numero];
+    const botao = document.createElement("button");
 
     if (item) {
-      const jogador = item.nome || "Sem nome";
+      const jogador = item.nome || "Reservado";
 
-      btn.innerHTML =
-        "<strong>" + num + "</strong>" +
-        "<small>" + escaparHTML(jogador) + "</small>";
+      botao.disabled = true;
 
-      if (item.bonus) {
-        btn.className = "brinde";
-        btn.innerHTML =
-          "<strong>" + num + "</strong>" +
-          "<small>" + escaparHTML(jogador) + "</small>" +
-          "<small>🎁 BRINDE</small>";
-      } else if (jogador === nome) {
-        btn.className = "meu";
+      const nomeEl = document.createElement("small");
+      nomeEl.textContent = item.bonus === true ? "🎁 BRINDE" : jogador;
+      nomeEl.title = jogador;
+
+      const numeroEl = document.createElement("strong");
+      numeroEl.textContent = numero;
+
+      const statusEl = document.createElement("small");
+      statusEl.className = "statusMini";
+
+      if (item.bonus === true) {
+        botao.className = "brinde";
+        statusEl.textContent = "BRINDE";
+        statusEl.style.color = "#000";
+      } else if (item.pago === true) {
+        statusEl.textContent = "PAGO";
+        statusEl.style.color = jogador === nome ? "#000" : "#00ff88";
+        botao.className = jogador === nome ? "meu" : "ocupado";
       } else {
-        btn.className = "ocupado";
+        statusEl.textContent = "PENDENTE";
+        statusEl.style.color = jogador === nome ? "#000" : "#ffb020";
+        botao.className = jogador === nome ? "meu" : "ocupado";
       }
 
-      btn.disabled = true;
+      botao.appendChild(nomeEl);
+      botao.appendChild(numeroEl);
+      botao.appendChild(statusEl);
+
+      botao.title =
+        jogador + " | " +
+        (item.bonus ? "BRINDE" : item.pago ? "PAGO" : "PENDENTE");
+
     } else {
-      const marcado = selecionados.includes(num);
+      botao.className = selecionados.includes(numero) ? "meu" : "livre";
 
-      btn.className = marcado ? "meu" : "livre";
-      btn.innerHTML =
-        "<strong>" + num + "</strong>" +
-        "<small>" +
-        (marcado ? escaparHTML(nome) : "LIVRE") +
-        "</small>";
+      const numeroEl = document.createElement("strong");
+      numeroEl.textContent = numero;
 
-      btn.onclick = function() {
+      const legenda = document.createElement("small");
+      legenda.textContent = selecionados.includes(numero) ? "MARCADO" : "LIVRE";
+
+      botao.appendChild(numeroEl);
+      botao.appendChild(legenda);
+
+      botao.onclick = function() {
         if (!dadosCarregados || processando) return;
 
-        if (selecionados.includes(num)) {
-          selecionados = selecionados.filter(n => n !== num);
+        if (selecionados.includes(numero)) {
+          selecionados = selecionados.filter(n => n !== numero);
         } else {
-          selecionados.push(num);
+          selecionados.push(numero);
         }
 
-        atualizarContador();
         atualizarGrid();
+        atualizarContador();
       };
     }
 
-    fragmento.appendChild(btn);
+    fragmento.appendChild(botao);
   }
 
   grid.appendChild(fragmento);
 }
 
-/* =========================================
+/* ========================================
    ACUMULADO
-========================================= */
+======================================== */
 
 function atualizarAcumulado() {
   let total = ACUMULADO_INICIAL;
 
   Object.values(numerosCache).forEach(function(item) {
-    if (!item || item.bonus) return;
-    total += VALOR_ACUMULADO_POR_NUMERO;
+    if (item && item.bonus !== true) {
+      total += VALOR_ACUMULADO_POR_NUMERO;
+    }
   });
 
   document.getElementById("resTopo").textContent =
     "Acumulado: " + dinheiro(total);
 }
 
-/* =========================================
-   CONTADOR
-========================================= */
-
 function atualizarContador() {
   document.getElementById("qtdSelecionados").textContent =
     "Marcados: " + selecionados.length;
 }
 
-/* =========================================
-   MENU DE RESERVAS
-========================================= */
+/* ========================================
+   MINHAS RESERVAS
+   MOSTRA NOME, PIX E STATUS
+======================================== */
 
-function atualizarMenu() {
-  const agrupado = {};
+function atualizarMinhasReservas() {
+  const lista = document.getElementById("listaMinhasReservas");
 
-  Object.keys(numerosCache).sort().forEach(function(num) {
-    const item = numerosCache[num];
-    if (!item) return;
-
-    const pessoa = item.nome || "Sem nome";
-
-    if (!agrupado[pessoa]) agrupado[pessoa] = [];
-    agrupado[pessoa].push({
-      numero:num,
-      bonus:!!item.bonus
-    });
-  });
-
-  const lista = document.getElementById("listaReservas");
+  mostrarDadosParticipante();
   lista.innerHTML = "";
 
-  const pessoas = Object.keys(agrupado).sort();
+  const numeros = Object.keys(numerosCache)
+    .filter(function(numero) {
+      const item = numerosCache[numero];
+
+      return item &&
+        item.nome === nome &&
+        item.bonus !== true;
+    })
+    .sort((a,b) => Number(a) - Number(b));
+
+  if (!nome) {
+    lista.textContent = "Cadastre seu nome para ver suas reservas.";
+    return;
+  }
+
+  if (!numeros.length) {
+    lista.textContent = "Você ainda não possui números reservados.";
+    return;
+  }
+
+  const grupo = criarElemento("div", "reservaPessoa");
+
+  numeros.forEach(function(numero) {
+    const item = numerosCache[numero];
+    const linha = criarElemento("div", "reservaNumero");
+
+    const dados = document.createElement("div");
+    dados.style.flex = "1";
+    dados.style.minWidth = "130px";
+
+    const numeroEl = criarElemento("strong", "", "Número " + numero);
+    dados.appendChild(numeroEl);
+
+    const nomeEl = criarElemento("div", "", "Nome: " + (item.nome || nome));
+    nomeEl.style.fontSize = "12px";
+    nomeEl.style.marginTop = "5px";
+    dados.appendChild(nomeEl);
+
+    const pixEl = criarElemento(
+      "div",
+      "",
+      "Pix: " + (item.pix || pixParticipante || "Não informado")
+    );
+    pixEl.style.fontSize = "11px";
+    pixEl.style.color = "#ccc";
+    pixEl.style.marginTop = "4px";
+    pixEl.style.overflowWrap = "anywhere";
+    dados.appendChild(pixEl);
+
+    const status = document.createElement("span");
+
+    if (item.pago === true) {
+      status.className = "statusPago";
+      status.textContent = "✅ PAGO";
+    } else {
+      status.className = "statusPendente";
+      status.textContent = "⏳ PENDENTE";
+    }
+
+    linha.appendChild(dados);
+    linha.appendChild(status);
+    grupo.appendChild(linha);
+  });
+
+  lista.appendChild(grupo);
+}
+
+/* ========================================
+   MENU HAMBÚRGUER ORIGINAL
+======================================== */
+
+function toggleMenu() {
+  document.getElementById("menuLateral").classList.toggle("ativo");
+}
+
+document.addEventListener("click", function(evento) {
+  const menu = document.getElementById("menuLateral");
+  const botao = document.getElementById("menuBtn");
+
+  if (
+    !menu.contains(evento.target) &&
+    !botao.contains(evento.target)
+  ) {
+    menu.classList.remove("ativo");
+  }
+});
+
+function atualizarMenu() {
+  const lista = document.getElementById("listaReservas");
+  const grupos = {};
+
+  lista.innerHTML = "";
+
+  Object.keys(numerosCache)
+    .sort((a,b) => Number(a) - Number(b))
+    .forEach(function(numero) {
+      const item = numerosCache[numero];
+      if (!item) return;
+
+      const participante = item.nome || "Sem nome";
+
+      if (!grupos[participante]) {
+        grupos[participante] = {
+          pix: item.pix || "",
+          numeros: []
+        };
+      }
+
+      if (!grupos[participante].pix && item.pix) {
+        grupos[participante].pix = item.pix;
+      }
+
+      grupos[participante].numeros.push({
+        numero: numero,
+        pago: item.pago === true,
+        bonus: item.bonus === true
+      });
+    });
+
+  const pessoas = Object.keys(grupos).sort((a,b) =>
+    a.localeCompare(b, "pt-BR")
+  );
 
   if (!pessoas.length) {
     lista.textContent = "Ainda não há reservas.";
@@ -652,60 +954,56 @@ function atualizarMenu() {
   }
 
   pessoas.forEach(function(pessoa) {
-    const divNome = document.createElement("div");
-    divNome.className = "linha-nome";
-    divNome.textContent = pessoa;
-
-    const divNum = document.createElement("div");
-    divNum.className = "linha-numeros";
-
-    agrupado[pessoa].sort((a,b) =>
-      a.numero.localeCompare(b.numero)
+    const titulo = criarElemento("div", "linhaNome", pessoa);
+    const pix = criarElemento(
+      "div",
+      "linhaPix",
+      "Pix: " + (grupos[pessoa].pix || "Não informado")
     );
+    const numerosEl = criarElemento("div", "linhaNumeros");
 
-    agrupado[pessoa].forEach(function(item, indice) {
-      if (indice) divNum.appendChild(document.createTextNode(", "));
-
-      const span = document.createElement("span");
-      span.textContent = (item.bonus ? "🎁 " : "") + item.numero;
-
-      if (item.bonus) {
-        span.style.color = "gold";
-        span.style.fontWeight = "bold";
+    grupos[pessoa].numeros.forEach(function(item, indice) {
+      if (indice > 0) {
+        numerosEl.appendChild(document.createTextNode(", "));
       }
 
-      divNum.appendChild(span);
+      const numeroEl = document.createElement("span");
+
+      numeroEl.textContent =
+        (item.bonus ? "🎁 " : "") +
+        item.numero +
+        (item.bonus ? "" : item.pago ? " (PAGO)" : " (PENDENTE)");
+
+      if (item.bonus) {
+        numeroEl.style.color = "#ffd700";
+      } else if (item.pago) {
+        numeroEl.style.color = "#00ff88";
+      } else {
+        numeroEl.style.color = "#ffb020";
+      }
+
+      numerosEl.appendChild(numeroEl);
     });
 
-    const divisor = document.createElement("div");
-    divisor.className = "divisor";
-
-    lista.appendChild(divNome);
-    lista.appendChild(divNum);
-    lista.appendChild(divisor);
+    lista.appendChild(titulo);
+    lista.appendChild(pix);
+    lista.appendChild(numerosEl);
+    lista.appendChild(criarElemento("div", "divisor"));
   });
 }
 
-function toggleMenu() {
-  document.getElementById("menuLateral").classList.toggle("ativo");
-}
-
-document.addEventListener("click", function(e) {
-  const menu = document.getElementById("menuLateral");
-  const btn = document.getElementById("menuBtn");
-
-  if (!menu.contains(e.target) && !btn.contains(e.target)) {
-    menu.classList.remove("ativo");
-  }
-});
-
-/* =========================================
+/* ========================================
    RESUMO DA APOSTA
-========================================= */
+======================================== */
 
 function abrirResumo() {
   if (!dadosCarregados) {
-    alert("Aguarde o carregamento da rifa.");
+    alert("Aguarde o carregamento dos números.");
+    return;
+  }
+
+  if (!nome || !pixParticipante) {
+    abrirCadastro();
     return;
   }
 
@@ -715,27 +1013,26 @@ function abrirResumo() {
   }
 
   if (!selecionados.length) {
-    alert("Selecione pelo menos um número!");
+    alert("Selecione pelo menos um número.");
     return;
   }
 
-  const novosBrindes =
-    calcularBrindes(meusNumeros.length + selecionados.length) -
-    calcularBrindes(meusNumeros.length);
-
-  const total = selecionados.length * VALOR_NUMERO;
+  const totalAntes = meusNumeros.length;
+  const totalDepois = totalAntes + selecionados.length;
+  const brindesPrevistos =
+    calcularBrindes(totalDepois) - calcularBrindes(totalAntes);
 
   document.getElementById("resNome").textContent =
-    "Nome: " + nome;
+    "Participante: " + nome + " | Pix: " + pixParticipante;
 
   document.getElementById("resNumeros").textContent =
     "Números: " + selecionados.slice().sort().join(", ") +
-    (novosBrindes > 0
-      ? " | Brindes previstos: " + novosBrindes
+    (brindesPrevistos > 0
+      ? " | Brindes previstos: " + brindesPrevistos
       : "");
 
   document.getElementById("resValor").textContent =
-    "Total: " + dinheiro(total);
+    "Total: " + dinheiro(selecionados.length * VALOR_NUMERO);
 
   document.getElementById("modalResumo").style.display = "flex";
 }
@@ -745,22 +1042,17 @@ function fecharModal() {
   document.getElementById("modalResumo").style.display = "none";
 }
 
-/* =========================================
-   PIX BR CODE
-========================================= */
+/* ========================================
+   GERADOR PIX ORIGINAL
+======================================== */
 
 function removerAcentos(texto) {
-  return String(texto)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+  return String(texto).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 function campoPix(id, valor) {
   valor = String(valor);
-
-  return id +
-    String(valor.length).padStart(2, "0") +
-    valor;
+  return id + String(valor.length).padStart(2, "0") + valor;
 }
 
 function crc16(texto) {
@@ -770,11 +1062,9 @@ function crc16(texto) {
     crc ^= texto.charCodeAt(i) << 8;
 
     for (let j = 0; j < 8; j++) {
-      if (crc & 0x8000) {
-        crc = (crc << 1) ^ 0x1021;
-      } else {
-        crc <<= 1;
-      }
+      crc = (crc & 0x8000)
+        ? (crc << 1) ^ 0x1021
+        : crc << 1;
 
       crc &= 0xFFFF;
     }
@@ -790,13 +1080,13 @@ function criarPix(valor) {
 
   const nomeRecebedor = removerAcentos(PIX_NOME)
     .replace(/[^A-Za-z0-9 ]/g, "")
-    .substring(0, 25)
+    .substring(0,25)
     .trim()
     .toUpperCase();
 
   const cidade = removerAcentos(PIX_CIDADE)
     .replace(/[^A-Za-z0-9 ]/g, "")
-    .substring(0, 15)
+    .substring(0,15)
     .trim()
     .toUpperCase();
 
@@ -804,7 +1094,7 @@ function criarPix(valor) {
     campoPix("00", "BR.GOV.BCB.PIX") +
     campoPix("01", PIX_CHAVE);
 
-  let payload =
+  const payload =
     campoPix("00", "01") +
     campoPix("01", "11") +
     campoPix("26", contaPix) +
@@ -820,13 +1110,9 @@ function criarPix(valor) {
   return payload + crc16(payload);
 }
 
-/* =========================================
-   ABRIR QR CODE
-========================================= */
-
 function abrirPixComValor(valor) {
   if (typeof QRCode === "undefined") {
-    alert("A biblioteca do QR Code não carregou. Verifique a conexão.");
+    alert("O QR Code não carregou. Verifique sua conexão.");
     return;
   }
 
@@ -834,8 +1120,8 @@ function abrirPixComValor(valor) {
 
   try {
     codigo = criarPix(valor);
-  } catch (e) {
-    alert("Erro ao gerar Pix: " + e.message);
+  } catch (erro) {
+    alert("Erro ao gerar Pix: " + erro.message);
     return;
   }
 
@@ -848,12 +1134,12 @@ function abrirPixComValor(valor) {
   document.getElementById("modalPix").style.display = "flex";
 
   new QRCode(qr, {
-    text:codigo,
-    width:220,
-    height:220,
-    colorDark:"#000000",
-    colorLight:"#ffffff",
-    correctLevel:QRCode.CorrectLevel.M
+    text: codigo,
+    width: 220,
+    height: 220,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M
   });
 }
 
@@ -868,37 +1154,41 @@ async function copiarPix() {
       campo.select();
 
       if (!document.execCommand("copy")) {
-        throw new Error("Cópia não autorizada.");
+        throw new Error("Não foi possível copiar");
       }
     }
 
     alert("Pix Copia e Cola copiado!");
-  } catch (e) {
+  } catch (erro) {
     campo.focus();
     campo.select();
-    alert("Selecione o código e copie manualmente.");
+    alert("Não foi possível copiar automaticamente. Selecione o código e copie.");
   }
 }
-
 
 function fecharPix() {
   document.getElementById("modalPix").style.display = "none";
 }
 
-/* =========================================
-   RESERVAR NÚMERO COM TRANSAÇÃO FIREBASE
-========================================= */
+/* ========================================
+   RESERVAR NÚMERO COM TRANSAÇÃO
+   SALVA NOME E PIX DO PARTICIPANTE
+======================================== */
 
-async function reservarNumero(num) {
-  const ref = db.ref("rifa/numeros/" + num);
+async function reservarNumero(numero) {
+  const referencia = db.ref(CAMINHO_NUMEROS + "/" + numero);
 
   const dados = {
-    nome:nome,
-    valor:VALOR_NUMERO,
-    data:new Date().toISOString()
+    nome: nome,
+    pix: pixParticipante,
+    participanteId: participanteId,
+    valor: VALOR_NUMERO,
+    pago: false,
+    bonus: false,
+    data: new Date().toISOString()
   };
 
-  const resultado = await ref.transaction(function(atual) {
+  const resultado = await referencia.transaction(function(atual) {
     if (atual !== null) return;
     return dados;
   });
@@ -906,9 +1196,9 @@ async function reservarNumero(num) {
   return resultado.committed;
 }
 
-/* =========================================
-   RESERVAR BRINDE
-========================================= */
+/* ========================================
+   BRINDES ORIGINAIS
+======================================== */
 
 async function reservarBrinde() {
   for (let tentativa = 0; tentativa < 1000; tentativa++) {
@@ -916,37 +1206,38 @@ async function reservarBrinde() {
       Math.floor(Math.random() * 1000)
     ).padStart(3, "0");
 
-    const ref = db.ref("rifa/numeros/" + numero);
+    const referencia = db.ref(CAMINHO_NUMEROS + "/" + numero);
 
-    const resultado = await ref.transaction(function(atual) {
+    const resultado = await referencia.transaction(function(atual) {
       if (atual !== null) return;
 
       return {
-        nome:nome,
-        valor:0,
-        bonus:true,
-        tipo:"brinde",
-        data:new Date().toISOString()
+        nome: nome,
+        pix: pixParticipante,
+        participanteId: participanteId,
+        valor: 0,
+        pago: false,
+        bonus: true,
+        tipo: "brinde",
+        data: new Date().toISOString()
       };
     });
 
-    if (resultado.committed) {
-      return numero;
-    }
+    if (resultado.committed) return numero;
   }
 
   throw new Error("Não foi possível encontrar um número para o brinde.");
 }
 
-/* =========================================
-   CONFIRMAR APOSTA E GERAR PIX
-========================================= */
+/* ========================================
+   CONFIRMAR RESERVA E GERAR PIX
+======================================== */
 
 async function confirmar() {
   if (processando) return;
 
-  if (!nome || !nome.trim()) {
-    alert("Nome obrigatório.");
+  if (!nome || !pixParticipante) {
+    abrirCadastro();
     return;
   }
 
@@ -956,7 +1247,7 @@ async function confirmar() {
   }
 
   if (!dadosCarregados) {
-    alert("Aguarde os números carregarem.");
+    alert("Aguarde o carregamento dos números.");
     return;
   }
 
@@ -968,117 +1259,93 @@ async function confirmar() {
 
   const tentativa = [...new Set(selecionados)];
   const reservados = [];
-  const recusados = [];
+  const indisponiveis = [];
 
   try {
-    /*
-      Espera cada transação terminar.
-      Só os números realmente reservados serão cobrados.
-    */
     const resultados = await Promise.all(
-      tentativa.map(async function(num) {
+      tentativa.map(async function(numero) {
         try {
-          const ok = await reservarNumero(num);
-          return { numero:num, ok:ok };
-        } catch (e) {
-          console.error("Falha ao reservar " + num, e);
-          return { numero:num, ok:false, erro:true };
+          const sucesso = await reservarNumero(numero);
+          return { numero: numero, sucesso: sucesso };
+        } catch (erro) {
+          console.error("Erro ao reservar número:", numero, erro);
+          return { numero: numero, sucesso: false };
         }
       })
     );
 
-    resultados.forEach(function(r) {
-      if (r.ok) {
-        reservados.push(r.numero);
+    resultados.forEach(function(resultado) {
+      if (resultado.sucesso) {
+        reservados.push(resultado.numero);
       } else {
-        recusados.push(r.numero);
+        indisponiveis.push(resultado.numero);
       }
     });
 
     if (!reservados.length) {
-      selecionados = [];
-      atualizarContador();
-      document.getElementById("modalResumo").style.display = "none";
-
-      alert(
-        "Nenhum número foi reservado. " +
-        "Os números selecionados podem ter sido ocupados por outra pessoa."
-      );
-
+      alert("Nenhum número foi reservado. Os números selecionados podem estar ocupados.");
       return;
     }
 
-    /*
-      Calcula os brindes a partir dos números pagos
-      efetivamente reservados nesta operação.
-    */
     const totalAntes = meusNumeros.length;
     const totalDepois = totalAntes + reservados.length;
 
-    const brindesAntes = calcularBrindes(totalAntes);
-    const brindesDepois = calcularBrindes(totalDepois);
+    const brindesNovos =
+      calcularBrindes(totalDepois) - calcularBrindes(totalAntes);
 
-    const novosBrindes = brindesDepois - brindesAntes;
-
-    for (let i = 0; i < novosBrindes; i++) {
+    for (let i = 0; i < brindesNovos; i++) {
       await reservarBrinde();
     }
 
     selecionados = [];
-    atualizarContador();
 
     document.getElementById("modalResumo").style.display = "none";
+    atualizarContador();
 
-    if (recusados.length) {
+    if (indisponiveis.length) {
       alert(
-        "Alguns números já estavam ocupados e não foram cobrados: " +
-        recusados.join(", ") +
-        ". O Pix será gerado apenas para os números reservados."
+        "Estes números já estavam ocupados e não foram reservados: " +
+        indisponiveis.join(", ")
       );
     }
 
-    /*
-      O total considera somente números pagos reservados.
-      Brindes têm valor zero.
-    */
-    const totalPix = reservados.length * VALOR_NUMERO;
+    abrirPixComValor(reservados.length * VALOR_NUMERO);
 
-    abrirPixComValor(totalPix);
-
-  } catch (e) {
-    console.error(e);
+  } catch (erro) {
+    console.error("Erro durante a reserva:", erro);
 
     alert(
-      "Ocorreu um erro ao concluir a reserva. " +
-      "Confira a lista de números no Firebase antes de tentar novamente."
+      "Ocorreu um erro durante a reserva. Verifique seus números antes de tentar novamente."
     );
+
   } finally {
     processando = false;
+
     botao.disabled = false;
     botao.textContent = "RESERVAR E GERAR PIX";
 
     atualizarGrid();
     atualizarAcumulado();
+    atualizarContador();
     atualizarMenu();
+    atualizarMinhasReservas();
   }
 }
 
-/* =========================================
+/* ========================================
    DATA DO SORTEIO
-   SÁBADO ÀS 19H
-========================================= */
+======================================== */
 
-function atualizarDataSabado() {
+function atualizarDataSorteio() {
   const agora = new Date();
   const proximo = new Date(agora);
-  const dia = agora.getDay();
 
-  let dias = (6 - dia + 7) % 7;
+  let dias = (6 - agora.getDay() + 7) % 7;
 
-  const horario = new Date(agora);
-  horario.setHours(19, 0, 0, 0);
+  const horarioHoje = new Date(agora);
+  horarioHoje.setHours(19, 0, 0, 0);
 
-  if (dias === 0 && agora >= horario) {
+  if (dias === 0 && agora >= horarioHoje) {
     dias = 7;
   }
 
@@ -1086,17 +1353,22 @@ function atualizarDataSabado() {
   proximo.setHours(19, 0, 0, 0);
 
   const data = proximo.toLocaleDateString("pt-BR", {
-    day:"2-digit",
-    month:"2-digit",
-    year:"numeric"
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
   });
 
   document.getElementById("dataSorteio").textContent =
-    "Sorteio: Sábado " + data + " às 19:00";
+    "Sorteio: " + data + " às 19:00";
 }
 
-atualizarDataSabado();
-setInterval(atualizarDataSabado, 60000);
+/* ========================================
+   INICIALIZAÇÃO
+======================================== */
+
+carregarCadastroLocal();
+atualizarDataSorteio();
+setInterval(atualizarDataSorteio, 60000);
 </script>
 
 </body>
