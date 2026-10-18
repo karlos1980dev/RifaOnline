@@ -1369,11 +1369,7 @@ function atualizarDataSorteio() {
 /* ========================================
    INICIALIZAÇÃO
 ======================================== */
-function limpar(){
-    localStorage.clear()
-    console.log("limpo")
-}
-limpar()
+
 carregarCadastroLocal();
 atualizarDataSorteio();
 setInterval(atualizarDataSorteio, 60000);
