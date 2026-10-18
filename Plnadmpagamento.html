@@ -1,0 +1,638 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101010">
+<title>Administração - Rifa Online</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<style>
+:root {
+  --bg:#101010;
+  --card:#1d1d1d;
+  --green:#16a34a;
+  --pink:#ff00dc;
+  --red:#dc2626;
+  --yellow:#facc15;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:#fff;
+  font-family:Arial,sans-serif
+}
+header{
+  background:#080808;border-bottom:2px solid var(--green);
+  padding:18px 14px;text-align:center
+}
+header h1{margin:0;color:#22c55e;font-size:22px}
+.container{max-width:900px;margin:auto;padding:14px}
+.card{
+  background:var(--card);border:1px solid #383838;
+  border-radius:12px;padding:14px;margin:14px 0
+}
+h2{font-size:19px}
+input,button{
+  font:inherit;width:100%;padding:12px;border-radius:8px
+}
+input{
+  margin:6px 0;background:#111;color:#fff;
+  border:1px solid #444
+}
+button{border:0;font-weight:bold;cursor:pointer;margin-top:7px}
+button:disabled{opacity:.7;cursor:not-allowed}
+.btn-green{background:var(--green);color:#fff}
+.btn-gray{background:#333;color:#fff}
+.btn-red{background:#721c1c;color:#fff}
+.btn-yellow{background:#4b3b0b;color:#ffe082}
+.status{
+  margin:10px 0;padding:12px;border-radius:8px;
+  background:#252525;overflow-wrap:anywhere
+}
+.grupo-admin{
+  background:#191919;border:1px solid #444;
+  padding:14px;border-radius:12px;margin:14px 0
+}
+.grupo-titulo{
+  color:#4ade80;font-size:20px;font-weight:900;
+  overflow-wrap:anywhere
+}
+.total-grupo{color:#ccc;font-size:13px;line-height:1.8;margin-top:7px}
+.btn-pagamento{
+  background:var(--green);color:#fff;
+  padding:14px;font-weight:900
+}
+.btn-pendente-todos{
+  background:#4b3b0b;color:#ffe082
+}
+.numeros-admin{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;margin-top:12px
+}
+.numero-admin-item{
+  background:#292929;border:1px solid #444;
+  padding:10px;border-radius:8px;min-width:0
+}
+.numero-admin-valor{font-size:20px;font-weight:900}
+.status-pagamento{display:block;font-size:12px;font-weight:bold;margin:8px 0}
+.pagamento-confirmado{color:#4ade80}
+.pagamento-pendente{color:#fbbf24}
+.btn-item{font-size:12px;padding:9px}
+.btn-item-pagamento{background:#444;color:#fff}
+.btn-item-excluir{background:#6b1717;color:#fff}
+.pequeno{font-size:12px;color:#aaa;line-height:1.6}
+.pix-box{
+  margin-top:12px;padding:12px;background:#111;
+  border:1px solid #444;border-radius:8px
+}
+.pix-titulo{font-size:13px;color:#aaa;margin-bottom:7px}
+.pix-valor{
+  color:#fff;font-weight:bold;overflow-wrap:anywhere;
+  word-break:break-word;line-height:1.5
+}
+.pix-ausente{color:#fbbf24}
+.btn-copiar-pix{background:#2563eb;color:#fff}
+@media(min-width:600px){
+  .numeros-admin{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚙️ PAINEL ADMINISTRATIVO</h1>
+  <div class="pequeno">Rifa Online · Gestão de reservas</div>
+</header>
+
+<main class="container">
+  <div id="status" class="status">Conectando ao Firebase...</div>
+
+  <div class="card">
+    <h2>📊 Resumo</h2>
+    <p>Números reservados: <strong id="quantidade">0</strong></p>
+    <p>Pagamentos confirmados: <strong id="pagos">0</strong></p>
+    <p>Pagamentos pendentes: <strong id="pendentes">0</strong></p>
+    <p>Total reservado: <strong id="total">R$ 0,00</strong></p>
+  </div>
+
+  <div class="card">
+    <h2>➕ Adicionar número manualmente</h2>
+    <input id="numeroManual" type="number" min="0" max="999"
+      placeholder="Número de 000 a 999">
+    <input id="nomeManual" type="text" placeholder="Nome do participante">
+    <input id="pixManual" type="text" placeholder="Chave Pix do participante (opcional)">
+    <button class="btn-green" onclick="adicionarNumeroManual()">
+      ADICIONAR NÚMERO
+    </button>
+  </div>
+
+  <div class="card">
+    <h2>👥 Reservas por participante</h2>
+    <input id="pesquisa" type="search"
+      placeholder="Pesquisar participante, Pix ou número..."
+      oninput="renderizarAdmin()">
+    <button class="btn-gray" onclick="carregarNovamente()">
+      ATUALIZAR PAINEL
+    </button>
+    <div id="listaAdmin">Carregando reservas...</div>
+  </div>
+</main>
+
+<script>
+/* FIREBASE - MESMO PROJETO DA INDEX */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCIDFHMzgkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain: "rifa-782a3.firebaseapp.com",
+  databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId: "rifa-782a3",
+  storageBucket: "rifa-782a3.firebasestorage.app",
+  messagingSenderId: "88068598855",
+  appId: "1:88068598855:web:a230a06db76a4bbc125562"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+const caminhoNumeros = db.ref("rifa/numeros");
+
+const VALOR_NUMERO = 5;
+let dadosAtuais = {};
+let ocupado = false;
+
+function moeda(valor){
+  return Number(valor || 0).toLocaleString("pt-BR",{
+    style:"currency",currency:"BRL"
+  });
+}
+
+function numeroFormatado(numero){
+  return String(numero).padStart(3,"0");
+}
+
+function avisar(texto, erro=false){
+  const el = document.getElementById("status");
+  el.textContent = texto;
+  el.style.color = erro ? "#fca5a5" : "#86efac";
+}
+
+function ehBonus(registro){
+  return registro && registro.bonus === true;
+}
+
+function obterPix(registro){
+  if(!registro) return "";
+  return String(
+    registro.pix ||
+    registro.pixParticipante ||
+    registro.chavePix ||
+    ""
+  ).trim();
+}
+
+caminhoNumeros.on("value", snapshot => {
+  dadosAtuais = snapshot.val() || {};
+  avisar("Firebase conectado. Dados atualizados em tempo real.");
+  atualizarResumo();
+  renderizarAdmin();
+}, erro => {
+  avisar("Erro ao ler Firebase: " + erro.message, true);
+});
+
+/* RESUMO */
+
+function atualizarResumo(){
+  const registros = Object.entries(dadosAtuais)
+    .filter(([n,r]) => r && !ehBonus(r));
+
+  const pagos = registros.filter(([n,r]) => r.pago === true).length;
+  const pendentes = registros.length - pagos;
+
+  const total = registros.reduce(
+    (s,[n,r]) => s + Number(r.valor ?? VALOR_NUMERO), 0
+  );
+
+  document.getElementById("quantidade").textContent = registros.length;
+  document.getElementById("pagos").textContent = pagos;
+  document.getElementById("pendentes").textContent = pendentes;
+  document.getElementById("total").textContent = moeda(total);
+}
+
+/* AGRUPAR PARTICIPANTES */
+
+function agruparParticipantes(){
+  const grupos = {};
+
+  Object.entries(dadosAtuais).forEach(([numero,registro]) => {
+    if(!registro || !String(registro.nome || "").trim()) return;
+
+    const nome = String(registro.nome).trim();
+
+    if(!grupos[nome]){
+      grupos[nome] = {
+        nome,
+        pix:"",
+        numeros:[],
+        pagos:0,
+        pendentes:0,
+        total:0
+      };
+    }
+
+    const pix = obterPix(registro);
+    if(pix && !grupos[nome].pix){
+      grupos[nome].pix = pix;
+    }
+
+    grupos[nome].numeros.push({numero,registro});
+
+    if(!ehBonus(registro)){
+      grupos[nome].total += Number(registro.valor ?? VALOR_NUMERO);
+
+      if(registro.pago === true){
+        grupos[nome].pagos++;
+      }else{
+        grupos[nome].pendentes++;
+      }
+    }
+  });
+
+  return Object.values(grupos)
+    .map(g => {
+      g.numeros.sort((a,b) => Number(a.numero)-Number(b.numero));
+      return g;
+    })
+    .sort((a,b) => a.nome.localeCompare(b.nome,"pt-BR"));
+}
+
+/* COPIAR PIX */
+
+async function copiarPix(chave){
+  if(!chave){
+    avisar("Este participante não informou uma chave Pix.",true);
+    return;
+  }
+
+  try{
+    await navigator.clipboard.writeText(chave);
+    avisar("Chave Pix copiada!");
+  }catch(erro){
+    try{
+      const campo = document.createElement("textarea");
+      campo.value = chave;
+      campo.style.position = "fixed";
+      campo.style.opacity = "0";
+      document.body.appendChild(campo);
+      campo.select();
+
+      const copiou = document.execCommand("copy");
+      campo.remove();
+
+      if(copiou){
+        avisar("Chave Pix copiada!");
+      }else{
+        avisar("Não foi possível copiar. Copie a chave manualmente.",true);
+      }
+    }catch(e){
+      avisar("Não foi possível copiar a chave Pix.",true);
+    }
+  }
+}
+
+/* RENDERIZAR PAINEL */
+
+function renderizarAdmin(){
+  const caixa = document.getElementById("listaAdmin");
+  const filtro = document.getElementById("pesquisa").value.trim().toLowerCase();
+
+  caixa.innerHTML = "";
+
+  const grupos = agruparParticipantes().filter(g => {
+    if(!filtro) return true;
+
+    return g.nome.toLowerCase().includes(filtro) ||
+      g.pix.toLowerCase().includes(filtro) ||
+      g.numeros.some(n => numeroFormatado(n.numero).includes(filtro));
+  });
+
+  if(!grupos.length){
+    caixa.textContent = "Nenhuma reserva encontrada.";
+    return;
+  }
+
+  grupos.forEach(grupo => {
+    const card = document.createElement("div");
+    card.className = "grupo-admin";
+
+    const titulo = document.createElement("div");
+    titulo.className = "grupo-titulo";
+    titulo.textContent = grupo.nome;
+    card.appendChild(titulo);
+
+    /* CHAVE PIX DO PARTICIPANTE */
+
+    const areaPix = document.createElement("div");
+    areaPix.className = "pix-box";
+
+    const tituloPix = document.createElement("div");
+    tituloPix.className = "pix-titulo";
+    tituloPix.textContent = "🔑 CHAVE PIX DO PARTICIPANTE";
+
+    const valorPix = document.createElement("div");
+    valorPix.className = "pix-valor";
+
+    if(grupo.pix){
+      valorPix.textContent = grupo.pix;
+
+      const botaoCopiar = document.createElement("button");
+      botaoCopiar.className = "btn-copiar-pix";
+      botaoCopiar.textContent = "📋 COPIAR PIX";
+      botaoCopiar.onclick = () => copiarPix(grupo.pix);
+
+      areaPix.append(tituloPix,valorPix,botaoCopiar);
+    }else{
+      valorPix.className += " pix-ausente";
+      valorPix.textContent = "Pix não informado nesta reserva.";
+      areaPix.append(tituloPix,valorPix);
+    }
+
+    card.appendChild(areaPix);
+
+    const resumo = document.createElement("div");
+    resumo.className = "total-grupo";
+    resumo.textContent =
+      "Números: " + grupo.numeros.length +
+      " | Pagos: " + grupo.pagos +
+      " | Pendentes: " + grupo.pendentes +
+      " | Total: " + moeda(grupo.total);
+
+    card.appendChild(resumo);
+
+    const confirmar = document.createElement("button");
+    confirmar.className = "btn-pagamento";
+
+    if(grupo.pendentes > 0){
+      confirmar.textContent = "✓ CONFIRMAR PAGAMENTO";
+      confirmar.onclick = () => alterarPagamentoCard(grupo.nome,true);
+    }else{
+      confirmar.textContent = "✓ TODOS OS NÚMEROS ESTÃO PAGOS";
+      confirmar.disabled = true;
+      confirmar.style.background = "#166534";
+    }
+
+    card.appendChild(confirmar);
+
+    if(grupo.pagos > 0){
+      const pendente = document.createElement("button");
+      pendente.className = "btn-pendente-todos";
+      pendente.textContent = "VOLTAR TODOS PARA PENDENTE";
+      pendente.onclick = () => alterarPagamentoCard(grupo.nome,false);
+      card.appendChild(pendente);
+    }
+
+    const lista = document.createElement("div");
+    lista.className = "numeros-admin";
+
+    grupo.numeros.forEach(({numero,registro}) => {
+      const item = document.createElement("div");
+      item.className = "numero-admin-item";
+
+      const num = document.createElement("div");
+      num.className = "numero-admin-valor";
+      num.textContent = numeroFormatado(numero);
+
+      const status = document.createElement("span");
+      status.className = "status-pagamento " +
+        (registro.pago === true
+          ? "pagamento-confirmado"
+          : "pagamento-pendente");
+      status.textContent = registro.pago === true
+        ? "✓ PAGO"
+        : "● PENDENTE";
+
+      const individual = document.createElement("button");
+      individual.className = "btn-item btn-item-pagamento";
+      individual.textContent = registro.pago === true
+        ? "MARCAR PENDENTE"
+        : "CONFIRMAR ESTE NÚMERO";
+      individual.onclick = () =>
+        alterarPagamentoIndividual(numero,registro.pago === true);
+
+      const excluir = document.createElement("button");
+      excluir.className = "btn-item btn-item-excluir";
+      excluir.textContent = "EXCLUIR NÚMERO";
+      excluir.onclick = () => excluirNumero(numero);
+
+      item.append(num,status,individual,excluir);
+      lista.appendChild(item);
+    });
+
+    card.appendChild(lista);
+    caixa.appendChild(card);
+  });
+}
+
+/* CONFIRMAR TODOS OS NÚMEROS DO PARTICIPANTE */
+
+async function alterarPagamentoCard(nome, confirmarPagamento){
+  if(ocupado){
+    avisar("Aguarde a operação atual terminar.",true);
+    return;
+  }
+
+  const alvos = Object.entries(dadosAtuais).filter(([numero,r]) =>
+    r &&
+    String(r.nome || "").trim() === nome &&
+    !ehBonus(r) &&
+    (r.pago === true) !== confirmarPagamento
+  );
+
+  if(!alvos.length){
+    avisar(confirmarPagamento
+      ? "Todos já estão pagos."
+      : "Não há pagamentos confirmados.");
+    return;
+  }
+
+  if(!confirm(
+    "Participante: " + nome + "\n" +
+    "Quantidade de números: " + alvos.length + "\n\n" +
+    (confirmarPagamento
+      ? "Confirmar pagamento de todos?"
+      : "Voltar todos para pendente?")
+  )) return;
+
+  ocupado = true;
+
+  try{
+    const atualizacoes = {};
+    const data = new Date().toISOString();
+
+    alvos.forEach(([numero]) => {
+      atualizacoes[numero + "/pago"] = confirmarPagamento;
+      atualizacoes[numero + "/dataAtualizacaoPagamento"] = data;
+    });
+
+    await caminhoNumeros.update(atualizacoes);
+
+    avisar(confirmarPagamento
+      ? "Pagamento confirmado para " + nome + "."
+      : "Pagamentos de " + nome + " voltaram para pendente.");
+  }catch(erro){
+    avisar("Erro ao atualizar: " + erro.message,true);
+  }finally{
+    ocupado = false;
+  }
+}
+
+/* PAGAMENTO INDIVIDUAL */
+
+async function alterarPagamentoIndividual(numero,jaPago){
+  if(!confirm(
+    (jaPago
+      ? "Voltar para pendente o número "
+      : "Confirmar pagamento do número ") +
+    numeroFormatado(numero) + "?"
+  )) return;
+
+  try{
+    const ref = caminhoNumeros.child(numero);
+
+    const resultado = await ref.transaction(registro => {
+      if(!registro) return;
+
+      registro.pago = !jaPago;
+      registro.dataAtualizacaoPagamento = new Date().toISOString();
+
+      return registro;
+    });
+
+    if(!resultado.committed){
+      avisar("O número não foi atualizado.",true);
+      return;
+    }
+
+    avisar("Pagamento do número " + numeroFormatado(numero) + " atualizado.");
+  }catch(erro){
+    avisar("Erro: " + erro.message,true);
+  }
+}
+
+/* ADICIONAR NÚMERO MANUAL */
+
+async function adicionarNumeroManual(){
+  const campoNumero = document.getElementById("numeroManual");
+  const campoNome = document.getElementById("nomeManual");
+  const campoPix = document.getElementById("pixManual");
+
+  const valor = campoNumero.value.trim();
+  const nome = campoNome.value.trim();
+  const pix = campoPix.value.trim();
+
+  if(valor === "" || !nome){
+    avisar("Informe o número e o nome.",true);
+    return;
+  }
+
+  const n = Number(valor);
+
+  if(!Number.isInteger(n) || n < 0 || n > 999){
+    avisar("O número deve estar entre 000 e 999.",true);
+    return;
+  }
+
+  const numero = numeroFormatado(n);
+
+  try{
+    const registro = {
+      nome,
+      valor:VALOR_NUMERO,
+      pago:false,
+      data:new Date().toISOString()
+    };
+
+    if(pix){
+      registro.pix = pix;
+    }
+
+    const resultado = await caminhoNumeros.child(numero)
+      .transaction(atual => {
+        if(atual !== null) return;
+        return registro;
+      });
+
+    if(!resultado.committed){
+      avisar("O número " + numero + " já está reservado.",true);
+      return;
+    }
+
+    campoNumero.value = "";
+    campoNome.value = "";
+    campoPix.value = "";
+
+    avisar("Número " + numero + " adicionado para " + nome + ".");
+  }catch(erro){
+    avisar("Erro ao adicionar: " + erro.message,true);
+  }
+}
+
+/* EXCLUIR RESERVA */
+
+async function excluirNumero(numero){
+  const registro = dadosAtuais[numero];
+
+  if(!registro){
+    avisar("Reserva não encontrada.",true);
+    return;
+  }
+
+  if(!confirm(
+    "Excluir o número " + numeroFormatado(numero) +
+    " de " + registro.nome + "?"
+  )) return;
+
+  try{
+    const resultado = await caminhoNumeros.child(numero)
+      .transaction(atual => {
+        if(!atual) return;
+
+        if(
+          String(atual.nome || "").trim() !==
+          String(registro.nome || "").trim()
+        ){
+          return;
+        }
+
+        return null;
+      });
+
+    if(!resultado.committed){
+      avisar("Não foi possível excluir. Atualize e tente novamente.",true);
+      return;
+    }
+
+    avisar("Número " + numeroFormatado(numero) + " excluído.");
+  }catch(erro){
+    avisar("Erro ao excluir: " + erro.message,true);
+  }
+}
+
+/* ATUALIZAR PAINEL */
+
+function carregarNovamente(){
+  caminhoNumeros.once("value")
+    .then(snapshot => {
+      dadosAtuais = snapshot.val() || {};
+      atualizarResumo();
+      renderizarAdmin();
+      avisar("Painel atualizado.");
+    })
+    .catch(erro => avisar("Erro: " + erro.message,true));
+}
+</script>
+
+</body>
+</html>
