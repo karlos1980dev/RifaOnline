@@ -1,0 +1,1483 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#000000">
+<title>Rifa Online</title>
+
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/file_00000000c28471fba60c52601e2a4d2c.png">
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  padding:205px 5px 25px;
+  background:#050505;
+  color:#fff;
+  font-family:Arial,sans-serif;
+  text-align:center;
+}
+
+button{
+  border:0;
+  border-radius:8px;
+  padding:10px;
+  font-size:12px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+/* CABEÇALHO FIXO */
+
+
+#topoFixo{
+  position:fixed;
+  z-index:1000;
+  top:0;
+  left:0;
+  width:100%;
+  padding:14px 12px 16px;
+  background:#000;
+  border-bottom:3px solid #00ff88;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+#menuBtn{
+  position:absolute;
+  top:12px;
+  left:12px;
+  width:30px;
+  height:30px;
+  color:#00ff88;
+  font-size:25px;
+  line-height:28px;
+  cursor:pointer;
+}
+
+.topoLinha{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  min-height:38px;
+}
+
+#topoFixo h1{
+  margin:0;
+  padding-left:36px;
+  font-size:clamp(19px,5vw,28px);
+  line-height:1.1;
+  text-align:left;
+  white-space:nowrap;
+}
+
+#resTopo{
+  color:#ffb020;
+  font-size:clamp(12px,3.5vw,17px);
+  font-weight:bold;
+  text-align:right;
+  white-space:nowrap;
+  margin:0;
+}
+
+#dataSorteio{
+  color:#00ff88;
+  font-size:22px;
+  font-weight:bold;
+  text-align:center;
+  margin:0;
+}
+
+.topoIdentificacao{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:12px;
+  align-items:center;
+  width:100%;
+  padding:5px 2px;
+}
+
+.topoCampo{
+  min-width:0;
+  overflow:hidden;
+  text-align:left;
+}
+
+.topoCampo strong{
+  display:block;
+  color:#00ff88;
+  font-size:11px;
+  margin-bottom:4px;
+}
+
+.topoCampo p{
+  margin:0;
+  color:#fff;
+  font-size:12px;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+
+#qtdSelecionados{
+  color:#000;
+  background:#00ff88;
+  font-weight:bold;
+  font-size:15px;
+  text-align:center;
+  padding:9px;
+  border-radius:9px;
+  margin:0;
+}
+
+#topoFixo button{
+  width:100%;
+  background:#00ff88;
+  color:#000;
+  padding:12px 8px;
+  font-size:14px;
+  border-radius:9px;
+}
+
+/* GRADE DE NÚMEROS */
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:4px;
+  width:100%;
+  max-width:700px;
+  margin:10px auto;
+}
+
+.grid button{
+  position:relative;
+  width:100%;
+  min-width:0;
+  height:48px;
+  padding:2px;
+  overflow:hidden;
+}
+
+.grid button strong{
+  display:block;
+  margin-top:14px;
+  font-size:clamp(9px,2.6vw,13px);
+}
+
+.grid button small{
+  position:absolute;
+  top:3px;
+  left:2px;
+  right:2px;
+  font-size:7px;
+  line-height:9px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.grid button small.statusMini{
+  top:auto;
+  bottom:2px;
+  font-size:6px;
+  line-height:8px;
+  font-weight:bold;
+}
+
+.livre{background:#252525;color:#fff}
+.ocupado{background:#ff3030;color:#fff}
+.meu{background:#00ff88;color:#000}
+
+.brinde{
+  background:linear-gradient(135deg,#ffd700,#ffb300)!important;
+  color:#000!important;
+  border:1px solid #fff000;
+  box-shadow:0 0 5px #ffd700;
+}
+
+/* MENU LATERAL */
+
+#menuLateral{
+  position:fixed;
+  z-index:3000;
+  top:0;
+  left:-110%;
+  width:85%;
+  max-width:380px;
+  height:100%;
+  padding:18px;
+  background:#000;
+  border-right:2px solid #00ff88;
+  overflow-y:auto;
+  text-align:left;
+  transition:left .25s;
+}
+
+#menuLateral.ativo{left:0}
+#menuLateral h3{color:#00ff88}
+
+#fecharMenu{
+  float:right;
+  background:#ff3b3b;
+  color:#fff;
+}
+
+.linhaNome{
+  color:#00ff88;
+  font-weight:bold;
+  margin-top:15px;
+  overflow-wrap:anywhere;
+}
+
+.linhaPix{
+  color:#ccc;
+  font-size:11px;
+  margin-top:4px;
+  overflow-wrap:anywhere;
+}
+
+.linhaNumeros{
+  line-height:1.8;
+  overflow-wrap:anywhere;
+}
+
+.divisor{
+  border-bottom:1px solid #444;
+  margin:10px 0;
+}
+
+/* MINHAS RESERVAS */
+
+#minhasReservas{
+  max-width:650px;
+  margin:22px auto;
+  padding:15px;
+  background:#111;
+  border:1px solid #00ff88;
+  border-radius:12px;
+  text-align:left;
+}
+
+#minhasReservas h3{
+  color:#00ff88;
+  text-align:center;
+}
+
+#nomeParticipante{
+  color:#fff;
+  font-weight:bold;
+  text-align:center;
+  overflow-wrap:anywhere;
+}
+
+#pixParticipante{
+  color:#ccc;
+  font-size:12px;
+  text-align:center;
+  overflow-wrap:anywhere;
+  margin:8px 0 14px;
+}
+
+.reservaPessoa{
+  padding:12px;
+  margin:10px 0;
+  background:#202020;
+  border-radius:8px;
+}
+
+.reservaNumero{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  padding:10px 0;
+  border-bottom:1px solid #444;
+}
+
+.reservaNumero:last-child{border-bottom:0}
+
+.statusPago{
+  color:#00ff88;
+  font-size:11px;
+  font-weight:bold;
+}
+
+.statusPendente{
+  color:#ffb020;
+  font-size:11px;
+  font-weight:bold;
+}
+
+.statusBrinde{
+  color:#ffd700;
+  font-size:11px;
+  font-weight:bold;
+}
+
+.btnEditarCadastro{
+  display:block;
+  width:100%;
+  margin:10px 0;
+  background:#292929;
+  color:#00ff88;
+  border:1px solid #00ff88;
+}
+
+/* MODAIS */
+
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:5000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+  background:rgba(0,0,0,.88);
+}
+
+.caixa{
+  width:100%;
+  max-width:390px;
+  max-height:94vh;
+  overflow-y:auto;
+  padding:20px;
+  background:#111;
+  border:2px solid #00ff88;
+  border-radius:15px;
+  color:#fff;
+  text-align:center;
+}
+
+.caixa h3{color:#00ff88}
+
+.caixa label{
+  display:block;
+  margin-top:12px;
+  text-align:left;
+  font-size:12px;
+  color:#ddd;
+}
+
+.caixa input{
+  display:block;
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border:1px solid #444;
+  border-radius:8px;
+  background:#222;
+  color:#fff;
+  outline-color:#00ff88;
+  font-size:14px;
+}
+
+#resNumeros{
+  overflow-wrap:anywhere;
+  line-height:1.7;
+}
+
+#resValor{
+  color:#00ff88;
+  font-size:22px;
+  font-weight:bold;
+}
+
+.btnVerde{
+  width:100%;
+  margin-top:10px;
+  padding:12px;
+  background:#00ff88;
+  color:#000;
+}
+
+.btnVermelho{
+  width:100%;
+  margin-top:8px;
+  padding:12px;
+  background:#ff3b3b;
+  color:#fff;
+}
+
+#valorPix{
+  color:#00ff88;
+  font-size:28px;
+  font-weight:bold;
+}
+
+#qrcode{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  width:max-content;
+  max-width:100%;
+  min-height:20px;
+  padding:12px;
+  margin:15px auto;
+  background:#fff;
+  border-radius:8px;
+}
+
+#qrcode img,#qrcode canvas{
+  max-width:100%;
+  height:auto;
+}
+
+#pixCopiaCola{
+  display:block;
+  width:100%;
+  height:100px;
+  padding:10px;
+  resize:none;
+  border:1px solid #444;
+  border-radius:8px;
+  background:#222;
+  color:#fff;
+  font-size:11px;
+  overflow-wrap:anywhere;
+}
+
+.botoesPix{
+  display:flex;
+  gap:10px;
+  margin-top:15px;
+}
+
+.botoesPix button{
+  flex:1;
+  min-width:0;
+  margin:0;
+}
+
+.aviso{
+  color:#bbb;
+  font-size:12px;
+  line-height:1.6;
+  margin-top:12px;
+}
+
+@media(max-width:380px){
+  body{padding-top:195px}
+
+  #topoFixo{
+    padding:7px 8px 10px;
+    gap:7px;
+  }
+
+  #topoFixo h1{
+    padding-left:35px;
+    font-size:19px;
+  }
+
+  #menuBtn{
+    left:8px;
+    top:10px;
+  }
+
+  #resTopo{font-size:15px}
+
+  .topoIdentificacao{gap:8px}
+
+  .topoCampo p{font-size:10px}
+
+  #dataSorteio{font-size:16px}
+
+  #qtdSelecionados{font-size:14px}
+
+  #topoFixo button{
+    font-size:13px;
+    padding:11px 5px;
+  }
+
+  .grid{gap:2px}
+
+  .grid button{height:44px}
+
+  .grid button strong{margin-top:13px}
+
+  .reservaNumero{gap:5px}
+}
+
+@media(min-width:600px){
+  body{padding-top:200px}
+
+  #topoFixo{
+    padding-left:20px;
+    padding-right:20px;
+  }
+
+  .topoIdentificacao{
+    max-width:700px;
+    align-self:center;
+  }
+}
+
+.acoesTopo{
+  display:flex;
+  align-items:stretch;
+  gap:10px;
+  width:100%;
+  margin-top:5px;
+}
+
+.acoesTopo #qtdSelecionados{
+  flex:0 0 35%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0;
+  padding:12px 5px;
+  font-size:14px;
+  border-radius:9px;
+}
+
+.acoesTopo button{
+  flex:1;
+  width:auto;
+  min-width:0;
+  margin:0;
+  padding:12px 5px;
+  font-size:13px;
+  border-radius:9px;
+}
+
+@media(max-width:350px){
+  .acoesTopo{gap:6px}
+  .acoesTopo #qtdSelecionados{flex-basis:34%;font-size:12px}
+  .acoesTopo button{font-size:11px}
+}
+
+.acoesTopo button{
+  animation:pulsarAposta 1s infinite;
+  box-shadow:0 0 8px #00ff88;
+}
+
+@keyframes pulsarAposta{
+  0%,100%{
+    opacity:1;
+    box-shadow:0 0 8px #00ff88;
+    transform:scale(1);
+  }
+  50%{
+    opacity:.65;
+    box-shadow:0 0 20px #00ff88;
+    transform:scale(1.02);
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<header id="topoFixo">
+
+  <div class="topoLinha">
+    <h1>RIFA <span style="color:#00ff88">ONLINE</span></h1>
+    <p id="resTopo">Acumulado: R$ 3.000,00</p>
+  </div>
+
+  <div id="menuBtn" onclick="toggleMenu()">☰</div>
+
+  <p id="dataSorteio"></p>
+
+  <div class="topoIdentificacao">
+    <div class="topoCampo">
+      <strong>👤 PARTICIPANTE</strong>
+      <p id="nomeTopo"></p>
+    </div>
+
+    <div class="topoCampo">
+      <strong>🔑 CHAVE PIX</strong>
+      <p id="pixTopo"></p>
+    </div>
+  </div>
+
+ 
+<div class="acoesTopo">
+  <p id="qtdSelecionados">Marcados: 0</p>
+
+  <button onclick="abrirResumo()">APOSTAR NOS NÚMEROS</button>
+</div>
+
+
+</header>
+
+<div class="grid" id="grid"></div>
+
+<section id="minhasReservas" style="display:none">
+  <h3>📋 Minhas reservas</h3>
+  <p id="nomeParticipante"></p>
+  <p id="pixParticipante"></p>
+
+  <button class="btnEditarCadastro" onclick="editarCadastro()">
+    ✏️ Editar meu nome e Pix
+  </button>
+
+  <div id="listaMinhasReservas">Carregando reservas...</div>
+</section>
+
+<div id="menuLateral">
+  <button id="fecharMenu" onclick="toggleMenu()">FECHAR ✕</button>
+  <h3>📋 Números reservados</h3>
+  <div id="listaReservas">Carregando...</div>
+</div>
+
+<div id="modalCadastro" class="overlay">
+  <div class="caixa">
+    <h3>👤 Dados do participante</h3>
+    <p class="aviso">Informe seu nome e sua chave Pix.</p>
+
+    <form id="formCadastro">
+      <label for="campoNome">Seu nome completo</label>
+      <input id="campoNome" type="text" maxlength="100"
+        autocomplete="name" required placeholder="Digite seu nome">
+
+      <label for="campoPix">Sua chave Pix</label>
+      <input id="campoPix" type="text" maxlength="150"
+        required placeholder="CPF, telefone, e-mail ou chave aleatória">
+
+      <button class="btnVerde" type="submit">SALVAR MEUS DADOS</button>
+    </form>
+  </div>
+</div>
+
+<div id="modalResumo" class="overlay">
+  <div class="caixa">
+    <h3>Resumo da aposta</h3>
+    <p id="resNome"></p>
+    <p id="resNumeros"></p>
+    <p id="resValor"></p>
+    <p class="aviso">Confira os números e o valor antes de continuar.</p>
+
+    <button class="btnVerde" id="btnConfirmar" onclick="confirmar()">
+      RESERVAR E GERAR PIX
+    </button>
+
+    <button class="btnVermelho" onclick="fecharModal()">CANCELAR</button>
+  </div>
+</div>
+
+<div id="modalPix" class="overlay">
+  <div class="caixa">
+    <h3>💚 PAGAMENTO VIA PIX</h3>
+    <p>Valor da aposta:</p>
+    <p id="valorPix">R$ 0,00</p>
+
+    <div id="qrcode"></div>
+
+    <p style="color:#00ff88;font-weight:bold">PIX COPIA E COLA</p>
+    <textarea id="pixCopiaCola" readonly></textarea>
+
+    <div class="botoesPix">
+      <button class="btnVerde" onclick="copiarPix()">COPIAR PIX</button>
+      <button class="btnVermelho" onclick="fecharPix()">FECHAR</button>
+    </div>
+
+    <p class="aviso">
+      ⚠️ CONFIRME SUA PARTICIPAÇÃO ⚠️<br>
+      Para garantir sua participação, realize o pagamento via Pix
+      utilizando o código Copia e Cola ou o QR Code.
+      <br><br>
+      Após efetuar o pagamento, a reserva garante sua participação
+      conforme as regras da rifa.
+      <br><br>💚 Obrigado por participar! Boa sorte!
+    </p>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* FIREBASE */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCIDFHMzgkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain: "rifa-782a3.firebaseapp.com",
+  databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId: "rifa-782a3",
+  storageBucket: "rifa-782a3.firebasestorage.app",
+  messagingSenderId: "88068598855",
+  appId: "1:88068598855:web:a230a06db76a4bbc125562"
+};
+
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+
+/* CONFIGURAÇÕES */
+
+const VALOR_NUMERO = 5;
+const VALOR_ACUMULADO_POR_NUMERO = 4.50;
+const ACUMULADO_INICIAL = 3000;
+
+const PIX_CHAVE = "6f360f91-71c7-40da-b610-5a70ba3213dd";
+const PIX_NOME = "CARLOS DOS SANTOS REIS";
+const PIX_CIDADE = "SALVADOR";
+
+const CAMINHO_NUMEROS = "rifa/numeros";
+const CAMINHO_PARTICIPANTES = "rifa/participantes";
+
+let nome = "";
+let pixParticipante = "";
+let participanteId = "";
+let selecionados = [];
+let numerosCache = {};
+let dadosCarregados = false;
+let processando = false;
+
+/* PARTICIPANTE */
+
+function gerarIdParticipante() {
+  let id = localStorage.getItem("rifaParticipanteId");
+
+  if (!id) {
+    id = window.crypto && crypto.randomUUID
+      ? crypto.randomUUID()
+      : "P" + Date.now() + Math.random().toString(36).slice(2);
+
+    localStorage.setItem("rifaParticipanteId", id);
+  }
+
+  return id;
+}
+
+participanteId = gerarIdParticipante();
+
+function carregarCadastroLocal() {
+  nome = (localStorage.getItem("rifaNome") || "").trim();
+  pixParticipante = (localStorage.getItem("rifaPix") || "").trim();
+
+  mostrarDadosParticipante();
+
+  if (!nome || !pixParticipante) abrirCadastro();
+}
+
+function abrirCadastro() {
+  document.getElementById("campoNome").value = nome;
+  document.getElementById("campoPix").value = pixParticipante;
+  document.getElementById("modalCadastro").style.display = "flex";
+}
+
+function editarCadastro() {
+  abrirCadastro();
+}
+
+function mostrarDadosParticipante() {
+  document.getElementById("nomeTopo").textContent =
+    nome || "Não informado";
+
+  document.getElementById("pixTopo").textContent =
+    pixParticipante || "Não informada";
+
+  document.getElementById("nomeParticipante").textContent =
+    nome ? "Participante: " + nome : "";
+
+  document.getElementById("pixParticipante").textContent =
+    pixParticipante ? "Minha chave Pix: " + pixParticipante : "";
+}
+
+function pertenceAoParticipante(item) {
+  if (!item || item.bonus === true) return false;
+
+  if (item.participanteId) {
+    return item.participanteId === participanteId;
+  }
+
+  return !!nome && item.nome === nome;
+}
+
+function contarNumerosParticipante(dados) {
+  return Object.keys(dados || {}).filter(function(numero) {
+    return pertenceAoParticipante(dados[numero]);
+  }).length;
+}
+
+document.getElementById("formCadastro").addEventListener("submit", async function(evento) {
+  evento.preventDefault();
+
+  const nomeDigitado = document.getElementById("campoNome").value.trim();
+  const pixDigitado = document.getElementById("campoPix").value.trim();
+
+  if (!nomeDigitado || !pixDigitado) {
+    alert("Informe seu nome e sua chave Pix.");
+    return;
+  }
+
+  nome = nomeDigitado;
+  pixParticipante = pixDigitado;
+
+  localStorage.setItem("rifaNome", nome);
+  localStorage.setItem("rifaPix", pixParticipante);
+
+  mostrarDadosParticipante();
+  document.getElementById("modalCadastro").style.display = "none";
+
+  try {
+    await db.ref(CAMINHO_PARTICIPANTES + "/" + participanteId).update({
+      nome,
+      pix: pixParticipante,
+      atualizadoEm: firebase.database.ServerValue.TIMESTAMP
+    });
+  } catch (erro) {
+    console.error("Erro ao salvar cadastro:", erro);
+    alert("Os dados ficaram salvos neste dispositivo, mas não foi possível sincronizá-los com o Firebase.");
+  }
+
+  atualizarTudo();
+});
+
+/* UTILITÁRIOS */
+
+function dinheiro(valor) {
+  return Number(valor).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+}
+
+function criarElemento(tag, classe, texto) {
+  const el = document.createElement(tag);
+  if (classe) el.className = classe;
+  if (texto !== undefined) el.textContent = texto;
+  return el;
+}
+
+/* BRINDES: 1 PARA CADA 4 NÚMEROS */
+
+function calcularBrindes(total) {
+  return Math.floor(Math.max(0, total) / 4);
+}
+
+/* FIREBASE EM TEMPO REAL */
+
+db.ref(CAMINHO_NUMEROS).on("value", function(snapshot) {
+  numerosCache = snapshot.val() || {};
+  dadosCarregados = true;
+  atualizarTudo();
+}, function(erro) {
+  console.error("Erro ao carregar rifa:", erro);
+  document.getElementById("listaMinhasReservas").textContent =
+    "Não foi possível carregar suas reservas. Verifique sua conexão.";
+});
+
+/* ATUALIZAÇÃO GERAL */
+
+function atualizarTudo() {
+  atualizarGrid();
+  atualizarAcumulado();
+  atualizarContador();
+  atualizarMenu();
+  atualizarMinhasReservas();
+}
+
+/* GRADE 000 A 999 */
+
+function atualizarGrid() {
+  const grid = document.getElementById("grid");
+  const fragmento = document.createDocumentFragment();
+
+  grid.innerHTML = "";
+
+  for (let i = 0; i < 1000; i++) {
+    const numero = String(i).padStart(3, "0");
+    const item = numerosCache[numero];
+    const botao = document.createElement("button");
+
+    if (item) {
+      const jogador = item.nome || "Reservado";
+      botao.disabled = true;
+
+      const nomeEl = document.createElement("small");
+      nomeEl.textContent = item.bonus === true ? "🎁 BRINDE" : jogador;
+      nomeEl.title = jogador;
+
+      const numeroEl = document.createElement("strong");
+      numeroEl.textContent = numero;
+
+      const statusEl = document.createElement("small");
+      statusEl.className = "statusMini";
+
+      if (item.bonus === true) {
+        botao.className = "brinde";
+        statusEl.textContent = "BRINDE";
+        statusEl.style.color = "#000";
+      } else if (item.pago === true) {
+        statusEl.textContent = "PAGO";
+        statusEl.style.color = jogador === nome ? "#000" : "#00ff88";
+        botao.className = jogador === nome ? "meu" : "ocupado";
+      } else {
+        statusEl.textContent = "PENDENTE";
+        statusEl.style.color = jogador === nome ? "#000" : "#ffb020";
+        botao.className = jogador === nome ? "meu" : "ocupado";
+      }
+
+      botao.append(nomeEl, numeroEl, statusEl);
+      botao.title = jogador + " | " +
+        (item.bonus ? "BRINDE" : item.pago ? "PAGO" : "PENDENTE");
+    } else {
+      botao.className = selecionados.includes(numero) ? "meu" : "livre";
+
+      const numeroEl = document.createElement("strong");
+      numeroEl.textContent = numero;
+
+      const legenda = document.createElement("small");
+      legenda.textContent = selecionados.includes(numero) ? "MARCADO" : "LIVRE";
+
+      botao.append(numeroEl, legenda);
+
+      botao.onclick = function() {
+        if (!dadosCarregados || processando) return;
+
+        if (selecionados.includes(numero)) {
+          selecionados = selecionados.filter(n => n !== numero);
+        } else {
+          selecionados.push(numero);
+        }
+
+        atualizarGrid();
+        atualizarContador();
+      };
+    }
+
+    fragmento.appendChild(botao);
+  }
+
+  grid.appendChild(fragmento);
+}
+
+/* ACUMULADO */
+
+function atualizarAcumulado() {
+  let total = ACUMULADO_INICIAL;
+
+  Object.values(numerosCache).forEach(function(item) {
+    if (item && item.bonus !== true) {
+      total += VALOR_ACUMULADO_POR_NUMERO;
+    }
+  });
+
+  document.getElementById("resTopo").textContent =
+    "Acumulado: " + dinheiro(total);
+}
+
+function atualizarContador() {
+  document.getElementById("qtdSelecionados").textContent =
+    "Marcados: " + selecionados.length;
+}
+
+/* MINHAS RESERVAS */
+
+function atualizarMinhasReservas() {
+  const lista = document.getElementById("listaMinhasReservas");
+  lista.innerHTML = "";
+  mostrarDadosParticipante();
+
+  const numeros = Object.keys(numerosCache)
+    .filter(numero => pertenceAoParticipante(numerosCache[numero]))
+    .sort((a, b) => Number(a) - Number(b));
+
+  if (!nome) {
+    lista.textContent = "Cadastre seu nome para ver suas reservas.";
+    return;
+  }
+
+  if (!numeros.length) {
+    lista.textContent = "Você ainda não possui números reservados.";
+    return;
+  }
+
+  const grupo = criarElemento("div", "reservaPessoa");
+
+  numeros.forEach(function(numero) {
+    const item = numerosCache[numero];
+    const linha = criarElemento("div", "reservaNumero");
+    const dados = document.createElement("div");
+
+    dados.style.flex = "1";
+    dados.style.minWidth = "130px";
+
+    dados.appendChild(criarElemento("strong", "", "Número " + numero));
+
+    const nomeEl = criarElemento("div", "", "Nome: " + (item.nome || nome));
+    nomeEl.style.fontSize = "12px";
+    nomeEl.style.marginTop = "5px";
+    dados.appendChild(nomeEl);
+
+    const pixEl = criarElemento("div", "",
+      "Pix: " + (item.pix || pixParticipante || "Não informado"));
+
+    pixEl.style.fontSize = "11px";
+    pixEl.style.color = "#ccc";
+    pixEl.style.marginTop = "4px";
+    pixEl.style.overflowWrap = "anywhere";
+    dados.appendChild(pixEl);
+
+    const status = document.createElement("span");
+    status.className = item.pago === true ? "statusPago" : "statusPendente";
+    status.textContent = item.pago === true ? "✅ PAGO" : "⏳ PENDENTE";
+
+    linha.append(dados, status);
+    grupo.appendChild(linha);
+  });
+
+  lista.appendChild(grupo);
+}
+
+/* MENU DE RESERVAS */
+
+function toggleMenu() {
+  document.getElementById("menuLateral").classList.toggle("ativo");
+}
+
+document.addEventListener("click", function(evento) {
+  const menu = document.getElementById("menuLateral");
+  const botao = document.getElementById("menuBtn");
+
+  if (!menu.contains(evento.target) && !botao.contains(evento.target)) {
+    menu.classList.remove("ativo");
+  }
+});
+
+function atualizarMenu() {
+  const lista = document.getElementById("listaReservas");
+  const grupos = {};
+  lista.innerHTML = "";
+
+  Object.keys(numerosCache)
+    .sort((a, b) => Number(a) - Number(b))
+    .forEach(function(numero) {
+      const item = numerosCache[numero];
+      if (!item) return;
+
+      const participante = item.nome || "Sem nome";
+
+      if (!grupos[participante]) {
+        grupos[participante] = { pix: item.pix || "", numeros: [] };
+      }
+
+      if (!grupos[participante].pix && item.pix) {
+        grupos[participante].pix = item.pix;
+      }
+
+      grupos[participante].numeros.push({
+        numero,
+        pago: item.pago === true,
+        bonus: item.bonus === true
+      });
+    });
+
+  const pessoas = Object.keys(grupos).sort((a, b) =>
+    a.localeCompare(b, "pt-BR")
+  );
+
+  if (!pessoas.length) {
+    lista.textContent = "Ainda não há reservas.";
+    return;
+  }
+
+  pessoas.forEach(function(pessoa) {
+    const titulo = criarElemento("div", "linhaNome", pessoa);
+    const pix = criarElemento("div", "linhaPix",
+      "Pix: " + (grupos[pessoa].pix || "Não informado"));
+    const numerosEl = criarElemento("div", "linhaNumeros");
+
+    grupos[pessoa].numeros.forEach(function(item, indice) {
+      if (indice > 0) numerosEl.appendChild(document.createTextNode(", "));
+
+      const numeroEl = document.createElement("span");
+      numeroEl.textContent = (item.bonus ? "🎁 " : "") + item.numero +
+        (item.bonus ? "" : item.pago ? " (PAGO)" : " (PENDENTE)");
+
+      numeroEl.style.color = item.bonus
+        ? "#ffd700"
+        : item.pago ? "#00ff88" : "#ffb020";
+
+      numerosEl.appendChild(numeroEl);
+    });
+
+    lista.append(titulo, pix, numerosEl, criarElemento("div", "divisor"));
+  });
+}
+
+/* RESUMO DA APOSTA */
+
+function abrirResumo() {
+  if (!dadosCarregados) {
+    alert("Aguarde o carregamento dos números.");
+    return;
+  }
+
+  if (!nome || !pixParticipante) {
+    abrirCadastro();
+    return;
+  }
+
+  if (processando) {
+    alert("Aguarde o processamento atual.");
+    return;
+  }
+
+  if (!selecionados.length) {
+    alert("Selecione pelo menos um número.");
+    return;
+  }
+
+  const totalAntes = contarNumerosParticipante(numerosCache);
+  const totalDepois = totalAntes + selecionados.length;
+
+  const brindesPrevistos =
+    calcularBrindes(totalDepois) - calcularBrindes(totalAntes);
+
+  document.getElementById("resNome").textContent =
+    "Participante: " + nome + " | Pix: " + pixParticipante;
+
+  document.getElementById("resNumeros").textContent =
+    "Números: " + selecionados.slice().sort().join(", ") +
+    (brindesPrevistos > 0
+      ? " | 🎁 Brindes previstos: " + brindesPrevistos
+      : "");
+
+  document.getElementById("resValor").textContent =
+    "Total: " + dinheiro(selecionados.length * VALOR_NUMERO);
+
+  document.getElementById("modalResumo").style.display = "flex";
+}
+
+function fecharModal() {
+  if (processando) return;
+  document.getElementById("modalResumo").style.display = "none";
+}
+
+/* PIX */
+
+function removerAcentos(texto) {
+  return String(texto).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function campoPix(id, valor) {
+  valor = String(valor);
+  return id + String(valor.length).padStart(2, "0") + valor;
+}
+
+function crc16(texto) {
+  let crc = 0xFFFF;
+
+  for (let i = 0; i < texto.length; i++) {
+    crc ^= texto.charCodeAt(i) << 8;
+
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : crc << 1;
+      crc &= 0xFFFF;
+    }
+  }
+
+  return crc.toString(16).toUpperCase().padStart(4, "0");
+}
+
+function criarPix(valor) {
+  if (!Number.isFinite(valor) || valor <= 0) {
+    throw new Error("Valor Pix inválido.");
+  }
+
+  const nomeRecebedor = removerAcentos(PIX_NOME)
+    .replace(/[^A-Za-z0-9 ]/g, "")
+    .substring(0, 25).trim().toUpperCase();
+
+  const cidade = removerAcentos(PIX_CIDADE)
+    .replace(/[^A-Za-z0-9 ]/g, "")
+    .substring(0, 15).trim().toUpperCase();
+
+  const contaPix = campoPix("00", "BR.GOV.BCB.PIX") +
+    campoPix("01", PIX_CHAVE);
+
+  const payload =
+    campoPix("00", "01") +
+    campoPix("01", "11") +
+    campoPix("26", contaPix) +
+    campoPix("52", "0000") +
+    campoPix("53", "986") +
+    campoPix("54", valor.toFixed(2)) +
+    campoPix("58", "BR") +
+    campoPix("59", nomeRecebedor) +
+    campoPix("60", cidade) +
+    campoPix("62", campoPix("05", "***")) +
+    "6304";
+
+  return payload + crc16(payload);
+}
+
+function abrirPixComValor(valor) {
+  if (typeof QRCode === "undefined") {
+    alert("O QR Code não carregou. Verifique sua conexão.");
+    return;
+  }
+
+  let codigo;
+
+  try {
+    codigo = criarPix(valor);
+  } catch (erro) {
+    alert("Erro ao gerar Pix: " + erro.message);
+    return;
+  }
+
+  document.getElementById("valorPix").textContent = dinheiro(valor);
+  document.getElementById("pixCopiaCola").value = codigo;
+
+  const qr = document.getElementById("qrcode");
+  qr.innerHTML = "";
+  document.getElementById("modalPix").style.display = "flex";
+
+  new QRCode(qr, {
+    text: codigo,
+    width: 220,
+    height: 220,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
+
+async function copiarPix() {
+  const campo = document.getElementById("pixCopiaCola");
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(campo.value);
+    } else {
+      campo.focus();
+      campo.select();
+
+      if (!document.execCommand("copy")) {
+        throw new Error("Não foi possível copiar");
+      }
+    }
+
+    alert("Pix Copia e Cola copiado!");
+  } catch (erro) {
+    campo.focus();
+    campo.select();
+    alert("Não foi possível copiar automaticamente. Selecione o código e copie.");
+  }
+}
+
+function fecharPix() {
+  document.getElementById("modalPix").style.display = "none";
+}
+
+/* RESERVAR NÚMERO COM TRANSAÇÃO */
+
+async function reservarNumero(numero) {
+  const referencia = db.ref(CAMINHO_NUMEROS + "/" + numero);
+
+  const dados = {
+    nome,
+    pix: pixParticipante,
+    participanteId,
+    valor: VALOR_NUMERO,
+    pago: false,
+    bonus: false,
+    data: new Date().toISOString()
+  };
+
+  const resultado = await referencia.transaction(function(atual) {
+    if (atual !== null) return;
+    return dados;
+  });
+
+  return resultado.committed;
+}
+
+/* RESERVAR BRINDE */
+
+async function reservarBrinde() {
+  for (let tentativa = 0; tentativa < 1000; tentativa++) {
+    const numero = String(Math.floor(Math.random() * 1000)).padStart(3, "0");
+    const referencia = db.ref(CAMINHO_NUMEROS + "/" + numero);
+
+    const resultado = await referencia.transaction(function(atual) {
+      if (atual !== null) return;
+
+      return {
+        nome,
+        pix: pixParticipante,
+        participanteId,
+        valor: 0,
+        pago: false,
+        bonus: true,
+        tipo: "brinde",
+        data: new Date().toISOString()
+      };
+    });
+
+    if (resultado.committed) return numero;
+  }
+
+  throw new Error("Não foi possível encontrar um número disponível para o brinde.");
+}
+
+/* CONFIRMAR RESERVA E CALCULAR BRINDES */
+
+async function confirmar() {
+  if (processando) return;
+
+  if (!nome || !pixParticipante) {
+    abrirCadastro();
+    return;
+  }
+
+  if (!selecionados.length) {
+    alert("Selecione pelo menos um número.");
+    return;
+  }
+
+  if (!dadosCarregados) {
+    alert("Aguarde o carregamento dos números.");
+    return;
+  }
+
+  processando = true;
+
+  const botao = document.getElementById("btnConfirmar");
+  botao.disabled = true;
+  botao.textContent = "RESERVANDO...";
+
+  const tentativa = [...new Set(selecionados)];
+  const reservados = [];
+  const indisponiveis = [];
+
+  try {
+    const snapshotAntes = await db.ref(CAMINHO_NUMEROS).once("value");
+    const dadosAntes = snapshotAntes.val() || {};
+    const totalAntes = contarNumerosParticipante(dadosAntes);
+
+    const resultados = await Promise.all(
+      tentativa.map(async function(numero) {
+        try {
+          const sucesso = await reservarNumero(numero);
+          return { numero, sucesso };
+        } catch (erro) {
+          console.error("Erro ao reservar número:", numero, erro);
+          return { numero, sucesso: false };
+        }
+      })
+    );
+
+    resultados.forEach(function(resultado) {
+      if (resultado.sucesso) {
+        reservados.push(resultado.numero);
+      } else {
+        indisponiveis.push(resultado.numero);
+      }
+    });
+
+    if (!reservados.length) {
+      alert("Nenhum número foi reservado. Os números selecionados podem estar ocupados.");
+      return;
+    }
+
+    const snapshotDepois = await db.ref(CAMINHO_NUMEROS).once("value");
+    const dadosDepois = snapshotDepois.val() || {};
+    const totalDepois = contarNumerosParticipante(dadosDepois);
+
+    const brindesAntes = calcularBrindes(totalAntes);
+    const brindesDepois = calcularBrindes(totalDepois);
+    const brindesNovos = Math.max(0, brindesDepois - brindesAntes);
+
+    const numerosBrinde = [];
+
+    for (let i = 0; i < brindesNovos; i++) {
+      const numeroBrinde = await reservarBrinde();
+      numerosBrinde.push(numeroBrinde);
+    }
+
+    selecionados = [];
+    document.getElementById("modalResumo").style.display = "none";
+
+    if (indisponiveis.length) {
+      alert(
+        "Estes números já estavam ocupados e não foram reservados: " +
+        indisponiveis.join(", ")
+      );
+    }
+
+    if (numerosBrinde.length) {
+      alert(
+        "🎁 Parabéns! Você ganhou " + numerosBrinde.length +
+        (numerosBrinde.length === 1 ? " brinde!" : " brindes!") +
+        "\nNúmero(s) do brinde: " + numerosBrinde.join(", ")
+      );
+    }
+
+    atualizarTudo();
+    abrirPixComValor(reservados.length * VALOR_NUMERO);
+
+  } catch (erro) {
+    console.error("Erro durante a reserva:", erro);
+
+    alert(
+      "Ocorreu um erro durante a reserva ou na geração do brinde. " +
+      "Confira seus números no sistema antes de tentar novamente."
+    );
+
+  } finally {
+    processando = false;
+    botao.disabled = false;
+    botao.textContent = "RESERVAR E GERAR PIX";
+
+    try {
+      const snapshot = await db.ref(CAMINHO_NUMEROS).once("value");
+      numerosCache = snapshot.val() || {};
+      atualizarTudo();
+    } catch (erro) {
+      console.error("Erro ao atualizar os dados:", erro);
+    }
+  }
+}
+
+/* PRÓXIMO SÁBADO ÀS 19H */
+
+function atualizarDataSorteio() {
+  const agora = new Date();
+  const proximo = new Date(agora);
+
+  let dias = (6 - agora.getDay() + 7) % 7;
+
+  const horarioHoje = new Date(agora);
+  horarioHoje.setHours(19, 0, 0, 0);
+
+  if (dias === 0 && agora >= horarioHoje) dias = 7;
+
+  proximo.setDate(agora.getDate() + dias);
+  proximo.setHours(19, 0, 0, 0);
+
+  document.getElementById("dataSorteio").textContent =
+    "📅 Sorteio: " + proximo.toLocaleDateString("pt-BR") + " às 19:00";
+}
+
+/* INICIALIZAÇÃO */
+
+carregarCadastroLocal();
+atualizarDataSorteio();
+setInterval(atualizarDataSorteio, 60000);
+</script>
+
+</body>
+</html>
