@@ -7,8 +7,12 @@
 <meta name="theme-color" content="#000000">
 <title>Rifa Online</title>
 
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/file_00000000c28471fba60c52601e2a4d2c.png">
+
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
@@ -94,10 +98,10 @@ button:disabled{opacity:.6;cursor:not-allowed}
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(10,minmax(0,1fr));
+  grid-template-columns:repeat(8,minmax(0,1fr));
   gap:4px;
   width:100%;
-  max-width:1000px;
+  max-width:700px;
   margin:0 auto;
 }
 
@@ -542,7 +546,7 @@ const VALOR_NUMERO = 5;
 const VALOR_ACUMULADO_POR_NUMERO = 4.50;
 const ACUMULADO_INICIAL = 3000;
 
-const PIX_CHAVE = "02562631595";
+const PIX_CHAVE = "6f360f91-71c7-40da-b610-5a70ba3213dd";
 const PIX_NOME = "CARLOS DOS SANTOS REIS";
 const PIX_CIDADE = "SALVADOR";
 
@@ -1365,7 +1369,11 @@ function atualizarDataSorteio() {
 /* ========================================
    INICIALIZAÇÃO
 ======================================== */
-
+function limpar(){
+    localStorage.clear()
+    console.log("limpo")
+}
+limpar()
 carregarCadastroLocal();
 atualizarDataSorteio();
 setInterval(atualizarDataSorteio, 60000);
