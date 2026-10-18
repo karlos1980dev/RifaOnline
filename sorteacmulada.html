@@ -13,8 +13,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
 <style>
 *{box-sizing:border-box}
 
@@ -197,8 +195,6 @@ button:disabled{opacity:.6;cursor:not-allowed}
 
 .divisor{border-bottom:1px solid #444;margin:10px 0}
 
-/* MINHAS RESERVAS */
-
 #minhasReservas{
   max-width:650px;
   margin:22px auto;
@@ -274,8 +270,6 @@ button:disabled{opacity:.6;cursor:not-allowed}
   color:#00ff88;
   border:1px solid #00ff88;
 }
-
-/* MODAIS */
 
 .overlay{
   position:fixed;
@@ -403,27 +397,19 @@ button:disabled{opacity:.6;cursor:not-allowed}
 
 <body>
 
-<!-- TOPO ORIGINAL -->
-
 <header id="topoFixo">
   <div id="menuBtn" onclick="toggleMenu()">☰</div>
-
   <p id="resTopo">Acumulado: R$ 3.000,00</p>
   <p id="dataSorteio"></p>
   <p id="nomeTopo"></p>
   <p id="pixTopo"></p>
   <p id="qtdSelecionados">Marcados: 0</p>
-
   <button onclick="abrirResumo()">APOSTAR NOS NÚMEROS</button>
 </header>
 
-<!-- GRADE -->
-
 <div class="grid" id="grid"></div>
 
-<!-- MINHAS RESERVAS -->
-
-<section style="display:none"id="minhasReservas">
+<section id="minhasReservas" style="display:none">
   <h3>📋 Minhas reservas</h3>
   <p id="nomeParticipante"></p>
   <p id="pixParticipante"></p>
@@ -433,38 +419,27 @@ button:disabled{opacity:.6;cursor:not-allowed}
   <div id="listaMinhasReservas">Carregando reservas...</div>
 </section>
 
-<!-- MENU LATERAL ORIGINAL -->
-
 <div id="menuLateral">
   <button id="fecharMenu" onclick="toggleMenu()">FECHAR ✕</button>
   <h3>📋 Números reservados</h3>
   <div id="listaReservas">Carregando...</div>
 </div>
 
-<!-- MODAL CADASTRO -->
-
 <div id="modalCadastro" class="overlay">
   <div class="caixa">
     <h3>👤 Dados do participante</h3>
-    <p class="aviso">
-      Informe seu nome e sua chave Pix. Esses dados ficam salvos neste dispositivo.
-    </p>
-
+    <p class="aviso">Informe seu nome e sua chave Pix.</p>
     <form id="formCadastro">
       <label for="campoNome">Seu nome completo</label>
       <input id="campoNome" type="text" maxlength="100"
         autocomplete="name" required placeholder="Digite seu nome">
-
       <label for="campoPix">Sua chave Pix</label>
       <input id="campoPix" type="text" maxlength="150"
         required placeholder="CPF, telefone, e-mail ou chave aleatória">
-
       <button class="btnVerde" type="submit">SALVAR MEUS DADOS</button>
     </form>
   </div>
 </div>
-
-<!-- MODAL RESUMO ORIGINAL -->
 
 <div id="modalResumo" class="overlay">
   <div class="caixa">
@@ -472,45 +447,34 @@ button:disabled{opacity:.6;cursor:not-allowed}
     <p id="resNome"></p>
     <p id="resNumeros"></p>
     <p id="resValor"></p>
-
     <p class="aviso">Confira os números e o valor antes de continuar.</p>
-
     <button class="btnVerde" id="btnConfirmar" onclick="confirmar()">
       RESERVAR E GERAR PIX
     </button>
-
-    <button class="btnVermelho" onclick="fecharModal()">
-      CANCELAR
-    </button>
+    <button class="btnVermelho" onclick="fecharModal()">CANCELAR</button>
   </div>
 </div>
-
-<!-- MODAL PIX ORIGINAL -->
 
 <div id="modalPix" class="overlay">
   <div class="caixa">
     <h3>💚 PAGAMENTO VIA PIX</h3>
     <p>Valor da aposta:</p>
     <p id="valorPix">R$ 0,00</p>
-
     <div id="qrcode"></div>
-
     <p style="color:#00ff88;font-weight:bold">PIX COPIA E COLA</p>
     <textarea id="pixCopiaCola" readonly></textarea>
-
     <div class="botoesPix">
       <button class="btnVerde" onclick="copiarPix()">COPIAR PIX</button>
       <button class="btnVermelho" onclick="fecharPix()">FECHAR</button>
     </div>
-
     <p class="aviso">
-        ⚠️ CONFIRME SUA PARTICIPAÇÃO ⚠️ <br>
-
-Para garantir sua participação na rifa, realize o pagamento via Pix utilizando o código Copia e Cola ou o QR Code disponibilizado.
-
-Após efetuar o pagamento,A reserva do número garante a participação no valor acumulado.</br>
-
-💚 Obrigado por participar! Boa sorte!
+      ⚠️ CONFIRME SUA PARTICIPAÇÃO ⚠️<br>
+      Para garantir sua participação, realize o pagamento via Pix
+      utilizando o código Copia e Cola ou o QR Code.
+      <br><br>
+      Após efetuar o pagamento, a reserva garante sua participação
+      conforme as regras da rifa.
+      <br><br>💚 Obrigado por participar! Boa sorte!
     </p>
   </div>
 </div>
@@ -518,9 +482,7 @@ Após efetuar o pagamento,A reserva do número garante a participação no valor
 <script>
 "use strict";
 
-/* ========================================
-   FIREBASE ORIGINAL
-======================================== */
+/* FIREBASE */
 
 const firebaseConfig = {
   apiKey: "AIzaSyCIDFHMzgkN3HGLn-XA8ieC_5DDBvbJ7o",
@@ -532,15 +494,11 @@ const firebaseConfig = {
   appId: "1:88068598855:web:a230a06db76a4bbc125562"
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
 const db = firebase.database();
 
-/* ========================================
-   CONFIGURAÇÕES ORIGINAIS
-======================================== */
+/* CONFIGURAÇÕES */
 
 const VALOR_NUMERO = 5;
 const VALOR_ACUMULADO_POR_NUMERO = 4.50;
@@ -558,23 +516,18 @@ let pixParticipante = "";
 let participanteId = "";
 let selecionados = [];
 let numerosCache = {};
-let meusNumeros = [];
 let dadosCarregados = false;
 let processando = false;
 
-/* ========================================
-   CADASTRO ÚNICO DE NOME E PIX
-======================================== */
+/* PARTICIPANTE */
 
 function gerarIdParticipante() {
   let id = localStorage.getItem("rifaParticipanteId");
 
   if (!id) {
-    if (window.crypto && crypto.randomUUID) {
-      id = crypto.randomUUID();
-    } else {
-      id = "P" + Date.now() + Math.random().toString(36).slice(2);
-    }
+    id = window.crypto && crypto.randomUUID
+      ? crypto.randomUUID()
+      : "P" + Date.now() + Math.random().toString(36).slice(2);
 
     localStorage.setItem("rifaParticipanteId", id);
   }
@@ -588,13 +541,9 @@ function carregarCadastroLocal() {
   nome = (localStorage.getItem("rifaNome") || "").trim();
   pixParticipante = (localStorage.getItem("rifaPix") || "").trim();
 
-  // Se o nome já estava salvo, mas o Pix ainda não,
-  // será solicitado somente o Pix.
-  if (!nome || !pixParticipante) {
-    abrirCadastro();
-  } else {
-    mostrarDadosParticipante();
-  }
+  mostrarDadosParticipante();
+
+  if (!nome || !pixParticipante) abrirCadastro();
 }
 
 function abrirCadastro() {
@@ -609,26 +558,45 @@ function editarCadastro() {
 
 function mostrarDadosParticipante() {
   document.getElementById("nomeTopo").textContent =
-    "Participante: " + nome;
+    nome ? "Participante: " + nome : "";
 
   document.getElementById("pixTopo").textContent =
-    "Minha chave Pix: " + pixParticipante;
+    pixParticipante ? "Minha chave Pix: " + pixParticipante : "";
 
   document.getElementById("nomeParticipante").textContent =
-    "Participante: " + nome;
+    nome ? "Participante: " + nome : "";
 
   document.getElementById("pixParticipante").textContent =
-    "Minha chave Pix: " + pixParticipante;
+    pixParticipante ? "Minha chave Pix: " + pixParticipante : "";
+}
+
+/*
+  Identifica os números pertencentes ao participante.
+  Os registros antigos sem participanteId são compatíveis
+  através do nome, desde que não tenham um ID diferente.
+*/
+
+function pertenceAoParticipante(item) {
+  if (!item || item.bonus === true) return false;
+
+  if (item.participanteId) {
+    return item.participanteId === participanteId;
+  }
+
+  return !!nome && item.nome === nome;
+}
+
+function contarNumerosParticipante(dados) {
+  return Object.keys(dados || {}).filter(function(numero) {
+    return pertenceAoParticipante(dados[numero]);
+  }).length;
 }
 
 document.getElementById("formCadastro").addEventListener("submit", async function(evento) {
   evento.preventDefault();
 
-  const nomeDigitado =
-    document.getElementById("campoNome").value.trim();
-
-  const pixDigitado =
-    document.getElementById("campoPix").value.trim();
+  const nomeDigitado = document.getElementById("campoNome").value.trim();
+  const pixDigitado = document.getElementById("campoPix").value.trim();
 
   if (!nomeDigitado || !pixDigitado) {
     alert("Informe seu nome e sua chave Pix.");
@@ -646,28 +614,24 @@ document.getElementById("formCadastro").addEventListener("submit", async functio
 
   try {
     await db.ref(CAMINHO_PARTICIPANTES + "/" + participanteId).update({
-      nome: nome,
+      nome,
       pix: pixParticipante,
       atualizadoEm: firebase.database.ServerValue.TIMESTAMP
     });
   } catch (erro) {
-    console.error("Erro ao salvar cadastro no Firebase:", erro);
-    alert("Os dados ficaram salvos neste dispositivo, mas não foi possível sincronizá-los com o Firebase. Verifique as regras do banco.");
+    console.error("Erro ao salvar cadastro:", erro);
+    alert("Os dados ficaram salvos neste dispositivo, mas não foi possível sincronizá-los com o Firebase.");
   }
 
-  atualizarGrid();
-  atualizarMenu();
-  atualizarMinhasReservas();
+  atualizarTudo();
 });
 
-/* ========================================
-   UTILITÁRIOS
-======================================== */
+/* UTILITÁRIOS */
 
 function dinheiro(valor) {
   return Number(valor).toLocaleString("pt-BR", {
-    style:"currency",
-    currency:"BRL"
+    style: "currency",
+    currency: "BRL"
   });
 }
 
@@ -678,43 +642,35 @@ function criarElemento(tag, classe, texto) {
   return el;
 }
 
+/* REGRA DO BRINDE: 1 PARA CADA 4 NÚMEROS */
+
 function calcularBrindes(total) {
-  return Math.floor(total / 4);
+  return Math.floor(Math.max(0, total) / 4);
 }
 
-/* ========================================
-   FIREBASE EM TEMPO REAL
-======================================== */
+/* FIREBASE EM TEMPO REAL */
 
 db.ref(CAMINHO_NUMEROS).on("value", function(snapshot) {
   numerosCache = snapshot.val() || {};
   dadosCarregados = true;
+  atualizarTudo();
+}, function(erro) {
+  console.error("Erro ao carregar rifa:", erro);
+  document.getElementById("listaMinhasReservas").textContent =
+    "Não foi possível carregar suas reservas. Verifique sua conexão.";
+});
 
-  meusNumeros = Object.keys(numerosCache).filter(function(numero) {
-    const item = numerosCache[numero];
-    return item &&
-      item.nome === nome &&
-      item.bonus !== true;
-  });
+/* ATUALIZAÇÃO GERAL */
 
+function atualizarTudo() {
   atualizarGrid();
   atualizarAcumulado();
   atualizarContador();
   atualizarMenu();
   atualizarMinhasReservas();
+}
 
-}, function(erro) {
-  console.error("Erro ao carregar rifa:", erro);
-
-  document.getElementById("listaMinhasReservas").textContent =
-    "Não foi possível carregar suas reservas. Verifique sua conexão.";
-
-  alert("Erro ao conectar à rifa. Verifique sua internet.");
-});
-
-/* ========================================
-   GRADE ORIGINAL + STATUS ABAIXO DO NOME
-======================================== */
+/* GRADE DE 000 A 999 */
 
 function atualizarGrid() {
   const grid = document.getElementById("grid");
@@ -729,7 +685,6 @@ function atualizarGrid() {
 
     if (item) {
       const jogador = item.nome || "Reservado";
-
       botao.disabled = true;
 
       const nomeEl = document.createElement("small");
@@ -756,14 +711,9 @@ function atualizarGrid() {
         botao.className = jogador === nome ? "meu" : "ocupado";
       }
 
-      botao.appendChild(nomeEl);
-      botao.appendChild(numeroEl);
-      botao.appendChild(statusEl);
-
-      botao.title =
-        jogador + " | " +
+      botao.append(nomeEl, numeroEl, statusEl);
+      botao.title = jogador + " | " +
         (item.bonus ? "BRINDE" : item.pago ? "PAGO" : "PENDENTE");
-
     } else {
       botao.className = selecionados.includes(numero) ? "meu" : "livre";
 
@@ -773,8 +723,7 @@ function atualizarGrid() {
       const legenda = document.createElement("small");
       legenda.textContent = selecionados.includes(numero) ? "MARCADO" : "LIVRE";
 
-      botao.appendChild(numeroEl);
-      botao.appendChild(legenda);
+      botao.append(numeroEl, legenda);
 
       botao.onclick = function() {
         if (!dadosCarregados || processando) return;
@@ -796,9 +745,7 @@ function atualizarGrid() {
   grid.appendChild(fragmento);
 }
 
-/* ========================================
-   ACUMULADO
-======================================== */
+/* ACUMULADO */
 
 function atualizarAcumulado() {
   let total = ACUMULADO_INICIAL;
@@ -818,26 +765,16 @@ function atualizarContador() {
     "Marcados: " + selecionados.length;
 }
 
-/* ========================================
-   MINHAS RESERVAS
-   MOSTRA NOME, PIX E STATUS
-======================================== */
+/* MINHAS RESERVAS */
 
 function atualizarMinhasReservas() {
   const lista = document.getElementById("listaMinhasReservas");
-
-  mostrarDadosParticipante();
   lista.innerHTML = "";
+  mostrarDadosParticipante();
 
   const numeros = Object.keys(numerosCache)
-    .filter(function(numero) {
-      const item = numerosCache[numero];
-
-      return item &&
-        item.nome === nome &&
-        item.bonus !== true;
-    })
-    .sort((a,b) => Number(a) - Number(b));
+    .filter(numero => pertenceAoParticipante(numerosCache[numero]))
+    .sort((a, b) => Number(a) - Number(b));
 
   if (!nome) {
     lista.textContent = "Cadastre seu nome para ver suas reservas.";
@@ -854,24 +791,21 @@ function atualizarMinhasReservas() {
   numeros.forEach(function(numero) {
     const item = numerosCache[numero];
     const linha = criarElemento("div", "reservaNumero");
-
     const dados = document.createElement("div");
+
     dados.style.flex = "1";
     dados.style.minWidth = "130px";
 
-    const numeroEl = criarElemento("strong", "", "Número " + numero);
-    dados.appendChild(numeroEl);
+    dados.appendChild(criarElemento("strong", "", "Número " + numero));
 
     const nomeEl = criarElemento("div", "", "Nome: " + (item.nome || nome));
     nomeEl.style.fontSize = "12px";
     nomeEl.style.marginTop = "5px";
     dados.appendChild(nomeEl);
 
-    const pixEl = criarElemento(
-      "div",
-      "",
-      "Pix: " + (item.pix || pixParticipante || "Não informado")
-    );
+    const pixEl = criarElemento("div", "",
+      "Pix: " + (item.pix || pixParticipante || "Não informado"));
+
     pixEl.style.fontSize = "11px";
     pixEl.style.color = "#ccc";
     pixEl.style.marginTop = "4px";
@@ -879,26 +813,17 @@ function atualizarMinhasReservas() {
     dados.appendChild(pixEl);
 
     const status = document.createElement("span");
+    status.className = item.pago === true ? "statusPago" : "statusPendente";
+    status.textContent = item.pago === true ? "✅ PAGO" : "⏳ PENDENTE";
 
-    if (item.pago === true) {
-      status.className = "statusPago";
-      status.textContent = "✅ PAGO";
-    } else {
-      status.className = "statusPendente";
-      status.textContent = "⏳ PENDENTE";
-    }
-
-    linha.appendChild(dados);
-    linha.appendChild(status);
+    linha.append(dados, status);
     grupo.appendChild(linha);
   });
 
   lista.appendChild(grupo);
 }
 
-/* ========================================
-   MENU HAMBÚRGUER ORIGINAL
-======================================== */
+/* MENU DE RESERVAS */
 
 function toggleMenu() {
   document.getElementById("menuLateral").classList.toggle("ativo");
@@ -908,10 +833,7 @@ document.addEventListener("click", function(evento) {
   const menu = document.getElementById("menuLateral");
   const botao = document.getElementById("menuBtn");
 
-  if (
-    !menu.contains(evento.target) &&
-    !botao.contains(evento.target)
-  ) {
+  if (!menu.contains(evento.target) && !botao.contains(evento.target)) {
     menu.classList.remove("ativo");
   }
 });
@@ -919,11 +841,10 @@ document.addEventListener("click", function(evento) {
 function atualizarMenu() {
   const lista = document.getElementById("listaReservas");
   const grupos = {};
-
   lista.innerHTML = "";
 
   Object.keys(numerosCache)
-    .sort((a,b) => Number(a) - Number(b))
+    .sort((a, b) => Number(a) - Number(b))
     .forEach(function(numero) {
       const item = numerosCache[numero];
       if (!item) return;
@@ -931,10 +852,7 @@ function atualizarMenu() {
       const participante = item.nome || "Sem nome";
 
       if (!grupos[participante]) {
-        grupos[participante] = {
-          pix: item.pix || "",
-          numeros: []
-        };
+        grupos[participante] = { pix: item.pix || "", numeros: [] };
       }
 
       if (!grupos[participante].pix && item.pix) {
@@ -942,13 +860,13 @@ function atualizarMenu() {
       }
 
       grupos[participante].numeros.push({
-        numero: numero,
+        numero,
         pago: item.pago === true,
         bonus: item.bonus === true
       });
     });
 
-  const pessoas = Object.keys(grupos).sort((a,b) =>
+  const pessoas = Object.keys(grupos).sort((a, b) =>
     a.localeCompare(b, "pt-BR")
   );
 
@@ -959,46 +877,29 @@ function atualizarMenu() {
 
   pessoas.forEach(function(pessoa) {
     const titulo = criarElemento("div", "linhaNome", pessoa);
-    const pix = criarElemento(
-      "div",
-      "linhaPix",
-      "Pix: " + (grupos[pessoa].pix || "Não informado")
-    );
+    const pix = criarElemento("div", "linhaPix",
+      "Pix: " + (grupos[pessoa].pix || "Não informado"));
     const numerosEl = criarElemento("div", "linhaNumeros");
 
     grupos[pessoa].numeros.forEach(function(item, indice) {
-      if (indice > 0) {
-        numerosEl.appendChild(document.createTextNode(", "));
-      }
+      if (indice > 0) numerosEl.appendChild(document.createTextNode(", "));
 
       const numeroEl = document.createElement("span");
-
-      numeroEl.textContent =
-        (item.bonus ? "🎁 " : "") +
-        item.numero +
+      numeroEl.textContent = (item.bonus ? "🎁 " : "") + item.numero +
         (item.bonus ? "" : item.pago ? " (PAGO)" : " (PENDENTE)");
 
-      if (item.bonus) {
-        numeroEl.style.color = "#ffd700";
-      } else if (item.pago) {
-        numeroEl.style.color = "#00ff88";
-      } else {
-        numeroEl.style.color = "#ffb020";
-      }
+      numeroEl.style.color = item.bonus
+        ? "#ffd700"
+        : item.pago ? "#00ff88" : "#ffb020";
 
       numerosEl.appendChild(numeroEl);
     });
 
-    lista.appendChild(titulo);
-    lista.appendChild(pix);
-    lista.appendChild(numerosEl);
-    lista.appendChild(criarElemento("div", "divisor"));
+    lista.append(titulo, pix, numerosEl, criarElemento("div", "divisor"));
   });
 }
 
-/* ========================================
-   RESUMO DA APOSTA
-======================================== */
+/* RESUMO */
 
 function abrirResumo() {
   if (!dadosCarregados) {
@@ -1021,8 +922,9 @@ function abrirResumo() {
     return;
   }
 
-  const totalAntes = meusNumeros.length;
+  const totalAntes = contarNumerosParticipante(numerosCache);
   const totalDepois = totalAntes + selecionados.length;
+
   const brindesPrevistos =
     calcularBrindes(totalDepois) - calcularBrindes(totalAntes);
 
@@ -1032,7 +934,7 @@ function abrirResumo() {
   document.getElementById("resNumeros").textContent =
     "Números: " + selecionados.slice().sort().join(", ") +
     (brindesPrevistos > 0
-      ? " | Brindes previstos: " + brindesPrevistos
+      ? " | 🎁 Brindes previstos: " + brindesPrevistos
       : "");
 
   document.getElementById("resValor").textContent =
@@ -1046,9 +948,7 @@ function fecharModal() {
   document.getElementById("modalResumo").style.display = "none";
 }
 
-/* ========================================
-   GERADOR PIX ORIGINAL
-======================================== */
+/* PIX */
 
 function removerAcentos(texto) {
   return String(texto).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -1066,10 +966,7 @@ function crc16(texto) {
     crc ^= texto.charCodeAt(i) << 8;
 
     for (let j = 0; j < 8; j++) {
-      crc = (crc & 0x8000)
-        ? (crc << 1) ^ 0x1021
-        : crc << 1;
-
+      crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : crc << 1;
       crc &= 0xFFFF;
     }
   }
@@ -1083,19 +980,12 @@ function criarPix(valor) {
   }
 
   const nomeRecebedor = removerAcentos(PIX_NOME)
-    .replace(/[^A-Za-z0-9 ]/g, "")
-    .substring(0,25)
-    .trim()
-    .toUpperCase();
+    .replace(/[^A-Za-z0-9 ]/g, "").substring(0, 25).trim().toUpperCase();
 
   const cidade = removerAcentos(PIX_CIDADE)
-    .replace(/[^A-Za-z0-9 ]/g, "")
-    .substring(0,15)
-    .trim()
-    .toUpperCase();
+    .replace(/[^A-Za-z0-9 ]/g, "").substring(0, 15).trim().toUpperCase();
 
-  const contaPix =
-    campoPix("00", "BR.GOV.BCB.PIX") +
+  const contaPix = campoPix("00", "BR.GOV.BCB.PIX") +
     campoPix("01", PIX_CHAVE);
 
   const payload =
@@ -1134,7 +1024,6 @@ function abrirPixComValor(valor) {
 
   const qr = document.getElementById("qrcode");
   qr.innerHTML = "";
-
   document.getElementById("modalPix").style.display = "flex";
 
   new QRCode(qr, {
@@ -1174,18 +1063,15 @@ function fecharPix() {
   document.getElementById("modalPix").style.display = "none";
 }
 
-/* ========================================
-   RESERVAR NÚMERO COM TRANSAÇÃO
-   SALVA NOME E PIX DO PARTICIPANTE
-======================================== */
+/* RESERVAR NÚMERO COM TRANSAÇÃO */
 
 async function reservarNumero(numero) {
   const referencia = db.ref(CAMINHO_NUMEROS + "/" + numero);
 
   const dados = {
-    nome: nome,
+    nome,
     pix: pixParticipante,
-    participanteId: participanteId,
+    participanteId,
     valor: VALOR_NUMERO,
     pago: false,
     bonus: false,
@@ -1200,25 +1086,20 @@ async function reservarNumero(numero) {
   return resultado.committed;
 }
 
-/* ========================================
-   BRINDES ORIGINAIS
-======================================== */
+/* RESERVAR BRINDE */
 
 async function reservarBrinde() {
   for (let tentativa = 0; tentativa < 1000; tentativa++) {
-    const numero = String(
-      Math.floor(Math.random() * 1000)
-    ).padStart(3, "0");
-
+    const numero = String(Math.floor(Math.random() * 1000)).padStart(3, "0");
     const referencia = db.ref(CAMINHO_NUMEROS + "/" + numero);
 
     const resultado = await referencia.transaction(function(atual) {
       if (atual !== null) return;
 
       return {
-        nome: nome,
+        nome,
         pix: pixParticipante,
-        participanteId: participanteId,
+        participanteId,
         valor: 0,
         pago: false,
         bonus: true,
@@ -1230,12 +1111,10 @@ async function reservarBrinde() {
     if (resultado.committed) return numero;
   }
 
-  throw new Error("Não foi possível encontrar um número para o brinde.");
+  throw new Error("Não foi possível encontrar um número disponível para o brinde.");
 }
 
-/* ========================================
-   CONFIRMAR RESERVA E GERAR PIX
-======================================== */
+/* CONFIRMAR RESERVA E CALCULAR BRINDES */
 
 async function confirmar() {
   if (processando) return;
@@ -1266,14 +1145,22 @@ async function confirmar() {
   const indisponiveis = [];
 
   try {
+    /*
+      Busca os dados atuais no Firebase ANTES da reserva.
+      Não depende de um cache possivelmente desatualizado.
+    */
+    const snapshotAntes = await db.ref(CAMINHO_NUMEROS).once("value");
+    const dadosAntes = snapshotAntes.val() || {};
+    const totalAntes = contarNumerosParticipante(dadosAntes);
+
     const resultados = await Promise.all(
       tentativa.map(async function(numero) {
         try {
           const sucesso = await reservarNumero(numero);
-          return { numero: numero, sucesso: sucesso };
+          return { numero, sucesso };
         } catch (erro) {
           console.error("Erro ao reservar número:", numero, erro);
-          return { numero: numero, sucesso: false };
+          return { numero, sucesso: false };
         }
       })
     );
@@ -1291,20 +1178,28 @@ async function confirmar() {
       return;
     }
 
-    const totalAntes = meusNumeros.length;
-    const totalDepois = totalAntes + reservados.length;
+    /*
+      Busca novamente após as reservas serem confirmadas.
+      Conta somente os números normais do participante.
+      Os registros bonus:true nunca entram nessa contagem.
+    */
+    const snapshotDepois = await db.ref(CAMINHO_NUMEROS).once("value");
+    const dadosDepois = snapshotDepois.val() || {};
+    const totalDepois = contarNumerosParticipante(dadosDepois);
 
-    const brindesNovos =
-      calcularBrindes(totalDepois) - calcularBrindes(totalAntes);
+    const brindesAntes = calcularBrindes(totalAntes);
+    const brindesDepois = calcularBrindes(totalDepois);
+    const brindesNovos = Math.max(0, brindesDepois - brindesAntes);
+
+    const numerosBrinde = [];
 
     for (let i = 0; i < brindesNovos; i++) {
-      await reservarBrinde();
+      const numeroBrinde = await reservarBrinde();
+      numerosBrinde.push(numeroBrinde);
     }
 
     selecionados = [];
-
     document.getElementById("modalResumo").style.display = "none";
-    atualizarContador();
 
     if (indisponiveis.length) {
       alert(
@@ -1313,32 +1208,41 @@ async function confirmar() {
       );
     }
 
+    if (numerosBrinde.length) {
+      alert(
+        "🎁 Parabéns! Você ganhou " + numerosBrinde.length +
+        (numerosBrinde.length === 1 ? " brinde!" : " brindes!") +
+        "\nNúmero(s) do brinde: " + numerosBrinde.join(", ")
+      );
+    }
+
+    atualizarTudo();
     abrirPixComValor(reservados.length * VALOR_NUMERO);
 
   } catch (erro) {
     console.error("Erro durante a reserva:", erro);
 
     alert(
-      "Ocorreu um erro durante a reserva. Verifique seus números antes de tentar novamente."
+      "Ocorreu um erro durante a reserva ou na geração do brinde. " +
+      "Confira seus números no sistema antes de tentar novamente."
     );
 
   } finally {
     processando = false;
-
     botao.disabled = false;
     botao.textContent = "RESERVAR E GERAR PIX";
 
-    atualizarGrid();
-    atualizarAcumulado();
-    atualizarContador();
-    atualizarMenu();
-    atualizarMinhasReservas();
+    try {
+      const snapshot = await db.ref(CAMINHO_NUMEROS).once("value");
+      numerosCache = snapshot.val() || {};
+      atualizarTudo();
+    } catch (erro) {
+      console.error("Erro ao atualizar os dados:", erro);
+    }
   }
 }
 
-/* ========================================
-   DATA DO SORTEIO
-======================================== */
+/* DATA DO SORTEIO: PRÓXIMO SÁBADO ÀS 19H */
 
 function atualizarDataSorteio() {
   const agora = new Date();
@@ -1349,26 +1253,16 @@ function atualizarDataSorteio() {
   const horarioHoje = new Date(agora);
   horarioHoje.setHours(19, 0, 0, 0);
 
-  if (dias === 0 && agora >= horarioHoje) {
-    dias = 7;
-  }
+  if (dias === 0 && agora >= horarioHoje) dias = 7;
 
   proximo.setDate(agora.getDate() + dias);
   proximo.setHours(19, 0, 0, 0);
 
-  const data = proximo.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
-  });
-
   document.getElementById("dataSorteio").textContent =
-    "Sorteio: " + data + " às 19:00";
+    "Sorteio: " + proximo.toLocaleDateString("pt-BR") + " às 19:00";
 }
 
-/* ========================================
-   INICIALIZAÇÃO
-======================================== */
+/* INICIALIZAÇÃO */
 
 carregarCadastroLocal();
 atualizarDataSorteio();
