@@ -1,0 +1,797 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#020617">
+
+<title>Rifa Online</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #0f172a;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  padding-top: 140px;
+}
+
+/* TOPO */
+
+#topo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #020617;
+  border-bottom: 2px solid #00ff88;
+  padding: 12px;
+  z-index: 999;
+}
+
+.topo-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.topo-info {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+#resTopo {
+  color: #00ff88;
+}
+
+#qtd {
+  color: #ffd700;
+}
+
+.topo-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.topo-buttons button {
+  background: #00ff88;
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* GRID */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 10px;
+  max-width: 600px;
+  margin: auto;
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+.numero {
+  padding: 12px 5px;
+  border: none;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.livre {
+  background: #1e293b;
+  color: #fff;
+}
+
+.ocupado {
+  background: #ef4444;
+  color: #fff;
+}
+
+.meu {
+  background: #00ff88;
+  color: #000;
+}
+
+.brinde {
+  background: gold;
+  color: #000;
+  border: 2px solid #fff;
+}
+
+/* MENU */
+
+#menu {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 85%;
+  max-width: 350px;
+  height: 100%;
+  background: #020617;
+  z-index: 1000;
+  transition: .3s;
+  overflow: auto;
+  padding: 20px;
+}
+
+#menu.ativo {
+  left: 0;
+}
+
+.menu-topo,
+.admin-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.fechar {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.card {
+  background: #111827;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  overflow-wrap: anywhere;
+}
+
+.card-nome {
+  color: #00ff88;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* ADMIN */
+
+#admin {
+  position: fixed;
+  bottom: -100%;
+  left: 0;
+  width: 100%;
+  background: #020617;
+  border-top: 2px solid #00ff88;
+  transition: .3s;
+  z-index: 1000;
+  max-height: 85vh;
+  overflow: auto;
+  padding: 20px;
+  border-radius: 20px 20px 0 0;
+}
+
+#admin.ativo {
+  bottom: 0;
+}
+
+.inputs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.inputs input {
+  min-width: 0;
+  width: 50%;
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #111827;
+  color: #fff;
+}
+
+.btn-add {
+  width: 100%;
+  background: #00ff88;
+  color: #000;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+/* GRUPOS POR PARTICIPANTE */
+
+.grupo-admin {
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.grupo-titulo {
+  color: #00ff88;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  overflow-wrap: anywhere;
+}
+
+.total-grupo {
+  color: #cbd5e1;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.numeros-admin {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.numero-admin-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #1e293b;
+  padding: 9px 10px;
+  border-radius: 8px;
+}
+
+.numero-admin-valor {
+  color: #fff;
+  font-weight: bold;
+}
+
+.excluir-numero {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 12px;
+  font-weight: bold;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.vazio {
+  text-align: center;
+  color: #94a3b8;
+  padding: 20px 10px;
+}
+
+.status {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00ff88;
+  border-radius: 10px;
+}
+
+@media (max-width: 380px) {
+  .topo-buttons button {
+    padding: 9px;
+    font-size: 12px;
+  }
+
+  .topo-info {
+    font-size: 12px;
+  }
+
+  .grid {
+    gap: 5px;
+    padding: 7px;
+  }
+
+  .numero {
+    padding: 10px 2px;
+    font-size: 12px;
+  }
+
+  #admin {
+    padding: 14px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOPO -->
+
+<div id="topo">
+  <div class="topo-box">
+
+    <div class="topo-buttons">
+      <button onclick="toggleMenu()">☰ MENU</button>
+      <button onclick="toggleAdmin()">⚙ ADMIN</button>
+    </div>
+
+    <div class="topo-info">
+      <p id="resTopo">Acumulado: R$ 0,00</p>
+      <p id="qtd">Selecionados: 0</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- GRADE -->
+
+<div class="grid" id="grid"></div>
+
+<!-- MENU DE RESERVAS -->
+
+<div id="menu">
+  <div class="menu-topo">
+    <h2>Reservas</h2>
+    <button class="fechar" onclick="toggleMenu()">X</button>
+  </div>
+
+  <div id="listaMenu"></div>
+</div>
+
+<!-- PAINEL ADMIN -->
+
+<div id="admin">
+
+  <div class="admin-topo">
+    <h2>Painel Admin</h2>
+    <button class="fechar" onclick="toggleAdmin()">Fechar</button>
+  </div>
+
+  <div class="inputs">
+    <input id="nomeAdmin" placeholder="Nome do participante"
+           maxlength="100">
+    <input id="numeroAdmin" placeholder="Número (000–999)"
+           inputmode="numeric" maxlength="3">
+  </div>
+
+  <button class="btn-add" onclick="adicionar()">
+    + Adicionar Número
+  </button>
+
+  <p class="status" id="statusAdmin">
+    Os números serão agrupados por participante.
+  </p>
+
+  <div id="listaAdmin"></div>
+
+</div>
+
+<script>
+"use strict";
+
+/* FIREBASE */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCIDFHMzgkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain: "rifa-782a3.firebaseapp.com",
+  databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId: "rifa-782a3",
+  storageBucket: "rifa-782a3.firebasestorage.app",
+  messagingSenderId: "88068598855",
+  appId: "1:88068598855:web:a230a06db76a4bbc125562"
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+const db = firebase.database();
+const caminhoNumeros = db.ref("rifa/numeros");
+
+let selecionados = [];
+let dadosAtuais = {};
+let carregado = false;
+
+let nome = localStorage.getItem("nome");
+
+if (!nome) {
+  nome = prompt("Digite seu nome:") || "";
+  nome = nome.trim().slice(0, 100);
+
+  if (nome) {
+    localStorage.setItem("nome", nome);
+  }
+}
+
+/* UTILITÁRIOS */
+
+function escaparHTML(valor) {
+  return String(valor).replace(/[&<>"']/g, caractere => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[caractere]);
+}
+
+function normalizarNumero(valor) {
+  const texto = String(valor).trim();
+
+  if (!/^\d{1,3}$/.test(texto)) {
+    return null;
+  }
+
+  const numero = Number(texto);
+
+  if (numero < 0 || numero > 999) {
+    return null;
+  }
+
+  return String(numero).padStart(3, "0");
+}
+
+function definirStatus(texto) {
+  document.getElementById("statusAdmin").textContent = texto;
+}
+
+/* LEITURA EM TEMPO REAL */
+
+caminhoNumeros.on("value", snapshot => {
+  dadosAtuais = snapshot.val() || {};
+  carregado = true;
+
+  render(dadosAtuais);
+  atualizarMenu(dadosAtuais);
+  atualizarAdmin(dadosAtuais);
+  atualizarResumo(dadosAtuais);
+}, erro => {
+  console.error("Erro Firebase:", erro);
+  alert("Não foi possível carregar os números. Verifique a conexão e as regras do Firebase.");
+});
+
+/* RESUMO */
+
+function atualizarResumo(dados) {
+  let acumulado = 0;
+
+  Object.keys(dados).forEach(num => {
+    if (dados[num] && dados[num].bonus !== true) {
+      acumulado += 4.5;
+    }
+  });
+
+  document.getElementById("resTopo").textContent =
+    "Acumulado: R$ " + acumulado.toFixed(2).replace(".", ",");
+
+  document.getElementById("qtd").textContent =
+    "Selecionados: " + selecionados.length;
+}
+
+/* GRADE 000–999 */
+
+function render(dados) {
+  const grid = document.getElementById("grid");
+  const fragmento = document.createDocumentFragment();
+
+  grid.innerHTML = "";
+
+  for (let i = 0; i < 1000; i++) {
+    const num = String(i).padStart(3, "0");
+    const btn = document.createElement("button");
+
+    btn.type = "button";
+    btn.textContent = num;
+    btn.className = "numero";
+
+    if (dados[num]) {
+      if (dados[num].bonus === true) {
+        btn.classList.add("brinde");
+      } else {
+        btn.classList.add(
+          nome && dados[num].nome === nome ? "meu" : "ocupado"
+        );
+      }
+
+      btn.disabled = true;
+      btn.title = "Número ocupado";
+    } else {
+      btn.classList.add(
+        selecionados.includes(num) ? "meu" : "livre"
+      );
+
+      btn.onclick = () => {
+        if (selecionados.includes(num)) {
+          selecionados = selecionados.filter(n => n !== num);
+        } else {
+          selecionados.push(num);
+        }
+
+        render(dados);
+        atualizarResumo(dados);
+      };
+    }
+
+    fragmento.appendChild(btn);
+  }
+
+  grid.appendChild(fragmento);
+}
+
+/* MENU DE RESERVAS AGRUPADO POR NOME */
+
+function atualizarMenu(dados) {
+  const grupos = {};
+
+  Object.keys(dados)
+    .sort((a, b) => Number(a) - Number(b))
+    .forEach(num => {
+      const registro = dados[num];
+
+      if (!registro) return;
+
+      const pessoa = registro.nome || "Sem nome";
+
+      if (!grupos[pessoa]) {
+        grupos[pessoa] = [];
+      }
+
+      grupos[pessoa].push(
+        registro.bonus === true ? "🎁 " + num : num
+      );
+    });
+
+  const lista = document.getElementById("listaMenu");
+  lista.innerHTML = "";
+
+  const nomes = Object.keys(grupos).sort((a, b) =>
+    a.localeCompare(b, "pt-BR")
+  );
+
+  if (!nomes.length) {
+    lista.innerHTML = '<div class="vazio">Nenhum número reservado.</div>';
+    return;
+  }
+
+  nomes.forEach(pessoa => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const titulo = document.createElement("div");
+    titulo.className = "card-nome";
+    titulo.textContent = pessoa;
+
+    const numeros = document.createElement("div");
+    numeros.textContent = grupos[pessoa].join(", ");
+
+    card.appendChild(titulo);
+    card.appendChild(numeros);
+    lista.appendChild(card);
+  });
+}
+
+/* ADMIN AGRUPADO POR NOME */
+
+function atualizarAdmin(dados) {
+  const lista = document.getElementById("listaAdmin");
+  lista.innerHTML = "";
+
+  const grupos = {};
+
+  Object.keys(dados)
+    .sort((a, b) => Number(a) - Number(b))
+    .forEach(num => {
+      const registro = dados[num];
+
+      if (!registro) return;
+
+      const pessoa = registro.nome || "Sem nome";
+
+      if (!grupos[pessoa]) {
+        grupos[pessoa] = [];
+      }
+
+      grupos[pessoa].push({
+        numero: num,
+        bonus: registro.bonus === true
+      });
+    });
+
+  const nomes = Object.keys(grupos).sort((a, b) =>
+    a.localeCompare(b, "pt-BR")
+  );
+
+  if (!nomes.length) {
+    lista.innerHTML = '<div class="vazio">Nenhum número cadastrado.</div>';
+    return;
+  }
+
+  nomes.forEach(pessoa => {
+    const numeros = grupos[pessoa];
+
+    const grupo = document.createElement("div");
+    grupo.className = "grupo-admin";
+
+    const titulo = document.createElement("div");
+    titulo.className = "grupo-titulo";
+    titulo.textContent = "👤 " + pessoa;
+
+    const total = document.createElement("div");
+    total.className = "total-grupo";
+    total.textContent = "Total de números: " + numeros.length;
+
+    const listaNumeros = document.createElement("div");
+    listaNumeros.className = "numeros-admin";
+
+    numeros.forEach(item => {
+      const linha = document.createElement("div");
+      linha.className = "numero-admin-item";
+
+      const numero = document.createElement("span");
+      numero.className = "numero-admin-valor";
+      numero.textContent =
+        (item.bonus ? "🎁 " : "") + item.numero;
+
+      const botao = document.createElement("button");
+      botao.type = "button";
+      botao.className = "excluir-numero";
+      botao.textContent = "🗑 Excluir";
+
+      botao.onclick = () => excluir(item.numero);
+
+      linha.appendChild(numero);
+      linha.appendChild(botao);
+      listaNumeros.appendChild(linha);
+    });
+
+    grupo.appendChild(titulo);
+    grupo.appendChild(total);
+    grupo.appendChild(listaNumeros);
+
+    lista.appendChild(grupo);
+  });
+}
+
+/* ADICIONAR UM NÚMERO PELO ADMIN */
+
+async function adicionar() {
+  if (!carregado) {
+    alert("Aguarde o carregamento do Firebase.");
+    return;
+  }
+
+  const nomeA = document.getElementById("nomeAdmin").value.trim();
+  const valorNumero = document.getElementById("numeroAdmin").value;
+  const num = normalizarNumero(valorNumero);
+
+  if (!nomeA) {
+    alert("Digite o nome do participante.");
+    return;
+  }
+
+  if (num === null) {
+    alert("Digite um número válido entre 000 e 999.");
+    return;
+  }
+
+  const referencia = db.ref("rifa/numeros/" + num);
+
+  try {
+    const resultado = await referencia.transaction(atual => {
+      if (atual !== null) {
+        return;
+      }
+
+      return {
+        nome: nomeA.slice(0, 100)
+      };
+    });
+
+    if (!resultado.committed) {
+      alert("O número " + num + " já está ocupado.");
+      return;
+    }
+
+    document.getElementById("nomeAdmin").value = nomeA;
+    document.getElementById("numeroAdmin").value = "";
+
+    definirStatus("Número " + num + " adicionado para " + nomeA + ".");
+  } catch (erro) {
+    console.error("Erro ao adicionar:", erro);
+    alert("Não foi possível adicionar. Verifique as regras do Firebase.");
+  }
+}
+
+/* EXCLUIR SOMENTE UM NÚMERO */
+
+async function excluir(num) {
+  if (!carregado) {
+    alert("Aguarde o carregamento do Firebase.");
+    return;
+  }
+
+  const referencia = db.ref("rifa/numeros/" + num);
+
+  try {
+    const snapshot = await referencia.once("value");
+
+    if (!snapshot.exists()) {
+      alert("O número " + num + " não existe mais.");
+      return;
+    }
+
+    const registro = snapshot.val();
+    const nomePessoa = registro.nome || "Sem nome";
+
+    const confirmado = confirm(
+      "Deseja excluir somente o número " + num +
+      " de " + nomePessoa + "?\n\n" +
+      "Os outros números dessa pessoa serão mantidos."
+    );
+
+    if (!confirmado) return;
+
+    // Confirma que o registro ainda é o mesmo antes de excluir.
+    const atual = await referencia.once("value");
+
+    if (!atual.exists()) {
+      alert("Esse número já foi removido.");
+      return;
+    }
+
+    if ((atual.val().nome || "Sem nome") !== nomePessoa) {
+      alert("O cadastro mudou. Atualize a lista e tente novamente.");
+      return;
+    }
+
+    await referencia.remove();
+
+    selecionados = selecionados.filter(n => n !== num);
+
+    definirStatus("Número " + num + " excluído. Os demais foram mantidos.");
+  } catch (erro) {
+    console.error("Erro ao excluir:", erro);
+    alert("Não foi possível excluir. Verifique as regras do Firebase.");
+  }
+}
+
+/* ABRIR E FECHAR PAINÉIS */
+
+function toggleMenu() {
+  document.getElementById("menu").classList.toggle("ativo");
+}
+
+function toggleAdmin() {
+  document.getElementById("admin").classList.toggle("ativo");
+}
+</script>
+
+</body>
+</html>
