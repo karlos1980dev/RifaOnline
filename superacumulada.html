@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1055,66 +1054,70 @@ document.addEventListener("click", function(evento) {
   }
 });
 
+
+/* MENU: MOSTRAR SOMENTE OS NÚMEROS DO PARTICIPANTE ATUAL */
+
 function atualizarMenu() {
   const lista = document.getElementById("listaReservas");
-  const grupos = {};
   lista.innerHTML = "";
 
-  Object.keys(numerosCache)
-    .sort((a, b) => Number(a) - Number(b))
-    .forEach(function(numero) {
+  const numeros = Object.keys(numerosCache)
+    .filter(function(numero) {
       const item = numerosCache[numero];
-      if (!item) return;
 
-      const participante = item.nome || "Sem nome";
-
-      if (!grupos[participante]) {
-        grupos[participante] = { pix: item.pix || "", numeros: [] };
-      }
-
-      if (!grupos[participante].pix && item.pix) {
-        grupos[participante].pix = item.pix;
-      }
-
-      grupos[participante].numeros.push({
-        numero,
-        pago: item.pago === true,
-        bonus: item.bonus === true
-      });
+      return item &&
+        item.bonus !== true &&
+        item.participanteId === participanteId;
+    })
+    .sort(function(a, b) {
+      return Number(a) - Number(b);
     });
 
-  const pessoas = Object.keys(grupos).sort((a, b) =>
-    a.localeCompare(b, "pt-BR")
-  );
-
-  if (!pessoas.length) {
-    lista.textContent = "Ainda não há reservas.";
+  if (!numeros.length) {
+    lista.textContent = "Você ainda não reservou nenhum número.";
     return;
   }
 
-  pessoas.forEach(function(pessoa) {
-    const titulo = criarElemento("div", "linhaNome", pessoa);
-    const pix = criarElemento("div", "linhaPix",
-      "Pix: " + (grupos[pessoa].pix || "Não informado"));
-    const numerosEl = criarElemento("div", "linhaNumeros");
+  const titulo = criarElemento(
+    "div",
+    "linhaNome",
+    "👤 " + (nome || "Meu cadastro")
+  );
 
-    grupos[pessoa].numeros.forEach(function(item, indice) {
-      if (indice > 0) numerosEl.appendChild(document.createTextNode(", "));
+  const pix = criarElemento(
+    "div",
+    "linhaPix",
+    "🔑 Pix: " + (pixParticipante || "Não informado")
+  );
 
-      const numeroEl = document.createElement("span");
-      numeroEl.textContent = (item.bonus ? "🎁 " : "") + item.numero +
-        (item.bonus ? "" : item.pago ? " (PAGO)" : " (PENDENTE)");
+  const numerosEl = criarElemento("div", "linhaNumeros");
 
-      numeroEl.style.color = item.bonus
-        ? "#ffd700"
-        : item.pago ? "#00ff88" : "#ffb020";
+  numeros.forEach(function(numero, indice) {
+    const item = numerosCache[numero];
 
-      numerosEl.appendChild(numeroEl);
-    });
+    if (indice > 0) {
+      numerosEl.appendChild(document.createTextNode(", "));
+    }
 
-    lista.append(titulo, pix, numerosEl, criarElemento("div", "divisor"));
+    const numeroEl = document.createElement("span");
+
+    numeroEl.textContent = numero +
+      (item.pago === true ? " (PAGO)" : " (PENDENTE)");
+
+    numeroEl.style.color =
+      item.pago === true ? "#00ff88" : "#ffb020";
+
+    numerosEl.appendChild(numeroEl);
   });
+
+  lista.append(
+    titulo,
+    pix,
+    numerosEl,
+    criarElemento("div", "divisor")
+  );
 }
+
 
 /* RESUMO DA APOSTA */
 
