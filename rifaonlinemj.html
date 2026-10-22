@@ -991,9 +991,8 @@
     <p class="quantidade-descricao">
       Para continuar, escolha dezenas em grupos de 5.
     </p>
-
-    
 <div class="quantidade-opcoes">
+  <button type="button" onclick="marcarQuantidade(1)">1</button>
   <button type="button" onclick="marcarQuantidade(5)">5</button>
   <button type="button" onclick="marcarQuantidade(10)">10</button>
   <button type="button" onclick="marcarQuantidade(15)">15</button>
@@ -1037,7 +1036,15 @@ const totalPagarSpan=$('totalPagar'),totalReceberSpan=$('totalReceber'),valorPac
 const modalPacote=$('modalPacote');
 const CHAVE_PIX_RIFA='71992290058',NOME_RECEBEDOR_PIX='Carlos Santos',CIDADE_RECEBEDOR_PIX='SALVADOR';
 const VALOR_UNITARIO=1,VALOR_PACOTE_10=9,ESPERA_STATUS_MS=5*60*1000;
-let selecionados=[],bloqueados=new Set(),temporizadorMenu=null,ultimoHorarioAlertaPremio=null;
+let selecionados = [];
+let bloqueados = new Set();
+let temporizadorMenu = null;
+let ultimoHorarioAlertaPremio = null;
+
+let reservaPendentePix = null;
+let confirmandoReservaPix = false;
+
+
 const TEMPO_MINIMO_ENTRE_ALERTAS=3600000;
 const localDateString=(date=new Date())=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 const formatarDinheiro=n=>Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1230,12 +1237,176 @@ function gerarQRCodePix(valor){
   $('qrcode').innerHTML='';$('pixCopiaCola').value=payload;
   new QRCode($('qrcode'),{text:payload,width:250,height:250,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
 }
-async function copiarPixCopiaCola(){
-  const campo=$('pixCopiaCola');
-  try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(campo.value);else throw new Error('clipboard indisponível');}
-  catch(e){campo.focus();campo.select();const ok=document.execCommand('copy');if(!ok)return alert('Não foi possível copiar. Selecione e copie o texto.');}
-  $('pixMsg').style.display='block';
+async function copiarPixCopiaCola() {
+  const campo = $('pixCopiaCola');
+
+  if (!campo.value.trim()) {
+    return alert('O código Pix está vazio.');
+  }
+
+  let copiado = false;
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(campo.value);
+      copiado = true;
+    } else {
+      campo.focus();
+      campo.select();
+      copiado = document.execCommand('copy');
+    }
+  } catch (e) {
+    campo.focus();
+    campo.select();
+
+    try {
+      copiado = document.execCommand('copy');
+    } catch (_) {
+      copiado = false;
+    }
+  }
+
+  if (!copiado) {
+    return alert(
+      'Não foi possível copiar o Pix. Tente selecionar e copiar o código manualmente.'
+    );
+  }
+
+  $('pixMsg').style.display = 'block';
+
+  if (reservaPendentePix) {
+    await confirmarReservaAposCopiarPix();
+  }
 }
+
+async function confirmarReservaAposCopiarPix() {
+  if (!reservaPendentePix || confirmandoReservaPix) return;
+
+  confirmandoReservaPix = true;
+
+  try {
+    const pendente = reservaPendentePix;
+
+    if (!podeMarcarAgora()) {
+      alert('O horário de marcação foi encerrado.');
+      return;
+    }
+
+    // Verifica novamente se os números continuam disponíveis.
+    const snap = await db.ref('numerosBloqueados').once('value');
+    const dadosBloqueados = snap.val() || {};
+    const bloqueadosAtuais = new Set(Object.keys(dadosBloqueados));
+
+    const conflito = pendente.numeros.some(
+      n => bloqueadosAtuais.has(n)
+    );
+
+    if (conflito) {
+      reservaPendentePix = null;
+
+      $('modalPix').style.display = 'none';
+
+      await atualizarBloqueados();
+
+      alert(
+        'Um ou mais números foram reservados por outra pessoa. Escolha novamente e gere outro Pix.'
+      );
+
+      return;
+    }
+
+    // Atualiza a lista local de números bloqueados.
+    bloqueados = bloqueadosAtuais;
+
+    // Calcula eventuais números extras.
+    const qtdExtras = Math.floor(pendente.numeros.length / 10);
+
+    const disponiveisExtras = [...document.querySelectorAll('.numero')]
+      .filter(btn =>
+        !bloqueadosAtuais.has(btn.dataset.num) &&
+        !pendente.numeros.includes(btn.dataset.num)
+      )
+      .map(btn => btn.dataset.num);
+
+    const extras = embaralhar(disponiveisExtras).slice(0, qtdExtras);
+
+    const todosNumeros = [...pendente.numeros, ...extras];
+
+    const dataHoje = localDateString();
+    const dataHora = new Date().toISOString();
+
+    const chave =
+      'ID-' + Date.now() + '-' +
+      Math.random().toString(36).slice(2, 7);
+
+    const dadosReserva = {
+      nome: pendente.nome,
+      numeros: pendente.numeros,
+      dezenasExtras: extras,
+      horario: pendente.horario,
+      status: '⏳ AGUARDANDO PAGAMENTO',
+      resultado: '⏳ AGUARDANDO',
+      dataHora,
+      valorTotal: pendente.valorTotal,
+      quantidade: pendente.numeros.length,
+      pixCopiado: true,
+      pixCopiadoEm: new Date().toISOString()
+    };
+
+    // Grava a reserva e bloqueia os números.
+    const updates = {};
+
+    updates[
+      `compras-dia/${dataHoje}/${pendente.horario}/${chave}`
+    ] = dadosReserva;
+
+    todosNumeros.forEach(n => {
+      updates[`numerosBloqueados/${n}`] = {
+        bloqueadoEm: Date.now(),
+        extra: extras.includes(n),
+        nome: pendente.nome,
+        status: '⏳ AGUARDANDO PAGAMENTO',
+        reservaId: chave,
+        data: dataHoje,
+        horario: pendente.horario
+      };
+    });
+
+    await db.ref().update(updates);
+
+    // Limpa a seleção depois de gravar com sucesso.
+    selecionados = [];
+
+    document.querySelectorAll('.numero.marcado').forEach(btn => {
+      btn.classList.remove('marcado');
+    });
+
+    reservaPendentePix = null;
+
+    $('modalPix').style.display = 'none';
+
+    atualizarContador();
+    atualizarTotais();
+
+    await atualizarBloqueados();
+    await carregarReservasDaSemana();
+
+    alert(
+      'Reserva registrada! Agora realize o pagamento Pix e aguarde a validação.'
+    );
+
+  } catch (erro) {
+    console.error('Erro ao confirmar reserva:', erro);
+
+    alert(
+      'Não foi possível registrar a reserva. Verifique sua conexão e tente novamente.'
+    );
+
+  } finally {
+    confirmandoReservaPix = false;
+  }
+}
+<!--  -->
 function gerarCountdown(id,dataHora,status){
   const el=$(id);if(!el)return;
   if(status&&String(status).toUpperCase().includes('PAGO')){el.innerHTML='<span class="verde">✅ STATUS PAGO</span>';return;}
@@ -1249,37 +1420,89 @@ function gerarCountdown(id,dataHora,status){
   }
   atualizar();timer=setInterval(atualizar,1000);
 }
-function agendarAtualizacaoStatusParaPago(dataHoraCompra,caminhoReserva){
-  const inicio=Date.parse(dataHoraCompra),restante=inicio+ESPERA_STATUS_MS-Date.now();
-  if(!Number.isFinite(inicio))return;
-  setTimeout(()=>atualizarStatusParaPago(caminhoReserva),Math.max(0,restante));
-}
-function atualizarStatusParaPago(caminhoReserva){
-  db.ref(caminhoReserva).once('value').then(snap=>{
-    const reserva=snap.val();
-    if(reserva&&String(reserva.status||'').toUpperCase().includes('AGUARDANDO')){
-      return db.ref(caminhoReserva).update({status:'✅ PAGO - PIX VALIDADO',pagoEm:new Date().toISOString()})
-        .then(()=>{carregarReservasDaSemana();atualizarBloqueados();})
-        .catch(err=>console.error('Erro ao atualizar status:',err));
-    }
-  }).catch(err=>console.error('Erro ao consultar status:',err));
-}
-/* Reagenda as reservas pendentes da semana quando a página é aberta novamente. */
-function reagendarPagamentosAutomaticos(){
-  const inicio=getInicioDaSemana(),fim=getFimDaSemana(),datas=[];
-  const d=new Date(inicio+'T12:00:00'),ultimo=new Date(fim+'T12:00:00');
-  while(d<=ultimo){datas.push(localDateString(d));d.setDate(d.getDate()+1);}
-  return Promise.all(datas.map(data=>db.ref('compras-dia/'+data).once('value').then(snap=>{
-    const dia=snap.val()||{};
-    Object.keys(dia).forEach(horario=>Object.keys(dia[horario]||{}).forEach(id=>{
-      const item=dia[horario][id];
-      if(item&&item.dataHora&&String(item.status||'').toUpperCase().includes('AGUARDANDO'))
-        agendarAtualizacaoStatusParaPago(item.dataHora,`compras-dia/${data}/${horario}/${id}`);
-    }));
-  }))).catch(err=>console.error('Erro ao reagendar status automático:',err));
-}
 
 
+function agendarAtualizacaoStatusParaPago(dataHoraCompra, caminhoReserva) {
+  const inicio = Date.parse(dataHoraCompra);
+
+  if (!Number.isFinite(inicio)) return;
+
+  const restante = inicio + ESPERA_STATUS_MS - Date.now();
+
+  setTimeout(() => {
+    atualizarStatusParaPago(caminhoReserva);
+  }, Math.max(0, restante));
+}
+
+function atualizarStatusParaPago(caminhoReserva) {
+  const referencia = db.ref(caminhoReserva);
+
+  referencia.once("value")
+    .then(snapshot => {
+      const reserva = snapshot.val();
+
+      if (
+        reserva &&
+        String(reserva.status || "")
+          .toUpperCase()
+          .includes("AGUARDANDO")
+      ) {
+        return referencia.update({
+          status: "✅ PAGO - PIX VALIDADO",
+          pagoEm: new Date().toISOString()
+        }).then(() => {
+          carregarReservasDaSemana();
+          atualizarBloqueados();
+        });
+      }
+    })
+    .catch(erro => {
+      console.error("Erro ao atualizar status:", erro);
+    });
+}
+
+function reagendarPagamentosAutomaticos() {
+  const inicio = getInicioDaSemana();
+  const fim = getFimDaSemana();
+  const datas = [];
+
+  const data = new Date(inicio + "T12:00:00");
+  const ultima = new Date(fim + "T12:00:00");
+
+  while (data <= ultima) {
+    datas.push(localDateString(data));
+    data.setDate(data.getDate() + 1);
+  }
+
+  return Promise.all(
+    datas.map(dia =>
+      db.ref("compras-dia/" + dia).once("value").then(snapshot => {
+        const reservas = snapshot.val() || {};
+
+        Object.keys(reservas).forEach(horario => {
+          Object.keys(reservas[horario] || {}).forEach(id => {
+            const reserva = reservas[horario][id];
+
+            if (
+              reserva &&
+              reserva.dataHora &&
+              String(reserva.status || "")
+                .toUpperCase()
+                .includes("AGUARDANDO")
+            ) {
+              agendarAtualizacaoStatusParaPago(
+                reserva.dataHora,
+                `compras-dia/${dia}/${horario}/${id}`
+              );
+            }
+          });
+        });
+      })
+    )
+  ).catch(erro => {
+    console.error("Erro ao reagendar status automático:", erro);
+  });
+}
 function abrirModalQuantidade(qtd) {
   const modal = document.getElementById('modalQuantidade');
   const mensagem = document.getElementById('mensagemQuantidade');
@@ -1307,42 +1530,38 @@ function fecharModalQuantidade() {
   document.getElementById('modalQuantidade').style.display = 'none';
 }
 
-function salvarReserva(){
-  if (!selecionados.length || selecionados.length % 5 !== 0) {
-  abrirModalQuantidade(selecionados.length);
-  return;
-}
-  if(!podeMarcarAgora())return alert('Prazo encerrado para marcações neste horário.');
-  const nome=localStorage.getItem('nomeJogador');if(!nome){abrirModalNome();return alert('Digite seu nome para continuar.');}
-  const numerosReserva=[...selecionados],valorTotal=calcularValorComPacote(numerosReserva.length);
-  const extras=gerarDezenasExtras(numerosReserva.length,numerosReserva,bloqueados);
-  const todos=[...numerosReserva,...extras];
-  const horario=$('horarios').value,dataHoje=localDateString(),chave='ID-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
-  const dataHora=new Date().toISOString();
-  const dados={nome,numeros:numerosReserva,dezenasExtras:extras,horario,status:'⏳ AGUARDANDO',resultado:'⏳ AGUARDANDO',dataHora,valorTotal,quantidade:numerosReserva.length};
-  salvarBtn.disabled=true;salvarBtn.textContent='SALVANDO...';
-  db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados).then(()=>{
-    const updates={};
-    todos.forEach(n=>{updates['numerosBloqueados/'+n]={bloqueadoEm:Date.now(),extra:extras.includes(n),nome,status:'⏳ AGUARDANDO',reservaId:chave,data:dataHoje,horario};});
-    return db.ref().update(updates).then(()=>({path:`compras-dia/${dataHoje}/${horario}/${chave}`}));
-  }).then(({path})=>{
-    agendarAtualizacaoStatusParaPago(dataHora,path);
-    const valorPix=valorTotal;
-    selecionados=[];document.querySelectorAll('.numero.marcado').forEach(b=>b.classList.remove('marcado'));
-    atualizarContador();atualizarTotais();fecharModalPacote();
-    return atualizarBloqueados().then(()=>carregarReservasDaSemana()).then(()=>abrirModalPix(valorPix));
-  }).catch(err=>{console.error(err);alert('Não foi possível salvar a reserva. Confira sua conexão e as regras do Firebase.');})
-  .finally(()=>{salvarBtn.disabled=false;salvarBtn.textContent='SALVAR';});
-}
-salvarBtn.onclick = () => {
-  if (!selecionados.length || selecionados.length % 5 !== 0) {
-    abrirModalQuantidade(selecionados.length);
-    return;
+function salvarReserva() {
+  if (confirmandoReservaPix) return;
+
+  if (selecionados.length === 0) {
+    return alert('Selecione pelo menos 1 número.');
   }
 
+  if (!podeMarcarAgora()) {
+    return alert('Prazo encerrado para marcações neste horário.');
+  }
+
+  const nome = localStorage.getItem('nomeJogador');
+
+  if (!nome) {
+    abrirModalNome();
+    return alert('Digite seu nome para continuar.');
+  }
+
+  const numeros = [...selecionados];
+
+  const valorTotal = calcularValorComPacote(numeros.length);
+
+  reservaPendentePix = {
+    nome,
+    numeros,
+    horario: $('horarios').value,
+    valorTotal
+  };
+
   fecharModalPacote();
-  salvarReserva();
-};
+  abrirModalPix(valorTotal);
+}
 function salvarHistoricoAutomatico(){
   const conteudo=codigo.innerText.trim();if(!conteudo||conteudo.includes('Nenhuma reserva'))return;
   const agora=new Date(),data=localDateString(agora),hora=`${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}:${String(agora.getSeconds()).padStart(2,'0')}`;
@@ -1419,14 +1638,8 @@ carregarReservasDaSemana();atualizarBloqueados();reagendarPagamentosAutomaticos(
 
 
 function marcarQuantidade(qtd) {
-  const disponiveis = getNumerosDisponiveis();
+  if (!Number.isInteger(qtd) || qtd < 1) return;
 
-  if (disponiveis.length < qtd) {
-    alert(`Só existem ${disponiveis.length} dezenas disponíveis para marcar.`);
-    return;
-  }
-
-  // Limpa as marcações anteriores
   selecionados.forEach(n => {
     const btn = document.querySelector(
       `.numero[data-num="${n}"]`
@@ -1436,10 +1649,17 @@ function marcarQuantidade(qtd) {
 
   selecionados = [];
 
-  // Escolhe a quantidade solicitada aleatoriamente
-  const escolhidos = embaralhar([...disponiveis]).slice(0, qtd);
+  const disponiveis = getNumerosDisponiveis();
 
-  escolhidos.forEach(n => {
+  if (disponiveis.length < qtd) {
+    atualizarTotais();
+    atualizarContador();
+    return alert(
+      `Só existem ${disponiveis.length} dezenas disponíveis.`
+    );
+  }
+
+  embaralhar([...disponiveis]).slice(0, qtd).forEach(n => {
     const btn = document.querySelector(
       `.numero[data-num="${n}"]`
     );
@@ -1453,8 +1673,6 @@ function marcarQuantidade(qtd) {
   atualizarTotais();
   atualizarContador();
   fecharModalQuantidade();
-
-  // Abre o painel de pagamento
   abrirModalPacote();
 }
 
