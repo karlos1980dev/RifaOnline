@@ -371,6 +371,198 @@
   align-items: center;
   justify-content: center;
 }
+#btnPacoteContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+#btnPacoteContainer #btnMais10,
+#btnPacoteContainer #btnMenos10 {
+  flex: 1 1 calc(50% - 10px);
+  min-width: 0;
+}
+
+#btnPacoteContainer #salvar {
+  flex: 1 1 100%;
+  width: 100%;
+  background: #2ecc71;
+  color: #000;
+  font-weight: bold;
+  animation: piscarPagar 0.8s infinite alternate;
+}
+
+@keyframes piscarPagar {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.65;
+    transform: scale(0.97);
+  }
+}
+
+/* MODAL INTUITIVO DE QUANTIDADE */
+.modal-quantidade {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, .84);
+  backdrop-filter: blur(5px);
+  z-index: 50000;
+}
+
+.quantidade-box {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  padding: 25px 20px 20px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, #202331, #101116);
+  color: #fff;
+  text-align: center;
+  border: 1px solid #8098ff;
+  box-shadow: 0 0 30px rgba(128, 152, 255, .25);
+  animation: aparecerQuantidade .25s ease-out;
+}
+
+@keyframes aparecerQuantidade {
+  from { opacity: 0; transform: translateY(15px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.quantidade-fechar {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: #333746;
+  color: #fff;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.quantidade-icone {
+  font-size: 45px;
+  margin-bottom: 8px;
+}
+
+.quantidade-box h2 {
+  color: #8098ff;
+  margin: 0 0 10px;
+  font-size: 23px;
+}
+
+.quantidade-descricao {
+  color: #ddd;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 18px;
+}
+
+.quantidade-exemplo {
+  padding: 14px 10px;
+  border-radius: 12px;
+  background: #292c38;
+}
+
+.quantidade-exemplo > span {
+  display: block;
+  color: #ccc;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.quantidade-opcoes {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.quantidade-opcoes span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #8098ff;
+  color: #111;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.quantidade-status {
+  margin: 16px 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(46, 204, 113, .09);
+  border: 1px solid rgba(46, 204, 113, .3);
+}
+
+.quantidade-status p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #ccc;
+}
+
+.quantidade-status strong {
+  display: block;
+  color: #2ecc71;
+  font-size: 23px;
+  margin: 6px 0;
+}
+
+#mensagemQuantidade {
+  color: #ffd166;
+  line-height: 1.4;
+}
+
+.btn-continuar-quantidade {
+  width: 100%;
+  padding: 14px 10px;
+  border: none;
+  border-radius: 11px;
+  background: #8098ff;
+  color: #111;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+}
+.btnPagar {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  height: 30px;
+  padding: 6px 4px;
+  margin: 0;
+  background: linear-gradient(135deg, #00e676, #00a844);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 230, 118, .35);
+  animation: piscarPagar 1s infinite;
+}
+
+.btnPagar:active {
+  transform: scale(.97);
+}
+
   </style>
 </head>
 <body>
@@ -527,7 +719,7 @@
       <select id="horarios" style="font-weight:bold;width:120px" aria-label="Horário">
         <option value="20:00">FEDERAL</option type="disablet" readonly>    
       </select>
-      <button id="salvar" title="Salvar reserva">PAGAR</button>
+      <button class="btnPagar" onclick="salvarReserva()">PAGAR</button>
     </div>
 
     <div id="nomeBox" style="margin-left:10px; background:black; color:white; padding:0px 10px;border-radius:10px;" >
@@ -749,11 +941,53 @@
     <p>Adicione 10 cotas com </br><strong style="color:gold">10% de desconto</strong></br> ( paga R$ 9,00 a cada 10 cotas! )</p>
     <p>Valor total atual: <span id="valorPacote">R$ 0,00</span></p>
     <div id="btnPacoteContainer">
-      <button id="btnMais10" class="btnPacote">+10 Números</button>
-      <button id="btnMenos10" class="btnPacote">-10 Números</button>
-    </div>
+  <button id="btnMais10" class="btnPacote">+10 Números</button>
+  <button id="btnMenos10" class="btnPacote">-10 Números</button>
+
+  <button id="salvar" type="button" class="btnPacote">
+    💰 PAGAR
+  </button>
+</div>
   </div>
 </div>
+
+<!-- MODAL INTUITIVO DE QUANTIDADE -->
+<div id="modalQuantidade" class="modal-quantidade">
+  <div class="quantidade-box">
+    <button type="button" class="quantidade-fechar"
+      onclick="fecharModalQuantidade()" aria-label="Fechar">×</button>
+
+    <div class="quantidade-icone">🎯</div>
+
+    <h2>Complete sua aposta</h2>
+
+    <p class="quantidade-descricao">
+      Para continuar, escolha dezenas em grupos de 5.
+    </p>
+
+    <div class="quantidade-exemplo">
+      <span>Quantidades válidas</span>
+      <div class="quantidade-opcoes">
+        <span>5</span><span>10</span><span>15</span>
+        <span>20</span><span>25</span>
+      </div>
+    </div>
+
+    <div class="quantidade-status">
+      <p>Você marcou</p>
+      <strong><span id="qtdAtualModal">0</span> dezenas</strong>
+      <p id="mensagemQuantidade">
+        Marque pelo menos 5 dezenas.
+      </p>
+    </div>
+
+    <button type="button" class="btn-continuar-quantidade"
+      onclick="fecharModalQuantidade()">
+      CONTINUAR ESCOLHENDO
+    </button>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 'use strict';
@@ -792,6 +1026,31 @@ for(let i=0;i<100;i++){
   btn.type='button';btn.textContent=n;btn.className='numero';btn.dataset.num=n;
   btn.addEventListener('click',()=>toggleNumero(btn,n));numerosDiv.appendChild(btn);
 }
+
+/* LIMPAR TEXTAREA POR COMANDO DO ADMIN */
+
+const comandoLimpezaRef = firebase.database().ref("controle/limparTextarea");
+
+comandoLimpezaRef.on("value", function(snapshot) {
+    const comando = snapshot.val();
+
+    if (!comando || comando.limpar !== true) return;
+
+    const textarea = document.getElementById("textarea");
+
+    if (textarea) {
+        textarea.value = "";
+    }
+
+    // Se o seu textarea tiver outro ID, troque "textarea" pelo ID correto.
+    firebase.database().ref("index/textarea").set("");
+
+    comandoLimpezaRef.set({
+        limpar: false,
+        em: Date.now()
+    });
+});
+
 function abrirModalNome(){modalNome.classList.add('show');inputNome.value=localStorage.getItem('nomeJogador')||'';setTimeout(()=>inputNome.focus(),100);}
 function fecharModalNome(){modalNome.classList.remove('show');}
 function exibirNome(){nomeExibicao.textContent=localStorage.getItem('nomeJogador')||'Bem-vindo';}
@@ -908,7 +1167,7 @@ $('btnFecharModal').onclick=fecharModalPacote;
 $('btnMais10').onclick=()=>{
   const disponiveis=getNumerosDisponiveis();
   if(disponiveis.length<10)return alert(`Restam apenas ${disponiveis.length} dezenas disponíveis.`);
-  embaralhar(disponiveis).slice(0,10).forEach(n=>{const b=document.querySelector(`.numero[data-num="${n}"]`);if(b){b.classList.add('marcado');selecionados.push(n);}});
+ embaralhar(disponiveis).slice(0,10).forEach(n=>{const b=document.querySelector(`.numero[data-num="${n}"]`);if(b){b.classList.add('marcado');selecionados.push(n);}});
   atualizarTotais();atualizarContador();
 };
 $('btnMenos10').onclick=()=>{
@@ -991,9 +1250,40 @@ function reagendarPagamentosAutomaticos(){
     }));
   }))).catch(err=>console.error('Erro ao reagendar status automático:',err));
 }
+
+
+function abrirModalQuantidade(qtd) {
+  const modal = document.getElementById('modalQuantidade');
+  const mensagem = document.getElementById('mensagemQuantidade');
+
+  document.getElementById('qtdAtualModal').textContent = qtd;
+
+  if (qtd === 0) {
+    mensagem.textContent = 'Marque pelo menos 5 dezenas para continuar.';
+  } else {
+    const falta = 5 - (qtd % 5);
+
+    mensagem.textContent = qtd % 5 === 0
+      ? 'Quantidade válida! Você já pode continuar.'
+      : `Faltam ${falta} dezena(s) para completar o próximo grupo de 5.`;
+  }
+
+  modal.style.display = 'flex';
+}
+
+function fecharModalQuantidade() {
+  document.getElementById('modalQuantidade').style.display = 'none';
+}
+
+function fecharModalQuantidade() {
+  document.getElementById('modalQuantidade').style.display = 'none';
+}
+
 function salvarReserva(){
-  if(!selecionados.length)return alert('Selecione números.');
-  if(selecionados.length%5!==0)return alert('Só é permitido salvar com 5, 10, 15, 20 dezenas...');
+  if (!selecionados.length || selecionados.length % 5 !== 0) {
+  abrirModalQuantidade(selecionados.length);
+  return;
+}
   if(!podeMarcarAgora())return alert('Prazo encerrado para marcações neste horário.');
   const nome=localStorage.getItem('nomeJogador');if(!nome){abrirModalNome();return alert('Digite seu nome para continuar.');}
   const numerosReserva=[...selecionados],valorTotal=calcularValorComPacote(numerosReserva.length);
@@ -1016,7 +1306,15 @@ function salvarReserva(){
   }).catch(err=>{console.error(err);alert('Não foi possível salvar a reserva. Confira sua conexão e as regras do Firebase.');})
   .finally(()=>{salvarBtn.disabled=false;salvarBtn.textContent='SALVAR';});
 }
-salvarBtn.onclick=salvarReserva;
+salvarBtn.onclick = () => {
+  if (!selecionados.length || selecionados.length % 5 !== 0) {
+    abrirModalQuantidade(selecionados.length);
+    return;
+  }
+
+  fecharModalPacote();
+  salvarReserva();
+};
 function salvarHistoricoAutomatico(){
   const conteudo=codigo.innerText.trim();if(!conteudo||conteudo.includes('Nenhuma reserva'))return;
   const agora=new Date(),data=localDateString(agora),hora=`${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}:${String(agora.getSeconds()).padStart(2,'0')}`;
@@ -1091,3 +1389,5 @@ db.ref('admin/config/dezenaPremiada').on('value',atualizarDezenaPremiadaPublica)
 garantirNome();exibirNome();atualizarDataJogo();atualizarTotais();atualizarContador();
 carregarReservasDaSemana();atualizarBloqueados();reagendarPagamentosAutomaticos();atualizarResultadosAutomaticamente();
 </script>
+</body>
+</html>
