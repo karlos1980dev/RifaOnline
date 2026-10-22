@@ -1,0 +1,788 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#0b0f1a">
+<title>Painel Admin - Rifa</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff}
+.box{width:95%;max-width:560px;margin:20px auto;background:#141a2b;padding:18px;border-radius:14px;box-shadow:0 5px 25px rgba(0,0,0,.35)}
+h2{text-align:center;color:#00ffcc;margin-top:0}
+h3{margin-bottom:8px}
+.item{background:#0a0f1e;border-left:4px solid #00ffcc;padding:12px;border-radius:10px;margin-bottom:12px;overflow-wrap:anywhere}
+.valor{color:#00ffcc;font-weight:bold;font-size:18px}
+.data{font-size:12px;color:#aaa}
+select,button,input,textarea{font-family:Arial,sans-serif}
+select,button{width:100%;padding:9px;margin-top:6px;border:none;border-radius:8px}
+select,input{background:#080c16;color:#fff;border:1px solid #39445f}
+button{cursor:pointer;font-weight:bold}
+button:active{transform:scale(.98)}
+.botoes{display:flex;gap:6px;margin-top:8px}
+.apagar{background:#dc3545;color:#fff}
+.limpar{background:#6c757d;color:#fff}
+.topo{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+.topo input{flex:1;min-width:140px;padding:9px;border-radius:8px;border:none}
+.resumo{background:#0a0f1e;border-radius:10px;padding:10px;margin-bottom:12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.resumo div{font-weight:bold}
+.danger{background:#e74c3c;color:#fff}
+.warning{background:#f1c40f;color:#000}
+.success{background:#27ae60;color:#fff}
+.info{background:#3498db;color:#fff}
+.purple{background:#8098ff;color:#fff}
+textarea{width:100%;height:140px;margin-top:15px;background:#000;color:#0f0;border-radius:8px;padding:10px;border:none;resize:vertical;font-family:monospace}
+.historicoItem{background:#0a0f1e;border-left:4px solid #f1c40f;padding:12px;border-radius:10px;margin-bottom:12px;white-space:pre-wrap;font-family:monospace;color:#0f0;overflow-wrap:anywhere}
+.firebaseBox{background:#090d18;border:1px solid #29324a;border-radius:12px;padding:14px;margin:15px 0}
+.firebaseBox h3{color:#00ffcc;margin-top:0}
+.firebaseBox textarea{height:180px;color:#00ff88;border:1px solid #39445f;margin-top:8px}
+.firebaseStatus{background:#111827;padding:10px;border-radius:8px;margin-top:10px;font-size:13px;word-break:break-word}
+.firebaseStatus.ok{border-left:4px solid #27ae60}
+.firebaseStatus.erro{border-left:4px solid #e74c3c}
+.firebaseDelete{margin-top:10px;background:#8e1b1b;color:#fff;border:2px solid #e74c3c;padding:12px;font-size:15px}
+.firebaseDelete:disabled{opacity:.4;cursor:not-allowed}
+.separador{height:1px;background:#29324a;margin:18px 0}
+small{color:#aaa}
+.botoesDezena{display:flex;gap:6px;margin:10px 0}
+.botoesDezena button{flex:1;min-width:0}
+#dezenaAtual{text-align:center;color:#8098ff;font-weight:bold}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.tabs button{flex:1;min-width:130px}
+.oculto{display:none!important}
+#mensagem{padding:10px;background:#111827;border-radius:8px;margin:10px 0;font-size:13px;overflow-wrap:anywhere}
+.status{display:inline-block;padding:5px 8px;border-radius:6px;font-size:12px;font-weight:bold;margin:4px 0}
+.statusPago{background:#164b31;color:#6dffac}
+.statusPendente{background:#59440b;color:#ffe17a}
+@media(max-width:380px){
+ .box{width:100%;padding:11px;margin:8px auto}
+ .botoesDezena{gap:4px}
+ .botoesDezena button{font-size:12px;padding:9px 4px}
+ .resumo{gap:6px}
+}
+</style>
+</head>
+
+<body>
+<div class="box">
+
+<h2>🛠️ Painel Admin</h2>
+
+<div id="mensagem">🔄 Conectando ao Firebase...</div>
+
+<h3>🧹 Painel de Limpeza Firebase</h3>
+
+<button onclick="limparPixGanhador()" class="danger">🧹 Limpar PIX do ganhador</button>
+<button class="success" onclick="modoCompras()">📋 Ver Compras do Dia</button>
+<button class="warning" onclick="modoHistorico()">📜 Ver Histórico</button>
+<button class="warning" onclick="limparTextareaIndex()">🧹 Limpar textarea (Index)</button>
+<button class="success" onclick="liberarNovoJogo()">🔓 Liberar novo jogo</button>
+<button class="danger" onclick="limparTudoFirebase()">❌ APAGAR TUDO DO FIREBASE PRINCIPAL</button>
+
+<div class="firebaseBox">
+  <h3>🔥 Limpar outro banco Firebase</h3>
+  <small>Cole abaixo o objeto <b>firebaseConfig</b> do outro projeto.</small>
+  <textarea id="firebaseConfigInput" spellcheck="false"
+    placeholder='const firebaseConfig = {
+  apiKey: "SUA_API_KEY",
+  authDomain: "seu-projeto.firebaseapp.com",
+  projectId: "seu-projeto",
+  databaseURL: "https://seu-projeto-default-rtdb.firebaseio.com"
+};'></textarea>
+  <button class="info" onclick="conectarOutroFirebase()">🔌 CONECTAR BANCO</button>
+  <button id="btnApagarOutroFirebase" class="firebaseDelete"
+    onclick="apagarOutroFirebase()" disabled>🗑️ APAGAR TODO O BANCO CONECTADO</button>
+  <div id="firebaseStatus" class="firebaseStatus">⚪ Nenhum banco externo conectado.</div>
+</div>
+
+<div class="botoesDezena">
+  <button id="btnDezenaAdmin" class="purple">🏆 Definir Dezena Premiada</button>
+  <button id="btnLimparDezena" class="danger">🗑️ Limpar Dezena</button>
+</div>
+
+<p id="dezenaAtual">🏆 Carregando dezena premiada...</p>
+
+<div class="separador"></div>
+
+<h3>📊 Resumo</h3>
+<div class="resumo">
+  <div>Reservas: <span id="totalReservas">0</span></div>
+  <div>Pagos: <span id="totalPagos">0</span></div>
+  <div>Pendentes: <span id="totalPendentes">0</span></div>
+  <div>Total pago: R$ <span id="totalDia">0,00</span></div>
+</div>
+
+<div class="topo">
+  <input type="date" id="dataSelecionada">
+</div>
+
+<div class="tabs">
+  <button class="info" onclick="modoCompras()">🎟️ Compras</button>
+  <button class="warning" onclick="modoHistorico()">📜 Histórico</button>
+</div>
+
+<div id="historicoBox" class="oculto"></div>
+<div id="lista"></div>
+
+<textarea id="log" readonly>Painel iniciado.</textarea>
+
+<div class="separador"></div>
+<h3>🗂️ Participantes</h3>
+<input id="buscaParticipante" type="search" placeholder="Buscar nome ou Pix..." oninput="renderizarParticipantes()">
+<div id="listaParticipantes"></div>
+
+</div>
+
+<div id="modalDezenaAdmin" style="position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:40000;padding:12px">
+  <div style="background:#fff;color:#000;width:92%;max-width:420px;padding:20px;border-radius:14px;text-align:center">
+    <h2>🔐 Definir Dezena Premiada</h2>
+    <input id="inputDezenaAdmin" type="number" min="0" max="99" placeholder="Digite a dezena (0-99)" style="width:100%;padding:12px;font-size:16px;border-radius:8px;border:1px solid #ccc;margin-bottom:10px;text-align:center">
+    <button id="btnSalvarDezena" class="purple">💾 Salvar Dezena</button>
+    <button id="btnFecharDezena" style="background:#ccc;color:#000">Cancelar</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+/* ======================================================
+   FIREBASE DA RIFA
+====================================================== */
+const firebaseConfigPrincipal = {
+  apiKey: "AIzaSyCIDFHMzgkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain: "rifa-782a3.firebaseapp.com",
+  projectId: "rifa-782a3",
+  storageBucket: "rifa-782a3.firebasestorage.app",
+  messagingSenderId: "88068598855",
+  appId: "1:88068598855:web:a230a06db76a4bbc125562",
+  databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com"
+};
+
+let appPrincipal;
+try {
+  appPrincipal = firebase.initializeApp(firebaseConfigPrincipal, "rifaPrincipal");
+} catch (e) {
+  appPrincipal = firebase.app("rifaPrincipal");
+}
+const db = firebase.database(appPrincipal);
+
+const CAMINHO_NUMEROS = "rifa/numeros";
+const CAMINHO_PARTICIPANTES = "rifa/participantes";
+const CAMINHO_DEZENA = "admin/config/dezenaPremiada";
+const CONTROLE_KEY = "controle/execucaoAuto";
+
+let numeros = {};
+let participantes = {};
+let modoAtual = "compras";
+let gruposAtuais = {};
+let outroApp = null;
+let outroDb = null;
+
+const lista = document.getElementById("lista");
+const historicoBox = document.getElementById("historicoBox");
+const log = document.getElementById("log");
+const dataInput = document.getElementById("dataSelecionada");
+
+function hojeBR() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+dataInput.value = hojeBR();
+
+function escapar(v) {
+  return String(v ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  })[c]);
+}
+
+function escrever(msg) {
+  log.value += "\n" + msg;
+  log.scrollTop = log.scrollHeight;
+  avisar(msg);
+}
+
+function avisar(msg, erro=false) {
+  const el = document.getElementById("mensagem");
+  el.textContent = msg;
+  el.style.borderLeft = erro ? "4px solid #e74c3c" : "4px solid #27ae60";
+}
+
+function formatarDinheiro(n) {
+  return Number(n || 0).toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function obterValor(d) {
+  const v = Number(d && d.valor);
+  return Number.isFinite(v) ? v : 0;
+}
+
+function estaPago(d) {
+  return !!d && (d.pago === true || d.pago === 1 || d.pago === "true" || d.pago === "pago");
+}
+
+function estaBrinde(d) {
+  return !!d && (d.bonus === true || d.bonus === "true" || d.tipo === "brinde");
+}
+
+function dataDaReserva(d) {
+  const v = d && (d.data || d.dataHora || d.criadoEm || d.timestamp);
+  if (typeof v === "number") {
+    const dt = new Date(v);
+    return Number.isNaN(dt.getTime()) ? "" : hojeFormato(dt);
+  }
+  if (typeof v === "string") {
+    const m = v.match(/^(\d{4}-\d{2}-\d{2})/);
+    if (m) return m[1];
+    const br = v.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+    if (br) return `${br[3]}-${br[2]}-${br[1]}`;
+  }
+  return "";
+}
+
+function hojeFormato(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+function formatarData(v) {
+  if (v === undefined || v === null || v === "") return "Não informada";
+  if (typeof v === "number") {
+    const dt = new Date(v);
+    if (!Number.isNaN(dt.getTime())) return dt.toLocaleString("pt-BR");
+  }
+  return String(v);
+}
+
+/* Agrupa números da mesma compra/participante para administrar em conjunto. */
+function montarGrupos() {
+  const grupos = {};
+  Object.entries(numeros || {}).forEach(([numero, d]) => {
+    if (!d || typeof d !== "object") return;
+    const data = dataDaReserva(d);
+    const base = d.participanteId || d.idParticipante || d.nome || "sem-identificacao";
+    const chave = String(base) + "|" + String(data || "");
+    if (!grupos[chave]) {
+      grupos[chave] = {
+        nome: d.nome || "Sem nome",
+        pix: d.pix || d.pixParticipante || d.chavePix || "",
+        participanteId: d.participanteId || d.idParticipante || "",
+        data: data,
+        dataOriginal: d.data || d.dataHora || d.timestamp || "",
+        numeros: [],
+        pagos: 0,
+        pendentes: 0,
+        valorPago: 0,
+        resultado: d.resultado || "aguardando"
+      };
+    }
+    const g = grupos[chave];
+    g.numeros.push(String(numero));
+    if (estaPago(d)) {
+      g.pagos++;
+      g.valorPago += obterValor(d);
+    } else {
+      g.pendentes++;
+    }
+    if (d.nome) g.nome = d.nome;
+    if (d.pix || d.pixParticipante || d.chavePix) g.pix = d.pix || d.pixParticipante || d.chavePix;
+  });
+  return grupos;
+}
+
+function atualizarResumo() {
+  const valores = Object.values(numeros || {});
+  let pagos = 0, pendentes = 0, totalPago = 0;
+  valores.forEach(d => {
+    if (estaPago(d)) {
+      pagos++;
+      totalPago += obterValor(d);
+    } else {
+      pendentes++;
+    }
+  });
+  document.getElementById("totalReservas").textContent = valores.length;
+  document.getElementById("totalPagos").textContent = pagos;
+  document.getElementById("totalPendentes").textContent = pendentes;
+  document.getElementById("totalDia").textContent = formatarDinheiro(totalPago);
+}
+
+function carregar(data) {
+  modoAtual = "compras";
+  lista.classList.remove("oculto");
+  historicoBox.classList.add("oculto");
+  renderizarCompras(data);
+}
+
+function renderizarCompras(data) {
+  const grupos = montarGrupos();
+  gruposAtuais = {};
+  let indice = 0;
+  let html = "";
+
+  Object.values(grupos).forEach(g => {
+    if (data && g.data && g.data !== data) return;
+    const id = "g" + indice++;
+    gruposAtuais[id] = g;
+
+    const todosPagos = g.pendentes === 0;
+    const status = todosPagos
+      ? '<span class="status statusPago">PAGO</span>'
+      : '<span class="status statusPendente">PENDENTE</span>';
+
+    const nums = g.numeros.slice().sort((a,b) => Number(a)-Number(b));
+    const valor = g.numeros.reduce((s,n) => s + obterValor(numeros[n]), 0);
+    const resultado = g.resultado || "aguardando";
+
+    html += `
+      <div class="item">
+        <strong>${escapar(g.nome)}</strong><br>
+        <span class="data">Data: ${escapar(formatarData(g.dataOriginal || g.data))}</span><br><br>
+        <b>Pix:</b> ${escapar(g.pix || "Não informado")}<br>
+        <b>Números:</b> ${nums.map(escapar).join(" - ")}<br>
+        <b>Quantidade:</b> ${nums.length}<br>
+        <span class="valor">Valor registrado: R$ ${formatarDinheiro(valor)}</span><br>
+        ${status}<br>
+
+        <label>Status de pagamento</label>
+        <select onchange="alterarPagamentoGrupo('${id}',this.value)">
+          <option value="pendente" ${todosPagos ? "" : "selected"}>Pendente</option>
+          <option value="pago" ${todosPagos ? "selected" : ""}>Pago</option>
+        </select>
+
+        <label>Resultado</label>
+        <select onchange="alterarResultadoGrupo('${id}',this.value)">
+          <option value="aguardando" ${resultado==="aguardando"?"selected":""}>Resultado aguardando</option>
+          <option value="ganhou" ${resultado==="ganhou"?"selected":""}>Ganhou</option>
+          <option value="perdeu" ${resultado==="perdeu"?"selected":""}>Perdeu</option>
+        </select>
+
+        <div class="botoes">
+          <button class="limpar" onclick="resetarGrupo('${id}')">Resetar status</button>
+          <button class="apagar" onclick="excluirGrupo('${id}')">Excluir reserva</button>
+        </div>
+      </div>`;
+  });
+
+  lista.innerHTML = html || '<div class="item">Nenhuma reserva encontrada para essa data.</div>';
+}
+
+function modoCompras() {
+  modoAtual = "compras";
+  carregar(dataInput.value || hojeBR());
+}
+
+function alterarPagamentoGrupo(id, valor) {
+  const g = gruposAtuais[id];
+  if (!g) return;
+  const pago = valor === "pago";
+  if (!confirm(`Marcar ${g.numeros.length} número(s) de ${g.nome} como ${pago ? "PAGOS" : "PENDENTES"}?`)) {
+    renderizarCompras(dataInput.value);
+    return;
+  }
+
+  const updates = {};
+  g.numeros.forEach(n => {
+    updates[`${CAMINHO_NUMEROS}/${n}/pago`] = pago;
+    updates[`${CAMINHO_NUMEROS}/${n}/dataAtualizacaoPagamento`] = Date.now();
+  });
+
+  db.ref().update(updates).then(() => {
+    escrever(`✔ Pagamento atualizado: ${g.nome}`);
+  }).catch(err => avisar("Erro ao atualizar pagamento: " + err.message, true));
+}
+
+function alterarResultadoGrupo(id, resultado) {
+  const g = gruposAtuais[id];
+  if (!g) return;
+  const updates = {};
+  g.numeros.forEach(n => updates[`${CAMINHO_NUMEROS}/${n}/resultado`] = resultado);
+  db.ref().update(updates).then(() => {
+    escrever(`✔ Resultado atualizado: ${g.nome} — ${resultado}`);
+  }).catch(err => avisar("Erro ao atualizar resultado: " + err.message, true));
+}
+
+function resetarGrupo(id) {
+  const g = gruposAtuais[id];
+  if (!g || !confirm(`Resetar pagamento e resultado dos números de ${g.nome}?`)) return;
+  const updates = {};
+  g.numeros.forEach(n => {
+    updates[`${CAMINHO_NUMEROS}/${n}/pago`] = false;
+    updates[`${CAMINHO_NUMEROS}/${n}/resultado`] = "aguardando";
+    updates[`${CAMINHO_NUMEROS}/${n}/dataAtualizacaoPagamento`] = Date.now();
+  });
+  db.ref().update(updates).then(() => escrever(`✔ Status resetado: ${g.nome}`))
+    .catch(err => avisar("Erro ao resetar: " + err.message, true));
+}
+
+function excluirGrupo(id) {
+  const g = gruposAtuais[id];
+  if (!g || !confirm(`Excluir a reserva de ${g.nome} e liberar os números ${g.numeros.join(", ")}?`)) return;
+  const updates = {};
+  g.numeros.forEach(n => updates[`${CAMINHO_NUMEROS}/${n}`] = null);
+  db.ref().update(updates).then(() => escrever(`✔ Reserva excluída: ${g.nome}`))
+    .catch(err => avisar("Erro ao excluir: " + err.message, true));
+}
+
+/* Histórico das reservas: salva uma cópia antes da limpeza. */
+function salvarHistorico(conteudo, titulo="Histórico manual") {
+  const agora = new Date();
+  const id = `${agora.getFullYear()}-${String(agora.getMonth()+1).padStart(2,"0")}-${String(agora.getDate()).padStart(2,"0")}_${String(agora.getHours()).padStart(2,"0")}-${String(agora.getMinutes()).padStart(2,"0")}-${Date.now()}`;
+  const dados = {
+    data: agora.toLocaleDateString("pt-BR"),
+    dia: agora.toLocaleDateString("pt-BR",{weekday:"long"}),
+    hora: agora.toLocaleTimeString("pt-BR"),
+    conteudo: JSON.stringify(conteudo, null, 2),
+    titulo,
+    timestamp: Date.now()
+  };
+  return db.ref("historico/" + id).set(dados);
+}
+
+function modoHistorico() {
+  modoAtual = "historico";
+  lista.classList.add("oculto");
+  historicoBox.classList.remove("oculto");
+  historicoBox.innerHTML = '<div class="historicoItem">🔄 Carregando histórico...</div>';
+
+  db.ref("historico").orderByChild("timestamp").once("value").then(snap => {
+    const dados = snap.val() || {};
+    const chaves = Object.keys(dados).sort((a,b) => Number(dados[a].timestamp||0)-Number(dados[b].timestamp||0)).reverse();
+
+    if (!chaves.length) {
+      historicoBox.innerHTML = '<div class="item">Nenhum histórico encontrado.</div>';
+      return;
+    }
+
+    historicoBox.innerHTML = chaves.map(id => {
+      const h = dados[id] || {};
+      return `<div class="historicoItem">
+<b>${escapar(h.titulo || "Histórico")}</b>
+
+📅 ${escapar(h.data || "")} (${escapar(h.dia || "")})
+⏰ ${escapar(h.hora || "")}
+
+${escapar(h.conteudo || "")}
+</div>`;
+    }).join("");
+  }).catch(err => {
+    historicoBox.innerHTML = '<div class="item">Erro ao carregar histórico: ' + escapar(err.message) + '</div>';
+  });
+}
+
+dataInput.addEventListener("change", () => carregar(dataInput.value));
+
+/* Limpar campo de texto e avisar a tela index. */
+
+function limparTextareaIndex() {
+    if (!confirm("Deseja limpar o textarea da página da rifa?")) return;
+
+    Promise.all([
+        db.ref("index/textarea").set(""),
+        db.ref("controle/limparTextarea").set({
+            limpar: true,
+            em: Date.now()
+        })
+    ])
+    .then(() => {
+        escrever("✅ Comando de limpeza enviado para a página da rifa.");
+    })
+    .catch(err => {
+        escrever("❌ Erro ao limpar textarea: " + err.message);
+    });
+}
+
+
+/* Libera um novo jogo removendo as reservas atuais. */
+function liberarNovoJogo() {
+  if (!confirm("ATENÇÃO: isso apagará todas as reservas em rifa/numeros e liberará os números. Deseja continuar?")) return;
+  if (!confirm("Confirme novamente: salvar o histórico e liberar TODOS os números?")) return;
+
+  const snapshot = {
+    numeros: numeros || {},
+    participantes: participantes || {},
+    data: new Date().toISOString()
+  };
+
+  salvarHistorico(snapshot, "Liberação manual de novo jogo").then(() => {
+    return Promise.all([
+      db.ref(CAMINHO_NUMEROS).remove(),
+      db.ref("numerosBloqueados").remove(),
+      db.ref("controle/limparTextarea").set({limpar:true, em:Date.now()})
+    ]);
+  }).then(() => escrever("✔ Novo jogo liberado. O histórico anterior foi salvo."))
+    .catch(err => avisar("Erro ao liberar novo jogo: " + err.message, true));
+}
+
+/* Limpa somente o PIX do ganhador. */
+function limparPixGanhador() {
+  if (!confirm("Deseja apagar o PIX do ganhador em admin/ganhador/pix?")) return;
+  db.ref("admin/ganhador/pix").remove()
+    .then(() => escrever("✔ PIX do ganhador removido."))
+    .catch(err => avisar("Erro ao remover PIX: " + err.message, true));
+}
+
+/* Limpeza total do projeto principal: exige duas confirmações. */
+function limparTudoFirebase() {
+  const senha = prompt("Digite a senha de confirmação administrativa:");
+  if (senha !== "12345") {
+    alert("Senha incorreta. Operação cancelada.");
+    return;
+  }
+  if (prompt("Para confirmar, digite exatamente APAGAR BANCO") !== "APAGAR BANCO") {
+    alert("Operação cancelada.");
+    return;
+  }
+  if (!confirm("ÚLTIMO AVISO: TODOS os dados da raiz deste Firebase serão apagados, incluindo participantes, reservas e histórico. Continuar?")) return;
+
+  db.ref().remove().then(() => {
+    escrever("❌ Todos os dados do Firebase principal foram apagados.");
+  }).catch(err => avisar("Erro ao apagar Firebase: " + err.message, true));
+}
+
+/* ======================================================
+   DEZENA PREMIADA
+====================================================== */
+const modalDezenaAdmin = document.getElementById("modalDezenaAdmin");
+const inputDezenaAdmin = document.getElementById("inputDezenaAdmin");
+const dezenaAtualEl = document.getElementById("dezenaAtual");
+
+function podeDefinirDezena() {
+  const agora = new Date();
+  const dia = agora.getDay();
+  const minutos = agora.getHours()*60 + agora.getMinutes();
+  return (dia === 3 || dia === 0) && minutos >= 1200;
+}
+
+function atualizarDezenaExibida() {
+  db.ref(CAMINHO_DEZENA).once("value").then(snap => {
+    const d = snap.val();
+    dezenaAtualEl.textContent = d !== null && d !== undefined && d !== ""
+      ? "🏆 Dezena premiada atual: " + String(d).padStart(2,"0")
+      : "🏆 Dezena premiada atual: Nenhuma";
+  }).catch(err => {
+    dezenaAtualEl.textContent = "🏆 Erro ao carregar dezena: " + err.message;
+  });
+}
+
+document.getElementById("btnDezenaAdmin").addEventListener("click", () => {
+  if (!podeDefinirDezena()) {
+    alert("A dezena premiada só pode ser definida às 20h ou depois, na quarta-feira e no sábado.");
+    return;
+  }
+  inputDezenaAdmin.value = "";
+  modalDezenaAdmin.style.display = "flex";
+});
+
+document.getElementById("btnFecharDezena").addEventListener("click", () => {
+  modalDezenaAdmin.style.display = "none";
+});
+
+document.getElementById("btnSalvarDezena").addEventListener("click", () => {
+  const texto = inputDezenaAdmin.value.trim();
+  if (texto === "" || !/^\d{1,2}$/.test(texto) || Number(texto) < 0 || Number(texto) > 99) {
+    alert("Digite uma dezena válida entre 0 e 99.");
+    return;
+  }
+  const valor = String(Number(texto)).padStart(2,"0");
+  db.ref(CAMINHO_DEZENA).set(valor).then(() => {
+    modalDezenaAdmin.style.display = "none";
+    atualizarDezenaExibida();
+    escrever("✔ Dezena premiada salva: " + valor);
+  }).catch(err => avisar("Erro ao salvar dezena: " + err.message, true));
+});
+
+document.getElementById("btnLimparDezena").addEventListener("click", () => {
+  if (!confirm("Deseja apagar a dezena premiada?")) return;
+  db.ref(CAMINHO_DEZENA).remove().then(() => {
+    atualizarDezenaExibida();
+    escrever("✔ Dezena premiada removida.");
+  }).catch(err => avisar("Erro ao remover dezena: " + err.message, true));
+});
+
+/* ======================================================
+   PARTICIPANTES
+====================================================== */
+function renderizarParticipantes() {
+  const el = document.getElementById("listaParticipantes");
+  const busca = document.getElementById("buscaParticipante").value.trim().toLowerCase();
+  const entradas = Object.entries(participantes || {}).filter(([id,p]) => {
+    p = p || {};
+    return [id,p.nome,p.pix,p.chavePix].join(" ").toLowerCase().includes(busca);
+  });
+
+  if (!entradas.length) {
+    el.innerHTML = '<div class="item">Nenhum participante encontrado.</div>';
+    return;
+  }
+
+  el.innerHTML = entradas.map(([id,p]) => {
+    p = p || {};
+    return `<div class="item">
+<strong>${escapar(p.nome || "Sem nome")}</strong><br>
+<b>Pix:</b> ${escapar(p.pix || p.chavePix || "Não informado")}<br>
+<span class="data">ID: ${escapar(id)}</span>
+</div>`;
+  }).join("");
+}
+
+/* ======================================================
+   LIMPEZA AUTOMÁTICA
+   Quarta e sábado às 23:30.
+   Salva o estado antes de limpar as reservas.
+====================================================== */
+function verificarHorarioAutomatico() {
+  const agora = new Date();
+  const dia = agora.getDay();
+  if (!((dia === 3 || dia === 0) && agora.getHours() === 23 && agora.getMinutes() === 30)) return;
+
+  const idExecucao = hojeFormato(agora) + "_23-30";
+  db.ref(CONTROLE_KEY).once("value").then(snap => {
+    if (snap.val() === idExecucao) return;
+    executarLimpezaAutomatica(idExecucao);
+  }).catch(err => console.error(err));
+}
+
+function executarLimpezaAutomatica(idExecucao) {
+  const snapshot = {
+    numeros: numeros || {},
+    participantes: participantes || {},
+    textareaIndex: "",
+    dataExecucao: new Date().toISOString()
+  };
+
+  db.ref("index/textarea").once("value").then(snap => {
+    snapshot.textareaIndex = snap.val() || "";
+    return salvarHistorico(snapshot, "Limpeza automática");
+  }).then(() => {
+    return Promise.all([
+      db.ref(CAMINHO_NUMEROS).remove(),
+      db.ref("numerosBloqueados").remove(),
+      db.ref("index/textarea").set(""),
+      db.ref("controle/limparTextarea").set({limpar:true, em:Date.now()}),
+      db.ref(CONTROLE_KEY).set(idExecucao)
+    ]);
+  }).then(() => {
+    escrever("⏰ Limpeza automática executada. Histórico salvo.");
+  }).catch(err => {
+    avisar("Erro na limpeza automática: " + err.message, true);
+  });
+}
+
+/* ======================================================
+   OUTRO FIREBASE
+====================================================== */
+function extrairFirebaseConfig(texto) {
+  texto = texto.trim();
+  texto = texto.replace(/^\s*(const|let|var)\s+firebaseConfig\s*=\s*/, "");
+  texto = texto.replace(/;\s*$/, "");
+
+  try {
+    return JSON.parse(texto);
+  } catch(e) {}
+
+  let s = texto;
+  s = s.replace(/([{,]\s*)([A-Za-z_$][\w$]*)\s*:/g, '$1"$2":');
+  s = s.replace(/'/g, '"');
+  s = s.replace(/,\s*}/g, "}");
+
+  try {
+    return JSON.parse(s);
+  } catch(e) {
+    throw new Error("Não foi possível interpretar o firebaseConfig. Cole o objeto completo.");
+  }
+}
+
+function conectarOutroFirebase() {
+  const campo = document.getElementById("firebaseConfigInput");
+  const status = document.getElementById("firebaseStatus");
+  const botao = document.getElementById("btnApagarOutroFirebase");
+  botao.disabled = true;
+
+  try {
+    const config = extrairFirebaseConfig(campo.value);
+    if (!config.apiKey || !config.projectId || !config.databaseURL) {
+      throw new Error("O config precisa conter apiKey, projectId e databaseURL.");
+    }
+
+    if (outroApp) {
+      outroApp.delete().catch(()=>{});
+      outroApp = null;
+      outroDb = null;
+    }
+
+    outroApp = firebase.initializeApp(config, "externo_" + Date.now());
+    outroDb = firebase.database(outroApp);
+
+    status.className = "firebaseStatus";
+    status.textContent = "🔄 Testando acesso ao banco externo...";
+
+    outroDb.ref().once("value").then(() => {
+      status.className = "firebaseStatus ok";
+      status.textContent = "🟢 Banco conectado: " + config.projectId + ". Botão de exclusão liberado.";
+      botao.disabled = false;
+      escrever("✔ Banco externo conectado: " + config.projectId);
+    }).catch(err => {
+      status.className = "firebaseStatus erro";
+      status.textContent = "❌ Não foi possível ler o banco: " + err.message;
+      botao.disabled = true;
+    });
+  } catch(err) {
+    status.className = "firebaseStatus erro";
+    status.textContent = "❌ Configuração inválida: " + err.message;
+    botao.disabled = true;
+  }
+}
+
+function apagarOutroFirebase() {
+  if (!outroDb) {
+    alert("Nenhum banco externo conectado.");
+    return;
+  }
+
+  if (!confirm("ATENÇÃO: apagar todos os dados da raiz do Firebase externo. Deseja continuar?")) return;
+  if (prompt("Digite exatamente APAGAR") !== "APAGAR") {
+    alert("Operação cancelada.");
+    return;
+  }
+
+  const botao = document.getElementById("btnApagarOutroFirebase");
+  botao.disabled = true;
+  botao.textContent = "⏳ APAGANDO...";
+
+  outroDb.ref().remove().then(() => {
+    alert("Banco externo apagado.");
+    escrever("❌ Dados do Firebase externo apagados.");
+    document.getElementById("firebaseStatus").textContent = "Banco externo conectado, mas os dados foram removidos.";
+  }).catch(err => {
+    alert("Erro ao apagar: " + err.message);
+    avisar("Erro ao apagar Firebase externo: " + err.message, true);
+  }).finally(() => {
+    botao.disabled = false;
+    botao.textContent = "🗑️ APAGAR TODO O BANCO CONECTADO";
+  });
+}
+
+document.getElementById("lista").addEventListener("click", () => {});
+document.getElementById("btnApagarOutroFirebase").addEventListener("click", apagarOutroFirebase);
+
+/* ======================================================
+   INICIALIZAÇÃO E ATUALIZAÇÃO EM TEMPO REAL
+====================================================== */
+db.ref(CAMINHO_NUMEROS).on("value", snap => {
+  numeros = snap.val() || {};
+  atualizarResumo();
+  if (modoAtual === "compras") carregar(dataInput.value || hojeBR());
+}, err => avisar("Erro ao ler rifa/numeros: " + err.message, true));
+
+db.ref(CAMINHO_PARTICIPANTES).on("value", snap => {
+  participantes = snap.val() || {};
+  renderizarParticipantes();
+}, err => avisar("Erro ao ler participantes: " + err.message, true));
+
+atualizarDezenaExibida();
+carregar(hojeBR());
+setInterval(verificarHorarioAutomatico, 30000);
+</script>
+</body>
+</html>
