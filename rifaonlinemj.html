@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>raffle between friends</title>
+  <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/IMG-20260203-WA0098.jpg" type="image/jpg">
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/IMG-20260203-WA0098.jpg" type="image/jpg">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+  <style>
+    /* ---------- GERAL ---------- */
+    :root {
+      --bg: #232;
+      --card: #111;
+      --accent: #8098ff;
+      --accent-dark: #6f86e6;
+      --green: #2ecc71;
+      --danger: #e74c3c;
+      --text: #fff;
+    }
+.contador {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 15px 0;
+  color:#ff000a;
+}
+    *{box-sizing:border-box}
+    body {
+        font-family: Arial, sans-serif;
+        background: var(--bg);
+        color:var(--text);
+        margin:0;
+        padding-top: 50px;
+        text-align:center;
+    }
+
+    img.imagemIcone{
+    display:none;
+      width:100%;
+      height:70px;
+      margin:0;
+      top:0;
+      border-radius:10px;
+      object-fit:cover;
+    }
+
+    h1{
+        font-size:22px;
+        margin:8px 0;
+        
+    }
+
+    /* ---------- TOPO FIXO ---------- */
+    #topoWrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: linear-gradient(90deg,var(--accent),var(--accent-dark));
+        display:flex;
+        align-items:center;
+        padding:8px 10px;
+        gap:4px;
+        z-index:1000;
+        border-bottom:2px solid rgba(0,0,0,0.3);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    #btnMenu {
+        
+        color:#fff;
+        font-size:16px;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+        flex: 0 0 55px;
+        height:px;
+    }
+
+    #topoInputs {
+        display:flex;
+        align-items:center;
+        gap:12px;
+        width:100%;
+    }
+
+    #topoInputs input,
+    #topoInputs select,
+    #salvar {
+        flex: 1;
+        padding:6px;
+        font-size:14px;
+        border-radius:8px;
+        border:none;
+        text-align:center;
+        background:#222;
+        color:#fff;
+    }
+
+    #salvar {
+        background: var(--green);
+        color:#000000;
+        cursor:pointer;
+        height:30px;
+        padding:8px;
+        font-size:16px;
+        flex: 1;
+        font-weight:700;
+    }
+
+    #nomeBox {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-left:6px;
+      color:#fff;
+      font-weight:700;
+    }
+
+    #btnEditarNome {
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.2);
+      color:#fff;
+      padding:6px 8px;
+      border-radius:8px;
+      cursor:pointer;
+    }
+
+    @media (max-width: 420px) {
+        #btnMenu { flex: 0 0 45px; }
+        #salvar { font-size:12px; padding:6px; }
+    }
+
+    /* ---------- MENU LATERAL ---------- */
+    #menu {
+        position: fixed;
+        top: 60px;
+        margin:0px;
+        left: -150%;
+        width: 85%;
+        max-width:420px;
+        height: 80%;
+        background:var(--card);
+        color:#fff;
+        padding:14px;
+        transition:0.28s;
+        overflow-y:auto;
+        z-index:9999;
+        box-shadow: 6px 6px 30px rgba(0,0,0,0.6);
+        border-radius: 8px;
+    }
+    #menu.open { left:0; }
+
+    #menu h3 { margin-top:0; }
+
+#menu textarea {
+    display: block;
+    width: calc(100% - 0px);  /* largura total, sem deslocar */
+    max-width: 100%;
+    height: 350px;
+
+    background: #000;
+    color: #0f0;
+    border: 1px solid #0f0;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 16px;
+    resize: none;
+    box-sizing: border-box;
+    overflow-y: auto;
+
+    /* 🟢 DEIXA COLADO NA ESQUERDA */
+    margin-left: 0;
+    transform: translateX(0);    /* zera o deslocamento */
+    filter: none;                /* remove a sombra que jogava para o lado */
+}
+    /* ---------- NUMEROS ---------- */
+    #conteudo { display:flex; padding:12px; max-width:1000px; margin: 0 auto; }
+
+    #numeros {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 6px;
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+
+    .numero {
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      border-radius: 8px;
+      background: #3498db;
+      color: #fff;
+      border: none;
+      font-weight: bold;
+      font-size: clamp(10px, 2.8vw, 18px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .numero:active { transform: scale(.98); }
+    .marcado { background:#27ae60 !important; }
+    .bloqueado { background:#777 !important; color:#ccc; cursor:not-allowed; }
+
+    #rodapeInfo { margin-top:12px; color:gold; font-weight:bold; }
+
+    /* ---------- MODAL NOME ---------- */
+    #modalNome {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.75);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 20000;
+    }
+
+    #modalNome.show { display:flex; }
+
+    #modalBox input {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        border:1px solid #ddd;
+    }
+
+    #modalBox button {
+        background: #27ae60;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .pequeno { font-size:13px; color:#ccc; margin-top:10px; }
+.visualizador {
+  width: 100%;
+  height: 350px;
+  background: #111;
+  color: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: monospace;
+  border: 1px solid #444;
+}
+.verde { color:#00ff00; font-weight:bold; }
+.amarelo { color:gold; font-weight:bold; }
+.vermelho { color:#ff4d4d; font-weight:bold; }
+/* FORÇA ALINHAMENTO À ESQUERDA NO MENU */
+#menu,
+#menu * {
+  text-align: left;
+}
+#nomeExibicao {
+  color: #2ecc71; /* verde */
+}
+.numero.extra {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #000;
+  font-weight: bold;
+  border: 2px solid #fff3b0;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.9);
+}
+.numero.bloqueado.extra {
+  background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+  color: #000 !important;
+  border: 2px solid #fff3b0;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.95);
+}
+
+#modalPacote {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 25000;
+}
+#modalPacote.show { display: flex; }
+
+#modalPacoteBox {
+  background: #111;
+  color: #fff;
+  width: 90%;
+  max-width: 350px;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(128, 152, 255, 0.5);
+  position: relative;
+}
+
+#btnFecharModal {
+  position: absolute;
+  top: 10px; right: 10px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+#modalPacoteBox h3 {
+  margin-top: 0;
+  color: #8098ff;
+}
+
+#modalPacoteBox p {
+  margin: 15px 0;
+  font-size: 16px;
+}
+
+#valorPacote {
+  color: #2ecc71;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+#btnPacoteContainer {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.btnPacote {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btnPacote:hover { transform: scale(1.05); }
+
+#btnMais10 { background: #2ecc71; color: #000; }
+#btnMenos10 { background: #e74c3c; color: #fff; }
+.fechar-modal-pix {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: #ff3333;
+  color: #fff;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+  </style>
+</head>
+<body>
+     
+   <!-- MODAL DE RECEBER PRÊMIO -->
+<div id="modalPremio" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#111;
+    color:#fff;
+    width:92%;
+    max-width:420px;
+    padding:25px;
+    border-radius:14px;
+    text-align:center;
+    border:2px solid #8098ff;
+  ">
+    <h2 style="color:#ffd700; margin-top:0;">🎉 PARABÉNS, GANHADOR(A)! 🎉</h2>
+    
+    <p style="margin:15px 0;">Para receber seu prêmio de <strong style="color:#2ecc71;">R$ 80,00</strong>, siga esses passos:</p>
+    
+    <ol style="text-align:left; margin:20px 0; padding-left:25px;">
+      <li>1. Tire print do seu comprovante de reserva</li>
+      <li>2. Confira a dezena premiada exibida na tela</li>
+      <li>3. Envie ambos para o administrador no WhatsApp</li>
+    </ol>
+    
+    <button onclick="fecharModalPremio()" style="
+      margin-top:10px;
+      background:#8098ff;
+      color:#fff;
+      padding:10px 20px;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      font-weight:bold;
+    ">
+      Fechar
+    </button>
+  </div>
+</div>
+
+<!-- MODAL PIX -->
+<div id="modalPix" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:30000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  "><button class="fechar-modal-pix" onclick="fecharModalPix()">✕</button>
+    <h2>💰 Pagamento via PIX</h2>
+<p><strong>Valor a pagar: R$ <span id="valorPix">0,00</span></strong></p>
+    <p>Copie a chave PIX abaixo:</p>
+
+    
+<div id="qrcode" style="
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:15px auto;
+  padding:12px;
+  background:#fff;
+  border-radius:10px;
+  width:274px;
+  min-height:274px;
+"></div>
+
+<p style="font-size:14px;">
+  Escaneie o QR Code ou copie o Pix Copia e Cola.
+</p>
+
+<textarea id="pixCopiaCola" readonly style="
+  width:100%;
+  height:85px;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  background:#f5f5f5;
+  color:#111;
+  font-size:12px;
+  resize:none;
+  word-break:break-all;
+"></textarea>
+
+<button onclick="copiarPixCopiaCola()" style="
+  margin-top:8px;
+  background:#1769ff;
+  color:#fff;
+  padding:12px;
+  width:100%;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:bold;
+">
+  📋 Copiar Pix Copia e Cola
+</button>
+
+
+  <p id="pixMsg" style="color:green;display:none;"><b>✅ PIX COPIADO!</br>FAÇA O PAGAMANTO e BOA SORTE...</p></b>
+
+
+    <button onclick="fecharModalPix()" style="display:none;
+      margin-top:10px;
+      background:#ccc;
+      padding:8px;
+      width:100%;
+      border:none;
+      border-radius:8px;
+    ">
+      Fechar
+    </button>
+    <footer>
+    <p>todos os direitos reservado</br>
+    Newtech</p>
+</footer>
+  </div>
+</div>
+    <img class="imagemIcone"     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg">
+        <h1>
+  RIFA da SORTE</br>
+  <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin:0 30px;">
+    1.00
+  </strong> 
+  GANHA
+  <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin-left:20px;">
+    80.00
+  </strong>
+</h1>
+
+  <div id="topoWrapper" role="banner" aria-label="Topo">
+    <button style="color:#000;background: var(--green);font-weight:bold;padding:4px 20px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">VER</button>
+
+    <div id="topoInputs" role="form" aria-label="Formulário topo">
+      <input style="width:70px;font-weight:bold;" type="number" id="valor" value="1.00" readonly>
+      <select id="horarios" style="font-weight:bold;width:120px" aria-label="Horário">
+        <option value="20:00">FEDERAL</option type="disablet" readonly>    
+      </select>
+      <button id="salvar" title="Salvar reserva">PAGAR</button>
+    </div>
+
+    <div id="nomeBox" style="margin-left:10px; background:black; color:white; padding:0px 10px;border-radius:10px;" >
+      <span id="nomeExibicao" aria-live="polite">Bem-vindo</span>
+      <button id="btnEditarNome" title="Alterar nome">Editar</button>
+    </div>
+  </div>
+<div id="modalPixAdmin" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  ">
+    <h2>🔐 Definir PIX</h2>
+
+    <input id="inputPixAdmin" type="text" placeholder="Digite a chave PIX"
+      style="
+        width:100%;
+        padding:12px;
+        font-size:16px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        margin-bottom:10px;
+      "
+    >
+
+    <button onclick="salvarPixAdmin()" style="
+      width:100%;
+      padding:10px;
+      background:#27ae60;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      font-weight:bold;
+    ">
+      💾 Salvar PIX
+    </button>
+
+    <button onclick="fecharPixAdmin()" style="
+      width:100%;
+      margin-top:8px;
+      padding:8px;
+      background:#ccc;
+      border:none;
+      border-radius:8px;
+    ">
+      Cancelar
+    </button>
+  </div>
+</div>
+  <!-- MENU LATERAL -->
+  
+ <div id="menu" aria-hidden="true">
+  <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+  <button id="btnPixAdmin" style="
+    flex: 1;
+    text-align:center;
+    padding:10px;
+    background:#27ae60;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+    RECEBER PRÊMIO
+  </button>
+
+  <button id="btnHistoricoData" style="
+    flex: 1;
+    text-align:center;
+    padding:10px;
+    background:#8098ff;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+    HISTÓRICO POR DATA
+  </button>
+</div>
+
+
+<!-- MODAL PARA SELECIONAR DATA DO HISTÓRICO -->
+<div id="modalHistoricoData" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  ">
+    <h2>📅 Selecionar Data do Histórico</h2>
+
+    <input id="inputDataHistorico" type="date"
+      style="
+        width:100%;
+        padding:12px;
+        text-align:center;
+        font-size:16px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        margin-bottom:15px;
+      "
+    >
+
+    <div style="display: flex; gap: 8px;">
+      <button onclick="fecharModalHistoricoData()" style="
+        flex: 1;
+        padding:8px;
+        text-align:center;
+        background:#ccc;
+        border:none;
+        border-radius:8px;
+      ">
+        Cancelar
+      </button>
+      
+      <button onclick="carregarHistoricoPorData()" style="
+        flex: 1;
+        padding:10px;
+        text-align:center;
+        background:#8098ff;
+        color:#fff;
+        border:none;
+        border-radius:8px;
+        font-size:16px;
+        font-weight:bold;
+      ">
+        📤 Carregar
+      </button>
+
+      
+    </div>
+  </div>
+</div>
+
+
+    
+    <div class="visualizador" id="codigo">Nenhuma reserva carregada</div>
+    
+  </div>
+
+  <!-- Conteúdo principal -->
+<div style="display:flex;justify-content:space-between;align-items:center; flex-wrap:wrap; width:95%;box-sizing:border-box;margin-bottom:12px;    ">
+
+    <div style="flex:1; min-width:120px;">
+        <strong>Pagar: R$ <span id="totalPagar">0,00</span></strong>
+    </div>
+
+    <div style="flex:1; min-width:120px; text-align:right;">
+                <strong>Recebe: R$ <span id="totalReceber">0,00</span></strong>
+    </div>
+    
+    
+  </div>
+<p id="dataJogo" style="color:gold;font-weight:bold;"></p>
+  <div class="contador">
+  Dezenas marcadas: <span id="contadorMarcadas">0</span>
+</div>
+     
+<!-- ADICIONE ESTA LINHA A-->
+<p id="dezenaAtual" style="
+  color:#7bff55;
+  font-weight:bold;
+  font-size:18px;
+  margin:15px 0;
+  padding:10px;
+  background:rgba(128, 152, 255, 0.1);
+  border-radius:10px;
+  display:block;
+">🏆 Dezena premiada: Aguardando</p>
+</div>
+
+<div id="numeros" aria-label="Números da rifa"></div>
+<p id="rodapeInfo">SORTE E SUA A GARANTIA E NOSSA </br>JOGUE COM RESPONSABILIDADE</p>
+
+  <!-- MODAL PARA PEDIR O NOME -->
+  <div id="modalNome" role="dialog" aria-modal="true" aria-labelledby="tituloModal">
+    <div id="modalBox">
+        <h2 id="tituloModal">Digite seu nome para continuar</h2>
+        <input type="text" id="inputNome" placeholder="Seu nome">
+        <div style="display:flex; gap:8px; justify-content:center;">
+          <button id="btnContinuar">Continuar</button>
+        </div>
+        <div class="pequeno">O nome será salvo com a sua reserva.</div>
+    </div>
+  </div>
+<div id="modalPacote">
+  <div id="modalPacoteBox">
+    <button id="btnFecharModal">×</button>
+    <h3>Quer adicionar mais cotas?</h3>
+    <p>Adicione 10 cotas com </br><strong style="color:gold">10% de desconto</strong></br> ( paga R$ 9,00 a cada 10 cotas! )</p>
+    <p>Valor total atual: <span id="valorPacote">R$ 0,00</span></p>
+    <div id="btnPacoteContainer">
+      <button id="btnMais10" class="btnPacote">+10 Números</button>
+      <button id="btnMenos10" class="btnPacote">-10 Números</button>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+'use strict';
+const firebaseConfig = {
+  apiKey:"AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain:"rifa-782a3.firebaseapp.com",
+  databaseURL:"https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId:"rifa-782a3",
+  storageBucket:"rifa-782a3.firebasestorage.app",
+  messagingSenderId:"88068598855",
+  appId:"1:88068598855:web:a230a06db76a4bbc125562"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const $=id=>document.getElementById(id);
+const numerosDiv=$('numeros'),codigo=$('codigo'),menuEl=$('menu'),btnMenu=$('btnMenu');
+const salvarBtn=$('salvar'),nomeExibicao=$('nomeExibicao'),modalNome=$('modalNome'),inputNome=$('inputNome');
+const totalPagarSpan=$('totalPagar'),totalReceberSpan=$('totalReceber'),valorPacoteSpan=$('valorPacote');
+const modalPacote=$('modalPacote');
+const CHAVE_PIX_RIFA='71992290058',NOME_RECEBEDOR_PIX='Carlos Santos',CIDADE_RECEBEDOR_PIX='SALVADOR';
+const VALOR_UNITARIO=1,VALOR_PACOTE_10=9,ESPERA_STATUS_MS=5*60*1000;
+let selecionados=[],bloqueados=new Set(),temporizadorMenu=null,ultimoHorarioAlertaPremio=null;
+const TEMPO_MINIMO_ENTRE_ALERTAS=3600000;
+const localDateString=(date=new Date())=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+const formatarDinheiro=n=>Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const calcularValorComPacote=qtd=>Math.floor(qtd/10)*VALOR_PACOTE_10+(qtd%10)*VALOR_UNITARIO;
+const embaralhar=lista=>{for(let i=lista.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[lista[i],lista[j]]=[lista[j],lista[i]];}return lista;};
+function podeMarcarAgora(){
+  const agora=new Date(),dia=agora.getDay(),min=agora.getHours()*60+agora.getMinutes();
+  if(dia===3)return min<1200||min>=1320;
+  if(dia===0)return min<660||min>=780;
+  return true;
+}
+for(let i=0;i<100;i++){
+  const n=String(i).padStart(2,'0'),btn=document.createElement('button');
+  btn.type='button';btn.textContent=n;btn.className='numero';btn.dataset.num=n;
+  btn.addEventListener('click',()=>toggleNumero(btn,n));numerosDiv.appendChild(btn);
+}
+function abrirModalNome(){modalNome.classList.add('show');inputNome.value=localStorage.getItem('nomeJogador')||'';setTimeout(()=>inputNome.focus(),100);}
+function fecharModalNome(){modalNome.classList.remove('show');}
+function exibirNome(){nomeExibicao.textContent=localStorage.getItem('nomeJogador')||'Bem-vindo';}
+function garantirNome(){if(!localStorage.getItem('nomeJogador'))abrirModalNome();else exibirNome();}
+$('btnContinuar').onclick=()=>{const n=inputNome.value.trim();if(!n)return alert('Digite um nome válido');localStorage.setItem('nomeJogador',n);fecharModalNome();exibirNome();};
+$('btnEditarNome').onclick=abrirModalNome;
+function toggleNumero(btn,n){
+  if(btn.classList.contains('bloqueado'))return;
+  if(!podeMarcarAgora())return alert('Marcações encerradas neste horário.');
+  if(btn.classList.contains('marcado')){
+    btn.classList.remove('marcado');selecionados=selecionados.filter(x=>x!==n);
+  }else{
+    btn.classList.add('marcado');selecionados.push(n);
+    if(selecionados.length>0&&selecionados.length%5===0)abrirModalPacote();
+  }
+  atualizarTotais();atualizarContador();
+}
+function atualizarContador(){$('contadorMarcadas').textContent=selecionados.length;}
+function atualizarTotais(){
+  const total=calcularValorComPacote(selecionados.length);
+  totalPagarSpan.textContent=formatarDinheiro(total);
+  totalReceberSpan.textContent='80,00';
+  valorPacoteSpan.textContent='R$ '+formatarDinheiro(total);
+}
+function getNumerosDisponiveis(){
+  return [...document.querySelectorAll('.numero')].filter(b=>!b.classList.contains('bloqueado')&&!b.classList.contains('marcado')).map(b=>b.textContent);
+}
+function atualizarBloqueados(){
+  return db.ref('numerosBloqueados').once('value').then(snap=>{
+    const dados=snap.val()||{};bloqueados=new Set(Object.keys(dados));
+    document.querySelectorAll('.numero').forEach(btn=>{
+      const n=btn.textContent,info=dados[n];
+      btn.classList.toggle('bloqueado',!!info);btn.disabled=!!info;
+      btn.classList.toggle('extra',!!(info&&info.extra));
+      if(info&&btn.classList.contains('marcado')){btn.classList.remove('marcado');selecionados=selecionados.filter(x=>x!==n);}
+    });
+    atualizarTotais();atualizarContador();
+  }).catch(err=>console.error('Erro ao atualizar dezenas bloqueadas:',err));
+}
+function gerarDezenasExtras(qtd,jaSelecionados,jaBloqueados){
+  const extrasQtd=Math.floor(qtd/10);if(!extrasQtd)return [];
+  const disponiveis=getNumerosDisponiveis().filter(n=>!jaSelecionados.includes(n)&&!jaBloqueados.has(n));
+  return embaralhar(disponiveis).slice(0,extrasQtd);
+}
+function textoNumerosBloqueados(callback){
+  db.ref('numerosBloqueados').once('value').then(snap=>{
+    const dados=snap.val()||{},porNome={};
+    Object.keys(dados).forEach(num=>{
+      const item=dados[num]||{},nome=String(item.nome||'').trim();if(!nome)return;
+      if(!porNome[nome])porNome[nome]={status:item.status||'⏳ AGUARDANDO',numeros:[]};
+      porNome[nome].numeros.push(num);
+    });
+    let texto='';
+    Object.keys(porNome).sort().forEach(nome=>{
+      const item=porNome[nome],nums=item.numeros.sort().join('-');
+      texto+=`Nome: ${nome}\nDezenas: ${nums}\nStatus: ${item.status}\n-----------------------------\n`;
+    });
+    callback(texto);
+  }).catch(err=>{console.error(err);callback('Não foi possível carregar as dezenas bloqueadas.\n');});
+}
+function getInicioDaSemana(){
+  const hoje=new Date(),dia=hoje.getDay(),delta=dia===0?-6:1-dia;
+  hoje.setDate(hoje.getDate()+delta);return localDateString(hoje);
+}
+function getFimDaSemana(){const d=new Date(getInicioDaSemana()+'T12:00:00');d.setDate(d.getDate()+6);return localDateString(d);}
+function proximaDataDeJogo(){
+  const agora=new Date(),dia=agora.getDay(),min=agora.getHours()*60+agora.getMinutes();
+  const quarta=new Date(agora),domingo=new Date(agora);
+  quarta.setDate(agora.getDate()+((3-dia+7)%7));quarta.setHours(20,0,0,0);
+  domingo.setDate(agora.getDate()+((7-dia)%7));domingo.setHours(11,0,0,0);
+  if(quarta<=agora)quarta.setDate(quarta.getDate()+7);
+  if(domingo<=agora)domingo.setDate(domingo.getDate()+7);
+  if(dia===3&&min<1200)return quarta;
+  if(dia===0&&min<660)return domingo;
+  return quarta<domingo?quarta:domingo;
+}
+function cabecalhoDataJogo(){const d=proximaDataDeJogo();return `📅 DATA DO JOGO: ${d.toLocaleDateString('pt-BR')} às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}\n==========================\n\n`;}
+function atualizarDataJogo(){const d=proximaDataDeJogo();$('dataJogo').textContent=`📅 Próximo jogo: ${d.toLocaleDateString('pt-BR',{weekday:'long'})} - ${d.toLocaleDateString('pt-BR')}`;}
+function atualizarTextareaReservasSemana(todas){
+  textoNumerosBloqueados(textoBloq=>{
+    let html=escapeHtml(textoBloq).replace(/\n/g,'<br>')+escapeHtml(cabecalhoDataJogo()).replace(/\n/g,'<br>')+'------------------------------<br>';
+    if(!todas||!Object.keys(todas).length){codigo.innerHTML=html+'Nenhuma reserva nessa etapa.<br>';return;}
+    Object.keys(todas).sort().reverse().forEach(dataStr=>{
+      const dadosDia=todas[dataStr]||{};
+      Object.keys(dadosDia).sort().reverse().forEach(horario=>{
+        html+=`<br><strong>[ HORÁRIO ] =&gt; ${escapeHtml(horario)}</strong><br>`;
+        Object.keys(dadosDia[horario]||{}).sort().reverse().forEach(k=>{
+          const d=dadosDia[horario][k]||{},nums=Array.isArray(d.numeros)?d.numeros:[],extras=Array.isArray(d.dezenasExtras)?d.dezenasExtras:[];
+          const qtd=nums.length,total=Number(d.valorTotal??calcularValorComPacote(qtd));
+          const status=d.status||'⏳ AGUARDANDO',resultado=d.resultado||'⏳ AGUARDANDO';
+          const corStatus=status.toUpperCase().includes('PAGO')||status.toUpperCase().includes('VALIDADO')?'verde':status.toUpperCase().includes('CANCEL')?'vermelho':'amarelo';
+          const corResultado=resultado.includes('GANHOU')?'verde':resultado.includes('PERDEU')?'vermelho':'amarelo';
+          const id='countdown-'+(dataStr+'-'+horario+'-'+k).replace(/[^a-zA-Z0-9-_]/g,'');
+          html+=`Nome: <span class="verde">${escapeHtml(d.nome||'Sem nome')}</span><br>Quantidade: ${qtd}<br>Dezena escolhida: ${escapeHtml(nums.join('-'))}${extras.length?'<br>🎁 Dezenas extras: '+escapeHtml(extras.join('-')):''}<br>Valor a pagar: R$ ${formatarDinheiro(total)}<br>Status: <span class="${corStatus}">${escapeHtml(status)}</span><br>Resultado: <span class="${corResultado}">${escapeHtml(resultado)}</span><br><div id="${id}" class="amarelo"></div><br>---------------------------<br>`;
+          setTimeout(()=>{const el=$(id);if(el)gerarCountdown(id,d.dataHora,d.status);},0);
+        });
+      });
+    });
+    codigo.innerHTML=html;
+  });
+}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function carregarReservasDaSemana(){
+  const inicio=getInicioDaSemana(),fim=getFimDaSemana(),datas=[];
+  const d=new Date(inicio+'T12:00:00'),ultimo=new Date(fim+'T12:00:00');
+  while(d<=ultimo){datas.push(localDateString(d));d.setDate(d.getDate()+1);}
+  const todas={};
+  return Promise.all(datas.map(data=>db.ref('compras-dia/'+data).once('value').then(s=>{if(s.val())todas[data]=s.val();})))
+    .then(()=>atualizarTextareaReservasSemana(todas)).catch(err=>{console.error(err);codigo.textContent='Erro ao carregar reservas.';});
+}
+function abrirModalPacote(){atualizarTotais();modalPacote.classList.add('show');}
+function fecharModalPacote(){modalPacote.classList.remove('show');}
+$('btnFecharModal').onclick=fecharModalPacote;
+$('btnMais10').onclick=()=>{
+  const disponiveis=getNumerosDisponiveis();
+  if(disponiveis.length<10)return alert(`Restam apenas ${disponiveis.length} dezenas disponíveis.`);
+  embaralhar(disponiveis).slice(0,10).forEach(n=>{const b=document.querySelector(`.numero[data-num="${n}"]`);if(b){b.classList.add('marcado');selecionados.push(n);}});
+  atualizarTotais();atualizarContador();
+};
+$('btnMenos10').onclick=()=>{
+  if(selecionados.length<10)return alert('Você precisa ter pelo menos 10 dezenas marcadas para remover 10.');
+  selecionados.splice(-10).forEach(n=>{const b=document.querySelector(`.numero[data-num="${n}"]`);if(b)b.classList.remove('marcado');});
+  atualizarTotais();atualizarContador();
+};
+function abrirModalPix(valor){
+  const n=Number(valor);
+  if(!Number.isFinite(n)||n<=0)return alert('Não foi possível calcular o valor da reserva.');
+  $('valorPix').textContent=formatarDinheiro(n);$('pixMsg').style.display='none';
+  try{gerarQRCodePix(n);$('modalPix').style.display='flex';}
+  catch(err){console.error('Erro ao gerar Pix:',err);alert('Não foi possível gerar o QR Code Pix. Confira a chave e a conexão.');}
+}
+function fecharModalPix(){$('modalPix').style.display='none';}
+function campoPix(id,valor){valor=String(valor);return id+String(valor.length).padStart(2,'0')+valor;}
+function calcularCRC16(texto){
+  let crc=0xFFFF;
+  for(let i=0;i<texto.length;i++){crc^=texto.charCodeAt(i)<<8;for(let j=0;j<8;j++)crc=crc&0x8000?((crc<<1)^0x1021)&0xFFFF:(crc<<1)&0xFFFF;}
+  return crc.toString(16).toUpperCase().padStart(4,'0');
+}
+function gerarPixPayload(chave,nome,cidade,valor){
+  const v=Number(valor);if(!Number.isFinite(v)||v<=0)throw new Error('Valor Pix inválido.');
+  const limpar=(s,max)=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9 ]/g,'').substring(0,max).toUpperCase();
+  const conta=campoPix('00','BR.GOV.BCB.PIX')+campoPix('01',chave);
+  const payload=campoPix('00','01')+campoPix('26',conta)+campoPix('52','0000')+campoPix('53','986')+campoPix('54',v.toFixed(2))+campoPix('58','BR')+campoPix('59',limpar(nome,25))+campoPix('60',limpar(cidade,15))+campoPix('62',campoPix('05','***'))+'6304';
+  return payload+calcularCRC16(payload);
+}
+function gerarQRCodePix(valor){
+  if(typeof QRCode==='undefined')throw new Error('Biblioteca QRCode não carregada.');
+  const payload=gerarPixPayload(CHAVE_PIX_RIFA,NOME_RECEBEDOR_PIX,CIDADE_RECEBEDOR_PIX,valor);
+  $('qrcode').innerHTML='';$('pixCopiaCola').value=payload;
+  new QRCode($('qrcode'),{text:payload,width:250,height:250,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+}
+async function copiarPixCopiaCola(){
+  const campo=$('pixCopiaCola');
+  try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(campo.value);else throw new Error('clipboard indisponível');}
+  catch(e){campo.focus();campo.select();const ok=document.execCommand('copy');if(!ok)return alert('Não foi possível copiar. Selecione e copie o texto.');}
+  $('pixMsg').style.display='block';
+}
+function gerarCountdown(id,dataHora,status){
+  const el=$(id);if(!el)return;
+  if(status&&String(status).toUpperCase().includes('PAGO')){el.innerHTML='<span class="verde">✅ STATUS PAGO</span>';return;}
+  const inicio=Date.parse(dataHora);if(!Number.isFinite(inicio)){el.textContent='⏳ Aguardando atualização do status';return;}
+  let timer;
+  function atualizar(){
+    const restante=inicio+ESPERA_STATUS_MS-Date.now();
+    if(restante<=0){el.innerHTML='<span class="verde">⏳ Atualização automática do status processada.</span>';clearInterval(timer);return;}
+    const m=Math.floor(restante/60000),s=Math.floor((restante%60000)/1000);
+    el.innerHTML=`⏳ Status será atualizado em <span class="${restante>60000?'vermelho':'verde'}">${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</span>`;
+  }
+  atualizar();timer=setInterval(atualizar,1000);
+}
+function agendarAtualizacaoStatusParaPago(dataHoraCompra,caminhoReserva){
+  const inicio=Date.parse(dataHoraCompra),restante=inicio+ESPERA_STATUS_MS-Date.now();
+  if(!Number.isFinite(inicio))return;
+  setTimeout(()=>atualizarStatusParaPago(caminhoReserva),Math.max(0,restante));
+}
+function atualizarStatusParaPago(caminhoReserva){
+  db.ref(caminhoReserva).once('value').then(snap=>{
+    const reserva=snap.val();
+    if(reserva&&String(reserva.status||'').toUpperCase().includes('AGUARDANDO')){
+      return db.ref(caminhoReserva).update({status:'✅ PAGO - PIX VALIDADO',pagoEm:new Date().toISOString()})
+        .then(()=>{carregarReservasDaSemana();atualizarBloqueados();})
+        .catch(err=>console.error('Erro ao atualizar status:',err));
+    }
+  }).catch(err=>console.error('Erro ao consultar status:',err));
+}
+/* Reagenda as reservas pendentes da semana quando a página é aberta novamente. */
+function reagendarPagamentosAutomaticos(){
+  const inicio=getInicioDaSemana(),fim=getFimDaSemana(),datas=[];
+  const d=new Date(inicio+'T12:00:00'),ultimo=new Date(fim+'T12:00:00');
+  while(d<=ultimo){datas.push(localDateString(d));d.setDate(d.getDate()+1);}
+  return Promise.all(datas.map(data=>db.ref('compras-dia/'+data).once('value').then(snap=>{
+    const dia=snap.val()||{};
+    Object.keys(dia).forEach(horario=>Object.keys(dia[horario]||{}).forEach(id=>{
+      const item=dia[horario][id];
+      if(item&&item.dataHora&&String(item.status||'').toUpperCase().includes('AGUARDANDO'))
+        agendarAtualizacaoStatusParaPago(item.dataHora,`compras-dia/${data}/${horario}/${id}`);
+    }));
+  }))).catch(err=>console.error('Erro ao reagendar status automático:',err));
+}
+function salvarReserva(){
+  if(!selecionados.length)return alert('Selecione números.');
+  if(selecionados.length%5!==0)return alert('Só é permitido salvar com 5, 10, 15, 20 dezenas...');
+  if(!podeMarcarAgora())return alert('Prazo encerrado para marcações neste horário.');
+  const nome=localStorage.getItem('nomeJogador');if(!nome){abrirModalNome();return alert('Digite seu nome para continuar.');}
+  const numerosReserva=[...selecionados],valorTotal=calcularValorComPacote(numerosReserva.length);
+  const extras=gerarDezenasExtras(numerosReserva.length,numerosReserva,bloqueados);
+  const todos=[...numerosReserva,...extras];
+  const horario=$('horarios').value,dataHoje=localDateString(),chave='ID-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
+  const dataHora=new Date().toISOString();
+  const dados={nome,numeros:numerosReserva,dezenasExtras:extras,horario,status:'⏳ AGUARDANDO',resultado:'⏳ AGUARDANDO',dataHora,valorTotal,quantidade:numerosReserva.length};
+  salvarBtn.disabled=true;salvarBtn.textContent='SALVANDO...';
+  db.ref(`compras-dia/${dataHoje}/${horario}/${chave}`).set(dados).then(()=>{
+    const updates={};
+    todos.forEach(n=>{updates['numerosBloqueados/'+n]={bloqueadoEm:Date.now(),extra:extras.includes(n),nome,status:'⏳ AGUARDANDO',reservaId:chave,data:dataHoje,horario};});
+    return db.ref().update(updates).then(()=>({path:`compras-dia/${dataHoje}/${horario}/${chave}`}));
+  }).then(({path})=>{
+    agendarAtualizacaoStatusParaPago(dataHora,path);
+    const valorPix=valorTotal;
+    selecionados=[];document.querySelectorAll('.numero.marcado').forEach(b=>b.classList.remove('marcado'));
+    atualizarContador();atualizarTotais();fecharModalPacote();
+    return atualizarBloqueados().then(()=>carregarReservasDaSemana()).then(()=>abrirModalPix(valorPix));
+  }).catch(err=>{console.error(err);alert('Não foi possível salvar a reserva. Confira sua conexão e as regras do Firebase.');})
+  .finally(()=>{salvarBtn.disabled=false;salvarBtn.textContent='SALVAR';});
+}
+salvarBtn.onclick=salvarReserva;
+function salvarHistoricoAutomatico(){
+  const conteudo=codigo.innerText.trim();if(!conteudo||conteudo.includes('Nenhuma reserva'))return;
+  const agora=new Date(),data=localDateString(agora),hora=`${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}:${String(agora.getSeconds()).padStart(2,'0')}`;
+  const id=`${data}_${hora.replace(/:/g,'-')}`;
+  return db.ref('historico/'+id).set({data,dia:agora.toLocaleDateString('pt-BR',{weekday:'long'}),hora,conteudo,timestamp:Date.now()}).catch(err=>console.error('Erro ao salvar histórico:',err));
+}
+$('btnHistoricoData').onclick=()=>{$('inputDataHistorico').value=localDateString();$('modalHistoricoData').style.display='flex';};
+function fecharModalHistoricoData(){$('modalHistoricoData').style.display='none';}
+function carregarHistoricoPorData(){
+  const data=$('inputDataHistorico').value;if(!data)return alert('Selecione uma data válida.');
+  db.ref('historico').once('value').then(snap=>{
+    const todos=snap.val()||{},regs=Object.values(todos).filter(r=>r&&r.data===data&&r.conteudo&&!r.conteudo.includes('Nenhuma reserva')).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+    if(!regs.length){codigo.innerHTML=`<span class="vermelho">Nenhum histórico encontrado para ${data.split('-').reverse().join('/')}.</span>`;}
+    else{const r=regs[0];codigo.innerHTML=`<span class="verde">📅 HISTÓRICO DA DATA: ${data.split('-').reverse().join('/')}</span><br><br><span class="amarelo">Registro atualizado: ${escapeHtml(r.dia||'')} às ${escapeHtml(r.hora||'')}</span><br>------------------------------<br>${escapeHtml(r.conteudo).replace(/\n/g,'<br>')}`;}
+    fecharModalHistoricoData();if(!menuEl.classList.contains('open'))btnMenu.click();
+  }).catch(err=>{console.error(err);alert('Erro ao carregar histórico.');fecharModalHistoricoData();});
+}
+function salvarPixAdmin(){
+  const pix=$('inputPixAdmin').value.trim();if(!pix)return alert('Digite uma chave Pix válida.');
+  db.ref('admin/config/pix').set({chave:pix,atualizadoEm:Date.now()}).then(()=>{alert('Chave Pix salva no Firebase.');fecharPixAdmin();}).catch(err=>alert('Erro ao salvar chave Pix: '+err.message));
+}
+function fecharPixAdmin(){$('modalPixAdmin').style.display='none';}
+function atualizarDezenaPremiadaPublica(){
+  db.ref('admin/config/dezenaPremiada').once('value').then(snap=>{
+    const raw=snap.val(),el=$('dezenaAtual');
+    if(raw===null||raw===undefined||raw===''){el.style.display='none';const g=$('ganhadorPublico');if(g)g.remove();document.querySelectorAll('.numero').forEach(b=>{b.style.boxShadow='none';b.style.border='none';if(!b.classList.contains('bloqueado')&&!b.classList.contains('extra'))b.style.background=b.classList.contains('marcado')?'#27ae60':'#3498db';});return;}
+    const dezena=String(raw).padStart(2,'0');el.style.display='block';el.textContent='🏆 Dezena premiada: '+dezena;
+    document.querySelectorAll('.numero').forEach(b=>{if(b.textContent===dezena){b.style.background='linear-gradient(135deg,#ffd700,#ffa500)';b.style.boxShadow='0 0 20px #ffd700e6';b.style.border='3px solid #fff';}else{b.style.boxShadow='none';b.style.border='none';if(!b.classList.contains('bloqueado')&&!b.classList.contains('extra'))b.style.background=b.classList.contains('marcado')?'#27ae60':'#3498db';}});
+    procurarGanhador(dezena);
+  }).catch(err=>console.error('Erro ao carregar dezena premiada:',err));
+}
+function procurarGanhador(dezena){
+  db.ref('compras-dia').once('value').then(snap=>{
+    const todas=snap.val()||{};let ganhador=null;
+    outer:for(const dia of Object.keys(todas).sort().reverse())for(const horario of Object.keys(todas[dia]||{}))for(const id of Object.keys(todas[dia][horario]||{})){
+      const r=todas[dia][horario][id]||{},nums=(r.numeros||[]).map(String),extras=(r.dezenasExtras||[]).map(String);
+      if(nums.includes(dezena)||extras.includes(dezena)){ganhador={nome:r.nome||'Participante',dezenaTipo:nums.includes(dezena)?'selecionada':'extra',numeros:nums.join('-'),extras:extras.join('-')};break outer;}
+    }
+    mostrarGanhadorPublico(ganhador,dezena);
+  }).catch(err=>console.error('Erro ao procurar ganhador:',err));
+}
+function mostrarGanhadorPublico(ganhador,dezena){
+  let el=$('ganhadorPublico');if(el)el.remove();el=document.createElement('p');el.id='ganhadorPublico';
+  el.style.cssText='color:#ffd700;font-weight:bold;font-size:20px;margin:15px 10px;padding:15px;background:#ffd7001a;border-radius:15px;border:2px solid #ffd700;overflow-wrap:anywhere';
+  if(ganhador)el.innerHTML=`🎊 <strong>GANHADOR(A) ENCONTRADO(A)!</strong><br><br>Nome: <span style="color:#fff">${escapeHtml(ganhador.nome)}</span><br>Dezena premiada: <span style="color:#fff">${escapeHtml(dezena)}</span> (${ganhador.dezenaTipo})<br>Suas dezenas: <span style="color:#fff">${escapeHtml(ganhador.numeros)}</span><br>${ganhador.extras?'Dezenas extras: <span style="color:#fff">'+escapeHtml(ganhador.extras)+'</span>':''}`;
+  else el.textContent=`❌ Nenhum ganhador encontrado para a dezena ${dezena}.`;
+  $('dezenaAtual').after(el);
+}
+function estaNoHorarioPremio(){const d=new Date(),h=d.getHours(),m=d.getMinutes();return(h===20)||(h>20&&h<23)||(h===23&&m<=30);}
+$('btnPixAdmin').onclick=()=>{
+  if(estaNoHorarioPremio()){$('modalPremio').style.display='flex';ultimoHorarioAlertaPremio=null;}
+  else{const agora=Date.now();if(!ultimoHorarioAlertaPremio||agora-ultimoHorarioAlertaPremio>=TEMPO_MINIMO_ENTRE_ALERTAS){alert('⏰ Solicitação de prêmio disponível no horário divulgado: quarta e sábado, das 20:00 às 23:30.');ultimoHorarioAlertaPremio=agora;}}
+};
+function fecharModalPremio(){$('modalPremio').style.display='none';}
+btnMenu.onclick=()=>{
+  menuEl.classList.toggle('open');menuEl.setAttribute('aria-hidden',String(!menuEl.classList.contains('open')));
+  if(menuEl.classList.contains('open')){carregarReservasDaSemana();if(temporizadorMenu)clearTimeout(temporizadorMenu);salvarHistoricoAutomatico();temporizadorMenu=setTimeout(()=>{menuEl.classList.remove('open');menuEl.setAttribute('aria-hidden','true');},60000);}
+  else{if(temporizadorMenu)clearTimeout(temporizadorMenu);salvarHistoricoAutomatico();}
+};
+document.addEventListener('click',e=>{if(menuEl.classList.contains('open')&&!btnMenu.contains(e.target)&&!menuEl.contains(e.target)){menuEl.classList.remove('open');menuEl.setAttribute('aria-hidden','true');if(temporizadorMenu)clearTimeout(temporizadorMenu);}});
+function podeVirarPerdeuAutomatico(){const d=new Date();return(d.getDay()===3||d.getDay()===6)&&(d.getHours()>20||(d.getHours()===20&&d.getMinutes()>=30));}
+function atualizarResultadosAutomaticamente(){
+  if(!podeVirarPerdeuAutomatico())return;
+  const hoje=localDateString();
+  db.ref('compras-dia/'+hoje).once('value').then(snap=>{
+    const dados=snap.val();if(!dados)return;const updates={};
+    Object.keys(dados).forEach(h=>Object.keys(dados[h]||{}).forEach(id=>{const item=dados[h][id];if(item&&String(item.resultado||'').includes('AGUARDANDO'))updates[`compras-dia/${hoje}/${h}/${id}/resultado`]='❌ PERDEU';}));
+    if(Object.keys(updates).length)db.ref().update(updates).then(carregarReservasDaSemana);
+  }).catch(err=>console.error(err));
+}
+db.ref('admin/config/dezenaPremiada').on('value',atualizarDezenaPremiadaPublica);
+garantirNome();exibirNome();atualizarDataJogo();atualizarTotais();atualizarContador();
+carregarReservasDaSemana();atualizarBloqueados();reagendarPagamentosAutomaticos();atualizarResultadosAutomaticamente();
+</script>
