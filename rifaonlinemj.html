@@ -992,7 +992,6 @@
       Para continuar, escolha dezenas em grupos de 5.
     </p>
 <div class="quantidade-opcoes">
-  <button type="button" onclick="marcarQuantidade(1)">1</button>
   <button type="button" onclick="marcarQuantidade(5)">5</button>
   <button type="button" onclick="marcarQuantidade(10)">10</button>
   <button type="button" onclick="marcarQuantidade(15)">15</button>
@@ -1034,7 +1033,7 @@ const numerosDiv=$('numeros'),codigo=$('codigo'),menuEl=$('menu'),btnMenu=$('btn
 const salvarBtn=$('salvar'),nomeExibicao=$('nomeExibicao'),modalNome=$('modalNome'),inputNome=$('inputNome');
 const totalPagarSpan=$('totalPagar'),totalReceberSpan=$('totalReceber'),valorPacoteSpan=$('valorPacote');
 const modalPacote=$('modalPacote');
-const CHAVE_PIX_RIFA='71992290058',NOME_RECEBEDOR_PIX='Carlos Santos',CIDADE_RECEBEDOR_PIX='SALVADOR';
+const CHAVE_PIX_RIFA='d3cef174-0f3d-46d5-9bf2-9d64214bc8d3',NOME_RECEBEDOR_PIX='MULTIJOGO',CIDADE_RECEBEDOR_PIX='SALVADOR';
 const VALOR_UNITARIO=1,VALOR_PACOTE_10=9,ESPERA_STATUS_MS=5*60*1000;
 let selecionados = [];
 let bloqueados = new Set();
@@ -1092,16 +1091,28 @@ function exibirNome(){nomeExibicao.textContent=localStorage.getItem('nomeJogador
 function garantirNome(){if(!localStorage.getItem('nomeJogador'))abrirModalNome();else exibirNome();}
 $('btnContinuar').onclick=()=>{const n=inputNome.value.trim();if(!n)return alert('Digite um nome válido');localStorage.setItem('nomeJogador',n);fecharModalNome();exibirNome();};
 $('btnEditarNome').onclick=abrirModalNome;
-function toggleNumero(btn,n){
-  if(btn.classList.contains('bloqueado'))return;
-  if(!podeMarcarAgora())return alert('Marcações encerradas neste horário.');
-  if(btn.classList.contains('marcado')){
-    btn.classList.remove('marcado');selecionados=selecionados.filter(x=>x!==n);
-  }else{
-    btn.classList.add('marcado');selecionados.push(n);
-    if(selecionados.length>0&&selecionados.length%5===0)abrirModalPacote();
+function toggleNumero(btn, n) {
+  if (btn.classList.contains('bloqueado')) return;
+
+  if (!podeMarcarAgora()) {
+    return alert('Marcações encerradas neste horário.');
   }
-  atualizarTotais();atualizarContador();
+
+  if (btn.classList.contains('marcado')) {
+    btn.classList.remove('marcado');
+    selecionados = selecionados.filter(x => x !== n);
+  } else {
+    btn.classList.add('marcado');
+    selecionados.push(n);
+  }
+
+  atualizarTotais();
+  atualizarContador();
+
+  // Abre o modal ao marcar a 3ª ou a 4ª dezena.
+  if (selecionados.length === 3 || selecionados.length === 4) {
+    abrirModalQuantidade(selecionados.length);
+  }
 }
 function atualizarContador(){$('contadorMarcadas').textContent=selecionados.length;}
 function atualizarTotais(){
