@@ -564,6 +564,32 @@
   transform: scale(.97);
 }
 
+.quantidade-opcoes button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: #8098ff;
+  color: #111;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.quantidade-opcoes button:active {
+  transform: scale(.92);
+}
+
+.quantidade-opcoes button.selecionado {
+  background: #2ecc71;
+  border-color: #fff;
+  box-shadow: 0 0 10px #2ecc71;
+}
+
   </style>
 </head>
 <body>
@@ -966,13 +992,14 @@
       Para continuar, escolha dezenas em grupos de 5.
     </p>
 
-    <div class="quantidade-exemplo">
-      <span>Quantidades válidas</span>
-      <div class="quantidade-opcoes">
-        <span>5</span><span>10</span><span>15</span>
-        <span>20</span><span>25</span>
-      </div>
-    </div>
+    
+<div class="quantidade-opcoes">
+  <button type="button" onclick="marcarQuantidade(5)">5</button>
+  <button type="button" onclick="marcarQuantidade(10)">10</button>
+  <button type="button" onclick="marcarQuantidade(15)">15</button>
+  <button type="button" onclick="marcarQuantidade(20)">20</button>
+  <button type="button" onclick="marcarQuantidade(25)">25</button>
+</div>
 
     <div class="quantidade-status">
       <p>Você marcou</p>
@@ -1389,6 +1416,48 @@ function atualizarResultadosAutomaticamente(){
 db.ref('admin/config/dezenaPremiada').on('value',atualizarDezenaPremiadaPublica);
 garantirNome();exibirNome();atualizarDataJogo();atualizarTotais();atualizarContador();
 carregarReservasDaSemana();atualizarBloqueados();reagendarPagamentosAutomaticos();atualizarResultadosAutomaticamente();
+
+
+function marcarQuantidade(qtd) {
+  const disponiveis = getNumerosDisponiveis();
+
+  if (disponiveis.length < qtd) {
+    alert(`Só existem ${disponiveis.length} dezenas disponíveis para marcar.`);
+    return;
+  }
+
+  // Limpa as marcações anteriores
+  selecionados.forEach(n => {
+    const btn = document.querySelector(
+      `.numero[data-num="${n}"]`
+    );
+    if (btn) btn.classList.remove('marcado');
+  });
+
+  selecionados = [];
+
+  // Escolhe a quantidade solicitada aleatoriamente
+  const escolhidos = embaralhar([...disponiveis]).slice(0, qtd);
+
+  escolhidos.forEach(n => {
+    const btn = document.querySelector(
+      `.numero[data-num="${n}"]`
+    );
+
+    if (btn && !btn.classList.contains('bloqueado')) {
+      btn.classList.add('marcado');
+      selecionados.push(n);
+    }
+  });
+
+  atualizarTotais();
+  atualizarContador();
+  fecharModalQuantidade();
+
+  // Abre o painel de pagamento
+  abrirModalPacote();
+}
+
 </script>
 </body>
 </html>
