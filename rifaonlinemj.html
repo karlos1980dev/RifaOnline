@@ -121,6 +121,7 @@
     }
 
     #btnEditarNome {
+    display:none;
       background:transparent;
       border:1px solid rgba(255,255,255,0.2);
       color:#fff;
@@ -1128,7 +1129,7 @@ function proximaDataDeJogo(){
   return quarta<domingo?quarta:domingo;
 }
 function cabecalhoDataJogo(){const d=proximaDataDeJogo();return `📅 DATA DO JOGO: ${d.toLocaleDateString('pt-BR')} às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}\n==========================\n\n`;}
-function atualizarDataJogo(){const d=proximaDataDeJogo();$('dataJogo').textContent=`📅 Próximo jogo: ${d.toLocaleDateString('pt-BR',{weekday:'long'})} - ${d.toLocaleDateString('pt-BR')}`;}
+function atualizarDataJogo(){const d=proximaDataDeJogo();$('dataJogo').textContent=`📅 Próximo Sorteio: ${d.toLocaleDateString('pt-BR',{weekday:'long'})} - ${d.toLocaleDateString('pt-BR')}`;}
 function atualizarTextareaReservasSemana(todas){
   textoNumerosBloqueados(textoBloq=>{
     let html=escapeHtml(textoBloq).replace(/\n/g,'<br>')+escapeHtml(cabecalhoDataJogo()).replace(/\n/g,'<br>')+'------------------------------<br>';
