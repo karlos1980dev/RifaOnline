@@ -1,0 +1,2365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>raffle between friends</title>
+  <link rel="shortcut icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/IMG-20260203-WA0098.jpg" type="image/jpg">
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/IMG-20260203-WA0098.jpg" type="image/jpg">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+  
+<style>
+/* =========================
+   CONFIGURAÇÕES GERAIS
+========================= */
+:root {
+  --bg: #232323;
+  --card: #111111;
+  --accent: #8098ff;
+  --accent-dark: #6f86e6;
+  --green: #2ecc71;
+  --danger: #e74c3c;
+  --text: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding-top: 50px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+h1 {
+  margin: 8px 0;
+  font-size: 22px;
+}
+
+img.imagemIcone {
+  display: none;
+  width: 100%;
+  height: 70px;
+  margin: 0;
+  top: 0;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.contador {
+  margin: 10px 0;
+  color: #ff000a;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* =========================
+   TOPO FIXO
+========================= */
+
+/* TOPO FIXO UNIFORME */
+#topoWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+  border-bottom: 2px solid rgba(0,0,0,.3);
+  box-shadow: 0 4px 8px rgba(0,0,0,.2);
+}
+
+#btnMenu {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 4px;
+  background: var(--green);
+  color: #000;
+  font-size: 13px;
+  font-weight: bold;
+  border: none;
+  border-radius: 7px;
+}
+
+#topoInputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 3;
+  min-width: 0;
+}
+
+#topoInputs input,
+#topoInputs select,
+#topoInputs .btnPagar {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  height: 34px;
+  margin: 0;
+  padding: 4px 2px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  border: none;
+  border-radius: 7px;
+}
+
+#topoInputs input,
+#topoInputs select {
+  background: #222;
+  color: #fff;
+}
+
+#topoInputs select {
+  text-align-last: center;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+#topoInputs .btnPagar {
+  background: linear-gradient(135deg, #00e676, #00a844);
+  color: #000;
+  cursor: pointer;
+}
+
+#nomeBox {
+  display: none !important;
+}
+
+@media (max-width: 380px) {
+  #topoWrapper {
+    gap: 4px;
+    padding: 6px;
+  }
+
+  #topoInputs {
+    gap: 4px;
+  }
+
+  #btnMenu,
+  #topoInputs input,
+  #topoInputs select,
+  #topoInputs .btnPagar {
+    height: 32px;
+    font-size: 11px;
+  }
+}
+
+#btnEditarNome {
+  display: none;
+  padding: 6px 8px;
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#nomeExibicao {
+display:none;
+  color: #2ecc71;
+}
+
+/* =========================
+   MENU LATERAL
+========================= */
+#menu {
+  position: fixed;
+  top: 60px;
+  left: -150%;
+  z-index: 9999;
+  width: 90%;
+  max-width: 420px;
+  height: calc(100dvh - 75px);
+  margin: 0;
+  padding: 8px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--card);
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 6px 6px 30px rgba(0,0,0,.6);
+  transition: left .28s ease;
+}
+
+#menu.open {
+  left: 0;
+}
+
+#menu h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+#menu,
+#menu * {
+  text-align: left;
+}
+
+/* Área de texto tradicional */
+#menu textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 100px;
+  margin: 0;
+  padding: 8px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  resize: none;
+  background: #000;
+  color: #0f0;
+  border: 1px solid #0f0;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+/* Visualizador HTML do menu */
+.visualizador {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 350px;
+  margin: 0;
+  padding: 5px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  background: #111;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.verde {
+  color: #00ff00;
+  font-weight: bold;
+}
+
+.amarelo {
+  color: gold;
+  font-weight: bold;
+}
+
+.vermelho {
+  color: #ff4d4d;
+  font-weight: bold;
+}
+
+/* =========================
+   RESERVAS COMPACTAS
+========================= */
+.reserva-card {
+  display: block;
+  width: 100%;
+  margin: 5px 0;
+  padding: 7px;
+  overflow-wrap: anywhere;
+  background: #171a21;
+  color: #fff;
+  border: 1px solid #343a46;
+  border-radius: 7px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.reserva-card-horario {
+  display: block;
+  margin: 0 0 5px;
+  padding: 6px;
+  background: #292d37;
+  color: #ffd54a;
+  border-left: 3px solid #ffd54a;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.reserva-card-info {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+.reserva-card-linha {
+  display: flex;
+  justify-content: flex-start;
+  align-items: baseline;
+  gap: 5px;
+  margin: 0;
+  padding: 3px 0;
+  border-bottom: 1px solid #292e38;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.reserva-card-label {
+  flex: 0 0 auto;
+  color: #b9c0cc;
+}
+
+.reserva-card-valor {
+  min-width: 0;
+  max-width: 75%;
+  color: #fff;
+  font-weight: 600;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.reserva-card-status {
+  margin: 5px 0 0;
+  padding: 5px;
+  background: #302a19;
+  color: #ffd54a;
+  border: 1px solid #5b4a20;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.reserva-card-status.pago {
+  background: #123324;
+  color: #55e99a;
+  border-color: #226c45;
+}
+
+.reserva-card-status.cancelado {
+  background: #391b1b;
+  color: #ff7373;
+  border-color: #6c2929;
+}
+
+.reserva-card-resultado {
+  margin: 4px 0 0;
+  padding: 5px;
+  background: #222630;
+  color: #e0e6ef;
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.reserva-card-pix-titulo {
+  margin: 7px 0 4px;
+  color: #55e99a;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.reserva-card-pix {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-height: 60px;
+  margin: 4px 0;
+  padding: 6px;
+  overflow-wrap: anywhere;
+  resize: vertical;
+  background: #080a0e;
+  color: #7ef0a8;
+  border: 1px solid #35483b;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.reserva-card-botao-pix {
+  display: block;
+  width: 100%;
+  min-height: 36px;
+  margin: 4px 0 0;
+  padding: 7px;
+  background: #1769ff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+}
+
+.reserva-card-botao-pix:active {
+  background: #0e54d5;
+  transform: scale(.99);
+}
+
+.reserva-card-contagem {
+  margin: 4px 0 0;
+  padding: 5px;
+  background: #252a33;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.reserva-card-separador {
+  margin: 6px 0;
+  border: none;
+  border-top: 1px dashed #555d6b;
+}
+
+/* Evita parágrafos com margens grandes dentro das reservas */
+.reserva-card p {
+  margin: 3px 0;
+}
+
+/* =========================
+   NÚMEROS
+========================= */
+#conteudo {
+  display: flex;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 12px;
+}
+
+#numeros {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+  padding: 5px;
+}
+
+.numero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  background: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: clamp(10px, 2.8vw, 18px);
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+
+.numero:active {
+  transform: scale(.98);
+}
+
+.marcado {
+  background: #27ae60 !important;
+}
+
+.bloqueado {
+  background: #777 !important;
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.numero.extra {
+  background: linear-gradient(135deg, #ffd700, #ffa500);
+  color: #000;
+  font-weight: bold;
+  border: 2px solid #fff3b0;
+  box-shadow: 0 0 8px rgba(255,215,0,.9);
+}
+
+.numero.bloqueado.extra {
+  background: linear-gradient(135deg, #ffd700, #ffa500) !important;
+  color: #000 !important;
+  border: 2px solid #fff3b0;
+  box-shadow: 0 0 10px rgba(255,215,0,.95);
+}
+
+#rodapeInfo {
+  margin-top: 12px;
+  color: gold;
+  font-weight: bold;
+}
+
+/* =========================
+   MODAL NOME
+========================= */
+#modalNome {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 20000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,.75);
+}
+
+#modalNome.show {
+  display: flex;
+}
+
+#modalBox input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+#modalBox button {
+  padding: 10px 20px;
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.pequeno {
+  margin-top: 10px;
+  color: #ccc;
+  font-size: 13px;
+}
+
+/* =========================
+   MODAL PACOTE
+========================= */
+#modalPacote {
+  position: fixed;
+  inset: 0;
+  z-index: 25000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.85);
+}
+
+#modalPacote.show {
+  display: flex;
+}
+
+#modalPacoteBox {
+  position: relative;
+  width: 90%;
+  max-width: 350px;
+  padding: 25px;
+  background: #111;
+  color: #fff;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(128,152,255,.5);
+}
+
+#btnFecharModal {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+#modalPacoteBox h3 {
+  margin-top: 0;
+  color: #8098ff;
+}
+
+#modalPacoteBox p {
+  margin: 15px 0;
+  font-size: 16px;
+}
+
+#valorPacote {
+  color: #2ecc71;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+#btnPacoteContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.btnPacote {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform .2s;
+}
+
+.btnPacote:hover {
+  transform: scale(1.05);
+}
+
+#btnMais10 {
+  background: #2ecc71;
+  color: #000;
+}
+
+#btnMenos10 {
+  background: #e74c3c;
+  color: #fff;
+}
+
+#btnPacoteContainer #btnMais10,
+#btnPacoteContainer #btnMenos10 {
+  flex: 1 1 calc(50% - 10px);
+  min-width: 0;
+}
+
+#btnPacoteContainer #salvar {
+  flex: 1 1 100%;
+  width: 100%;
+  background: #2ecc71;
+  color: #000;
+  font-weight: bold;
+  animation: piscarPagar .8s infinite alternate;
+}
+
+.fechar-modal-pix {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #ff3333;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* =========================
+   BOTÃO PAGAR
+========================= */
+.btnPagar {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  width: 50px;
+  height: 30px;
+  margin: 10;
+  padding: 6px 4px;
+  background: linear-gradient(135deg, #00e676, #00a844);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,230,118,.35);
+  animation: piscarPagar 1s infinite;
+}
+
+.btnPagar:active {
+  transform: scale(.97);
+}
+
+@keyframes piscarPagar {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: .65;
+    transform: scale(.97);
+  }
+}
+
+/* =========================
+   MODAL DE QUANTIDADE
+========================= */
+.modal-quantidade {
+  position: fixed;
+  inset: 0;
+  z-index: 50000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0,0,0,.84);
+  backdrop-filter: blur(5px);
+}
+
+.quantidade-box {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  padding: 25px 20px 20px;
+  background: linear-gradient(160deg, #202331, #101116);
+  color: #fff;
+  border: 1px solid #8098ff;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(128,152,255,.25);
+  animation: aparecerQuantidade .25s ease-out;
+}
+
+@keyframes aparecerQuantidade {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.quantidade-fechar {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  background: #333746;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.quantidade-icone {
+  margin-bottom: 8px;
+  font-size: 45px;
+}
+
+.quantidade-box h2 {
+  margin: 0 0 10px;
+  color: #8098ff;
+  font-size: 23px;
+}
+
+.quantidade-descricao {
+  margin: 0 0 18px;
+  color: #ddd;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.quantidade-exemplo {
+  padding: 14px 10px;
+  background: #292c38;
+  border-radius: 12px;
+}
+
+.quantidade-exemplo > span {
+  display: block;
+  margin-bottom: 12px;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.quantidade-opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+}
+
+.quantidade-opcoes span,
+.quantidade-opcoes button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  background: #8098ff;
+  color: #111;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.quantidade-opcoes button {
+  cursor: pointer;
+  transition: .2s;
+}
+
+.quantidade-opcoes button:active {
+  transform: scale(.92);
+}
+
+.quantidade-opcoes button.selecionado {
+  background: #2ecc71;
+  border-color: #fff;
+  box-shadow: 0 0 10px #2ecc71;
+}
+
+.quantidade-status {
+  margin: 16px 0;
+  padding: 12px;
+  background: rgba(46,204,113,.09);
+  border: 1px solid rgba(46,204,113,.3);
+  border-radius: 12px;
+}
+
+.quantidade-status p {
+  margin: 4px 0;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.quantidade-status strong {
+  display: block;
+  margin: 6px 0;
+  color: #2ecc71;
+  font-size: 23px;
+}
+
+#mensagemQuantidade {
+  color: #ffd166;
+  line-height: 1.4;
+}
+
+.btn-continuar-quantidade {
+  width: 100%;
+  padding: 14px 10px;
+  background: #8098ff;
+  color: #111;
+  border: none;
+  border-radius: 11px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+@media (max-width: 420px) {
+  #btnMenu {
+    flex-basis: 30px;
+  }
+
+  #topoInputs {
+    gap: 4px;
+  }
+
+  #topoInputs input,
+  #topoInputs select {
+    padding: 5px 3px;
+    font-size: 12px;
+  }
+
+  #salvar {
+    padding: 5px 3px;
+    font-size: 11px;
+  }
+
+  #numeros {
+    gap: 4px;
+    padding: 3px;
+  }
+
+  #menu {
+    width: 94%;
+    padding: 6px;
+  }
+
+  .visualizador {
+    padding: 4px;
+    font-size: 12px;
+  }
+
+  .reserva-card {
+    margin: 4px 0;
+    padding: 6px;
+  }
+
+  .reserva-card-linha {
+    gap: 4px;
+    padding: 2px 0;
+  }
+
+  .reserva-card-valor {
+    max-width: 75%;
+  }
+}
+
+@media (max-width: 350px) {
+  #btnMenu {
+    flex-basis: 30px;
+    font-size: 13px;
+  }
+
+  #topoWrapper {
+    padding: 8px 6px;
+  }
+
+  #topoInputs input,
+  #topoInputs select {
+    font-size: 11px;
+  }
+
+  .reserva-card {
+    font-size: 12px;
+  }
+}
+</style>
+
+</head>
+<body>
+     
+   <!-- MODAL DE RECEBER PRÊMIO -->
+<div id="modalPremio" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#111;
+    color:#fff;
+    width:92%;
+    max-width:420px;
+    padding:25px;
+    border-radius:14px;
+    text-align:center;
+    border:2px solid #8098ff;
+  ">
+    <h2 style="color:#ffd700; margin-top:0;">🎉 PARABÉNS, GANHADOR(A)! 🎉</h2>
+    
+    <p style="margin:15px 0;">Para receber seu prêmio de <strong style="color:#2ecc71;">R$ 80,00</strong>, siga esses passos:</p>
+    
+    <ol style="text-align:left; margin:20px 0; padding-left:25px;">
+      <li>1. Tire print do seu comprovante de reserva</li>
+      <li>2. Confira a dezena premiada exibida na tela</li>
+      <li>3. Envie ambos para o administrador no WhatsApp</li>
+    </ol>
+    
+    <button onclick="fecharModalPremio()" style="
+      margin-top:10px;
+      background:#8098ff;
+      color:#fff;
+      padding:10px 20px;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      font-weight:bold;
+    ">
+      Fechar
+    </button>
+  </div>
+</div>
+
+<!-- MODAL PIX -->
+<div id="modalPix" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:30000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  "><button class="fechar-modal-pix" onclick="fecharModalPix()">✕</button>
+    <h2>💰 Pagamento via PIX</h2>
+<p><strong>Valor a pagar: R$ <span id="valorPix">0,00</span></strong></p>
+    <p>Copie a chave PIX abaixo:</p>
+
+    
+<div id="qrcode" style="
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:15px auto;
+  padding:12px;
+  background:#fff;
+  border-radius:10px;
+  width:274px;
+  min-height:274px;
+"></div>
+
+<p style="font-size:14px;">
+  Escaneie o QR Code ou copie o Pix Copia e Cola.
+</p>
+
+<textarea id="pixCopiaCola" readonly style="
+  width:100%;
+  height:85px;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  background:#f5f5f5;
+  color:#111;
+  font-size:12px;
+  resize:none;
+  word-break:break-all;
+"></textarea>
+
+<button onclick="copiarPixCopiaCola()" style="
+  margin-top:8px;
+  background:#1769ff;
+  color:#fff;
+  padding:12px;
+  width:100%;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:bold;
+">
+  📋 Copiar Pix Copia e Cola
+</button>
+
+
+  <p id="pixMsg" style="color:green;display:none;"><b>✅ PIX COPIADO!</br>FAÇA O PAGAMANTO e BOA SORTE...</p></b>
+
+
+    <button onclick="fecharModalPix()" style="display:none;
+      margin-top:10px;
+      background:#ccc;
+      padding:8px;
+      width:100%;
+      border:none;
+      border-radius:8px;
+    ">
+      Fechar
+    </button>
+    <footer>
+    <p>todos os direitos reservado</br>
+    Newtech</p>
+<footer>
+    <p>todos os direitos reservado</br>
+    Newtech</p>
+</footer>
+  </div>
+</div>
+    <img class="imagemIcone"     src="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/images-2.jpg">
+        <h1>
+  RIFA da SORTE</br>
+  <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin:0 30px;">
+    1.00
+  </strong> 
+  GANHA
+  <strong style="color:red; font-weight:bold; font-size:30px; border-bottom:3px solid gold; margin-left:20px;">
+    80.00
+  </strong>
+</h1>
+
+  
+<div id="topoWrapper" role="banner" aria-label="Topo">
+  <button id="btnMenu" type="button">VER</button>
+
+  <div id="topoInputs">
+    <input
+      type="text"
+      id="valor"
+      value="R$ 1,00"
+      readonly
+      aria-label="Valor por dezena"
+    >
+
+    <select id="horarios" aria-label="Horário">
+      <option value="20:00">FEDERAL</option>
+    </select>
+
+    <button class="btnPagar" type="button" onclick="salvarReserva()">
+      PAGAR
+    </button>
+  </div>
+
+  <div id="nomeBox">
+    <span id="nomeExibicao">Bem-vindo</span>
+    <button id="btnEditarNome" type="button">Editar</button>
+  </div>
+</div>
+
+<div id="modalPixAdmin" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  ">
+    <h2>🔐 Definir PIX</h2>
+
+    <input id="inputPixAdmin" type="text" placeholder="Digite a chave PIX"
+      style="
+        width:100%;
+        padding:12px;
+        font-size:16px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        margin-bottom:10px;
+      "
+    >
+
+    <button onclick="salvarPixAdmin()" style="
+      width:100%;
+      padding:10px;
+      background:#27ae60;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      font-weight:bold;
+    ">
+      💾 Salvar PIX
+    </button>
+
+    <button onclick="fecharPixAdmin()" style="
+      width:100%;
+      margin-top:8px;
+      padding:8px;
+      background:#ccc;
+      border:none;
+      border-radius:8px;
+    ">
+      Cancelar
+    </button>
+  </div>
+</div>
+  <!-- MENU LATERAL -->
+  
+ <div id="menu" aria-hidden="true">
+  <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+  <button id="btnPixAdmin" style="
+    flex: 1;
+    text-align:center;
+    padding:10px;
+    background:#27ae60;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+    RECEBER PRÊMIO
+  </button>
+
+  <button id="btnHistoricoData" style="
+    flex: 1;
+    text-align:center;
+    padding:10px;
+    background:#8098ff;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+    HISTÓRICO POR DATA
+  </button>
+</div>
+
+
+<!-- MODAL PARA SELECIONAR DATA DO HISTÓRICO -->
+<div id="modalHistoricoData" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  ">
+    <h2>📅 Selecionar Data do Histórico</h2>
+
+    <input id="inputDataHistorico" type="date"
+      style="
+        width:100%;
+        padding:12px;
+        text-align:center;
+        font-size:16px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        margin-bottom:15px;
+      "
+    >
+
+    <div style="display: flex; gap: 8px;">
+      <button onclick="fecharModalHistoricoData()" style="
+        flex: 1;
+        padding:8px;
+        text-align:center;
+        background:#ccc;
+        border:none;
+        border-radius:8px;
+      ">
+        Cancelar
+      </button>
+      
+      <button onclick="carregarHistoricoPorData()" style="
+        flex: 1;
+        padding:10px;
+        text-align:center;
+        background:#8098ff;
+        color:#fff;
+        border:none;
+        border-radius:8px;
+        font-size:16px;
+        font-weight:bold;
+      ">
+        📤 Carregar
+      </button>
+
+      
+    </div>
+  </div>
+</div>
+
+
+    
+    <div class="visualizador" id="codigo">Nenhuma reserva carregada</div>
+    
+  </div>
+
+  <!-- Conteúdo principal -->
+<div style="display:flex;justify-content:space-between;align-items:center; flex-wrap:wrap; width:95%;box-sizing:border-box;margin-bottom:12px;    ">
+
+    <div style="flex:1; min-width:120px;">
+        <strong>Pagar: R$ <span id="totalPagar">0,00</span></strong>
+    </div>
+
+    <div style="flex:1; min-width:120px; text-align:right;">
+                <strong>Recebe: R$ <span id="totalReceber">0,00</span></strong>
+    </div>
+    
+    
+  </div>
+<p id="dataJogo" style="color:gold;font-weight:bold;"></p>
+  <div class="contador">
+  Dezenas marcadas: <span id="contadorMarcadas">0</span>
+</div>
+     
+<!-- ADICIONE ESTA LINHA A-->
+<p id="dezenaAtual" style="
+  color:#7bff55;
+  font-weight:bold;
+  font-size:18px;
+  margin:15px 0;
+  padding:10px;
+  background:rgba(128, 152, 255, 0.1);
+  border-radius:10px;
+  display:block;
+">🏆 Dezena premiada: Aguardando</p>
+</div>
+
+<div id="numeros" aria-label="Números da rifa"></div>
+<p id="rodapeInfo">SORTE E SUA A GARANTIA E NOSSA </br>JOGUE COM RESPONSABILIDADE</p>
+
+  <!-- MODAL PARA PEDIR O NOME -->
+  <div id="modalNome" role="dialog" aria-modal="true" aria-labelledby="tituloModal">
+    <div id="modalBox">
+        <h2 id="tituloModal">Digite seu nome para continuar</h2>
+        <input type="text" id="inputNome" placeholder="Seu nome">
+        <div style="display:flex; gap:8px; justify-content:center;">
+          <button id="btnContinuar">Continuar</button>
+        </div>
+        <div class="pequeno">O nome será salvo com a sua reserva.</div>
+    </div>
+  </div>
+<div id="modalPacote">
+  <div id="modalPacoteBox">
+    <button id="btnFecharModal">×</button>
+    <h3>Quer adicionar mais cotas?</h3>
+    <p>Adicione 10 cotas com </br><strong style="color:gold">10% de desconto</strong></br> ( paga R$ 9,00 a cada 10 cotas! )</p>
+    <p>Valor total atual: <span id="valorPacote">R$ 0,00</span></p>
+    <div id="btnPacoteContainer">
+  <button id="btnMais10" class="btnPacote">+10 Números</button>
+  <button id="btnMenos10" class="btnPacote">-10 Números</button>
+
+  <button id="salvar" type="button" class="btnPacote">
+    💰 PAGAR
+  </button>
+</div>
+  </div>
+</div>
+
+<!-- MODAL INTUITIVO DE QUANTIDADE -->
+<div id="modalQuantidade" class="modal-quantidade">
+  <div class="quantidade-box">
+    <button type="button" class="quantidade-fechar"
+      onclick="fecharModalQuantidade()" aria-label="Fechar">×</button>
+
+    <div class="quantidade-icone">🎯</div>
+
+    <h2>Complete sua aposta</h2>
+
+    <p class="quantidade-descricao">
+      Para continuar, escolha dezenas em grupos de 5.
+    </p>
+<div class="quantidade-opcoes">
+  <button type="button" onclick="marcarQuantidade(5)">5</button>
+  <button type="button" onclick="marcarQuantidade(10)">10</button>
+  <button type="button" onclick="marcarQuantidade(15)">15</button>
+  <button type="button" onclick="marcarQuantidade(20)">20</button>
+  <button type="button" onclick="marcarQuantidade(25)">25</button>
+</div>
+
+    <div class="quantidade-status">
+      <p>Você marcou</p>
+      <strong><span id="qtdAtualModal">0</span> dezenas</strong>
+      <p id="mensagemQuantidade">
+        Marque pelo menos 5 dezenas.
+      </p>
+    </div>
+
+    <button type="button" class="btn-continuar-quantidade"
+      onclick="fecharModalQuantidade()">
+      CONTINUAR ESCOLHENDO
+    </button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+'use strict';
+const firebaseConfig = {
+  apiKey:"AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain:"rifa-782a3.firebaseapp.com",
+  databaseURL:"https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId:"rifa-782a3",
+  storageBucket:"rifa-782a3.firebasestorage.app",
+  messagingSenderId:"88068598855",
+  appId:"1:88068598855:web:a230a06db76a4bbc125562"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const $=id=>document.getElementById(id);
+const numerosDiv=$('numeros'),codigo=$('codigo'),menuEl=$('menu'),btnMenu=$('btnMenu');
+const salvarBtn=$('salvar'),nomeExibicao=$('nomeExibicao'),modalNome=$('modalNome'),inputNome=$('inputNome');
+const totalPagarSpan=$('totalPagar'),totalReceberSpan=$('totalReceber'),valorPacoteSpan=$('valorPacote');
+const modalPacote=$('modalPacote');
+const CHAVE_PIX_RIFA='d3cef174-0f3d-46d5-9bf2-9d64214bc8d3',NOME_RECEBEDOR_PIX='MULTIJOGO',CIDADE_RECEBEDOR_PIX='SALVADOR';
+const VALOR_UNITARIO=1,VALOR_PACOTE_10=9,ESPERA_STATUS_MS=5*60*1000;
+let selecionados = [];
+let bloqueados = new Set();
+let temporizadorMenu = null;
+let ultimoHorarioAlertaPremio = null;
+
+let reservaPendentePix = null;
+let confirmandoReservaPix = false;
+
+
+const TEMPO_MINIMO_ENTRE_ALERTAS=3600000;
+const localDateString=(date=new Date())=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+const formatarDinheiro=n=>Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const calcularValorComPacote=qtd=>Math.floor(qtd/10)*VALOR_PACOTE_10+(qtd%10)*VALOR_UNITARIO;
+const embaralhar=lista=>{for(let i=lista.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[lista[i],lista[j]]=[lista[j],lista[i]];}return lista;};
+function podeMarcarAgora(){
+  const agora=new Date(),dia=agora.getDay(),min=agora.getHours()*60+agora.getMinutes();
+  if(dia===3)return min<1200||min>=1320;
+  if(dia===0)return min<660||min>=780;
+  return true;
+}
+for(let i=0;i<100;i++){
+  const n=String(i).padStart(2,'0'),btn=document.createElement('button');
+  btn.type='button';btn.textContent=n;btn.className='numero';btn.dataset.num=n;
+  btn.addEventListener('click',()=>toggleNumero(btn,n));numerosDiv.appendChild(btn);
+}
+
+/* LIMPAR TEXTAREA POR COMANDO DO ADMIN */
+
+const comandoLimpezaRef = firebase.database().ref("controle/limparTextarea");
+
+comandoLimpezaRef.on("value", function(snapshot) {
+    const comando = snapshot.val();
+
+    if (!comando || comando.limpar !== true) return;
+
+    const textarea = document.getElementById("textarea");
+
+    if (textarea) {
+        textarea.value = "";
+    }
+
+    // Se o seu textarea tiver outro ID, troque "textarea" pelo ID correto.
+    firebase.database().ref("index/textarea").set("");
+
+    comandoLimpezaRef.set({
+        limpar: false,
+        em: Date.now()
+    });
+});
+
+function abrirModalNome(){modalNome.classList.add('show');inputNome.value=localStorage.getItem('nomeJogador')||'';setTimeout(()=>inputNome.focus(),100);}
+function fecharModalNome(){modalNome.classList.remove('show');}
+function exibirNome(){nomeExibicao.textContent=localStorage.getItem('nomeJogador')||'Bem-vindo';}
+function garantirNome(){if(!localStorage.getItem('nomeJogador'))abrirModalNome();else exibirNome();}
+$('btnContinuar').onclick=()=>{const n=inputNome.value.trim();if(!n)return alert('Digite um nome válido');localStorage.setItem('nomeJogador',n);fecharModalNome();exibirNome();};
+$('btnEditarNome').onclick=abrirModalNome;
+function toggleNumero(btn, n) {
+  if (btn.classList.contains('bloqueado')) return;
+
+  if (!podeMarcarAgora()) {
+    return alert('Marcações encerradas neste horário.');
+  }
+
+  if (btn.classList.contains('marcado')) {
+    btn.classList.remove('marcado');
+    selecionados = selecionados.filter(x => x !== n);
+  } else {
+    btn.classList.add('marcado');
+    selecionados.push(n);
+  }
+
+  atualizarTotais();
+  atualizarContador();
+
+  // Abre o modal ao marcar a 3ª ou a 4ª dezena.
+  if (selecionados.length === 3 || selecionados.length === 4) {
+    abrirModalQuantidade(selecionados.length);
+  }
+}
+function atualizarContador(){$('contadorMarcadas').textContent=selecionados.length;}
+function atualizarTotais(){
+  const total=calcularValorComPacote(selecionados.length);
+  totalPagarSpan.textContent=formatarDinheiro(total);
+  totalReceberSpan.textContent='80,00';
+  valorPacoteSpan.textContent='R$ '+formatarDinheiro(total);
+}
+function getNumerosDisponiveis(){
+  return [...document.querySelectorAll('.numero')].filter(b=>!b.classList.contains('bloqueado')&&!b.classList.contains('marcado')).map(b=>b.textContent);
+}
+function atualizarBloqueados(){
+  return db.ref('numerosBloqueados').once('value').then(snap=>{
+    const dados=snap.val()||{};bloqueados=new Set(Object.keys(dados));
+    document.querySelectorAll('.numero').forEach(btn=>{
+      const n=btn.textContent,info=dados[n];
+      btn.classList.toggle('bloqueado',!!info);btn.disabled=!!info;
+      btn.classList.toggle('extra',!!(info&&info.extra));
+      if(info&&btn.classList.contains('marcado')){btn.classList.remove('marcado');selecionados=selecionados.filter(x=>x!==n);}
+    });
+    atualizarTotais();atualizarContador();
+  }).catch(err=>console.error('Erro ao atualizar dezenas bloqueadas:',err));
+}
+function gerarDezenasExtras(qtd,jaSelecionados,jaBloqueados){
+  const extrasQtd=Math.floor(qtd/10);if(!extrasQtd)return [];
+  const disponiveis=getNumerosDisponiveis().filter(n=>!jaSelecionados.includes(n)&&!jaBloqueados.has(n));
+  return embaralhar(disponiveis).slice(0,extrasQtd);
+}
+function textoNumerosBloqueados(callback){
+  db.ref('numerosBloqueados').once('value').then(snap=>{
+    const dados=snap.val()||{},porNome={};
+    Object.keys(dados).forEach(num=>{
+      const item=dados[num]||{},nome=String(item.nome||'').trim();if(!nome)return;
+      if(!porNome[nome])porNome[nome]={status:item.status||'⏳ AGUARDANDO',numeros:[]};
+      porNome[nome].numeros.push(num);
+    });
+    let texto='';
+    Object.keys(porNome).sort().forEach(nome=>{
+      const item=porNome[nome],nums=item.numeros.sort().join('-');
+      texto+=`Nome: ${nome}\nDezenas: ${nums}\nStatus: ${item.status}\n-----------------------------\n`;
+    });
+    callback(texto);
+  }).catch(err=>{console.error(err);callback('Não foi possível carregar as dezenas bloqueadas.\n');});
+}
+function getInicioDaSemana(){
+  const hoje=new Date(),dia=hoje.getDay(),delta=dia===0?-6:1-dia;
+  hoje.setDate(hoje.getDate()+delta);return localDateString(hoje);
+}
+function getFimDaSemana(){const d=new Date(getInicioDaSemana()+'T12:00:00');d.setDate(d.getDate()+6);return localDateString(d);}
+function proximaDataDeJogo(){
+  const agora=new Date(),dia=agora.getDay(),min=agora.getHours()*60+agora.getMinutes();
+  const quarta=new Date(agora),domingo=new Date(agora);
+  quarta.setDate(agora.getDate()+((3-dia+7)%7));quarta.setHours(20,0,0,0);
+  domingo.setDate(agora.getDate()+((7-dia)%7));domingo.setHours(11,0,0,0);
+  if(quarta<=agora)quarta.setDate(quarta.getDate()+7);
+  if(domingo<=agora)domingo.setDate(domingo.getDate()+7);
+  if(dia===3&&min<1200)return quarta;
+  if(dia===0&&min<660)return domingo;
+  return quarta<domingo?quarta:domingo;
+}
+function cabecalhoDataJogo(){const d=proximaDataDeJogo();return `📅 DATA DO JOGO: ${d.toLocaleDateString('pt-BR')} às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}\n==========================\n\n`;}
+function atualizarDataJogo(){const d=proximaDataDeJogo();$('dataJogo').textContent=`📅 Próximo Sorteio: ${d.toLocaleDateString('pt-BR',{weekday:'long'})} - ${d.toLocaleDateString('pt-BR')}`;}
+
+function atualizarTextareaReservasSemana(todas) {
+  textoNumerosBloqueados(textoBloq => {
+    let html =
+      escapeHtml(textoBloq).replace(/\n/g, '<br>') +
+      escapeHtml(cabecalhoDataJogo()).replace(/\n/g, '<br>') +
+      '------------------------------<br>';
+
+    if (!todas || !Object.keys(todas).length) {
+      codigo.innerHTML = html + 'Nenhuma reserva nessa etapa.<br>';
+      return;
+    }
+
+    Object.keys(todas).sort().reverse().forEach(dataStr => {
+      const dadosDia = todas[dataStr] || {};
+
+      Object.keys(dadosDia).sort().reverse().forEach(horario => {
+        html += `<br><strong>[ HORÁRIO ] =&gt; ${escapeHtml(horario)}</strong><br>`;
+
+        Object.keys(dadosDia[horario] || {}).sort().reverse().forEach(k => {
+          const d = dadosDia[horario][k] || {};
+          const nums = Array.isArray(d.numeros) ? d.numeros : [];
+          const extras = Array.isArray(d.dezenasExtras) ? d.dezenasExtras : [];
+          const qtd = Number(d.quantidade || nums.length || 0);
+
+          const total = Number(
+            d.valorTotal ?? calcularValorComPacote(qtd)
+          );
+
+          const status = String(d.status || '⏳ AGUARDANDO PAGAMENTO');
+          const resultado = String(d.resultado || '⏳ AGUARDANDO');
+
+          const statusMaiusculo = status.toUpperCase();
+
+          const corStatus =
+            statusMaiusculo.includes('PAGO') ||
+            statusMaiusculo.includes('VALIDADO')
+              ? 'verde'
+              : statusMaiusculo.includes('CANCEL')
+                ? 'vermelho'
+                : 'amarelo';
+
+          const resultadoMaiusculo = resultado.toUpperCase();
+
+          const corResultado =
+            resultadoMaiusculo.includes('GANHOU')
+              ? 'verde'
+              : resultadoMaiusculo.includes('PERDEU')
+                ? 'vermelho'
+                : 'amarelo';
+
+          const identificador = (dataStr + '-' + horario + '-' + k)
+            .replace(/[^a-zA-Z0-9_-]/g, '');
+
+          const id = 'countdown-' + identificador;
+          const pixId = 'pix-reserva-' + identificador;
+
+          let pixReserva = String(d.pixCopiaCola || '');
+
+          if (!pixReserva) {
+            try {
+              pixReserva = gerarPixPayload(
+                CHAVE_PIX_RIFA,
+                NOME_RECEBEDOR_PIX,
+                CIDADE_RECEBEDOR_PIX,
+                total
+              );
+            } catch (erro) {
+              console.error('Erro ao gerar Pix da reserva:', erro);
+              pixReserva = '';
+            }
+          }
+
+          html += `
+            <div style="
+              margin:12px 0;
+              padding:12px;
+              border:1px solid #444;
+              border-radius:10px;
+              background:#181818;
+              color:#fff;
+              overflow-wrap:anywhere;
+              line-height:1.7;
+            ">
+              <strong style="color:#ffd700;">
+  ---------------------------<br>
+  [ HORÁRIO DO JOGO ] =&gt; ${
+    [1, 2, 3].includes(new Date(dataStr + 'T12:00:00').getDay())
+      ? '20:00'
+      : '11:00'
+  }<br>
+  [ ENCERRAMENTO ] =&gt; ${
+    [1, 2, 3].includes(new Date(dataStr + 'T12:00:00').getDay())
+      ? '20:30'
+      : '12:00'
+  }
+</strong>
+
+<br>
+              <strong>Nome:</strong>
+              <span class="verde">${escapeHtml(d.nome || 'Sem nome')}</span>
+
+              <br>
+              <strong>Quantidade:</strong> ${qtd}
+
+              <br>
+              <strong>Dezena escolhida:</strong>
+              ${escapeHtml(nums.length ? nums.join(', ') : 'Não informada')}
+
+              ${
+                extras.length
+                  ? `<br><strong>Dezenas extras:</strong> ${escapeHtml(extras.join(', '))}`
+                  : ''
+              }
+
+              <br>
+              <strong>Valor a pagar:</strong> R$ ${formatarDinheiro(total)}
+
+              <br>
+              <strong>Status:</strong>
+              <span class="${corStatus}">${escapeHtml(status)}</span>
+
+              <br>
+              <strong>Resultado:</strong>
+              <span class="${corResultado}">${escapeHtml(resultado)}</span>
+
+              <br><br>
+
+              <strong style="color:#00ff00;">
+                📲 PIX COPIA E COLA DESTA RESERVA
+              </strong>
+
+              <textarea
+                id="${pixId}"
+                readonly
+                onclick="this.select()"
+                style="
+                  display:block;
+                  width:100%;
+                  min-height:90px;
+                  margin-top:8px;
+                  padding:9px;
+                  box-sizing:border-box;
+                  background:#000;
+                  color:#00ff00;
+                  border:1px solid #00ff00;
+                  border-radius:8px;
+                  font-size:12px;
+                  resize:vertical;
+                "
+              >${escapeHtml(pixReserva || 'Pix não disponível')}</textarea>
+
+              <button
+                type="button"
+                onclick="copiarPixReserva('${pixId}')"
+                style="
+                  display:block;
+                  width:100%;
+                  margin-top:8px;
+                  padding:12px;
+                  background:#1769ff;
+                  color:#fff;
+                  border:none;
+                  border-radius:8px;
+                  font-size:14px;
+                  font-weight:bold;
+                  cursor:pointer;
+                "
+              >
+                📋 COPIAR PIX DESTA RESERVA
+              </button>
+
+              <br>
+              <div id="${id}" class="amarelo"></div>
+            </div>
+
+            <div style="color:#666;">
+              ---------------------------
+            </div>
+          `;
+
+          setTimeout(() => {
+            const el = $(id);
+            if (el) gerarCountdown(id, d.dataHora, d.status);
+          }, 0);
+        });
+      });
+    });
+
+    codigo.innerHTML = html;
+  });
+}
+
+async function copiarPixReserva(textareaId) {
+  const campo = document.getElementById(textareaId);
+
+  if (!campo || !campo.value.trim() ||
+      campo.value === 'Pix não disponível') {
+    alert('O Pix desta reserva não está disponível.');
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(campo.value);
+    alert('Pix desta reserva copiado!');
+  } catch (erro) {
+    campo.focus();
+    campo.select();
+    campo.setSelectionRange(0, campo.value.length);
+
+    const sucesso = document.execCommand('copy');
+
+    alert(
+      sucesso
+        ? 'Pix desta reserva copiado!'
+        : 'Não foi possível copiar. Selecione o código e copie manualmente.'
+    );
+  }
+}
+
+
+async function copiarPixReserva(textareaId) {
+  const campo = document.getElementById(textareaId);
+
+  if (!campo || !campo.value.trim()) {
+    alert('Pix não encontrado nesta aposta.');
+    return;
+  }
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(campo.value);
+    } else {
+      campo.focus();
+      campo.select();
+
+      const copiado = document.execCommand('copy');
+
+      if (!copiado) {
+        throw new Error('Não foi possível copiar.');
+      }
+    }
+
+    alert('✅ Pix desta aposta copiado!');
+  } catch (erro) {
+    campo.focus();
+    campo.select();
+
+    alert('Selecione o código Pix acima e copie manualmente.');
+  }
+}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function carregarReservasDaSemana(){
+  const inicio=getInicioDaSemana(),fim=getFimDaSemana(),datas=[];
+  const d=new Date(inicio+'T12:00:00'),ultimo=new Date(fim+'T12:00:00');
+  while(d<=ultimo){datas.push(localDateString(d));d.setDate(d.getDate()+1);}
+  const todas={};
+  return Promise.all(datas.map(data=>db.ref('compras-dia/'+data).once('value').then(s=>{if(s.val())todas[data]=s.val();})))
+    .then(()=>atualizarTextareaReservasSemana(todas)).catch(err=>{console.error(err);codigo.textContent='Erro ao carregar reservas.';});
+}
+function abrirModalPacote(){atualizarTotais();modalPacote.classList.add('show');}
+function fecharModalPacote(){modalPacote.classList.remove('show');}
+$('btnFecharModal').onclick=fecharModalPacote;
+$('btnMais10').onclick=()=>{
+  const disponiveis=getNumerosDisponiveis();
+  if(disponiveis.length<10)return alert(`Restam apenas ${disponiveis.length} dezenas disponíveis.`);
+ embaralhar(disponiveis).slice(0,10).forEach(n=>{const b=document.querySelector(`.numero[data-num="${n}"]`);if(b){b.classList.add('marcado');selecionados.push(n);}});
+  atualizarTotais();atualizarContador();
+};
+$('btnMenos10').onclick=()=>{
+  if(selecionados.length<10)return alert('Você precisa ter pelo menos 10 dezenas marcadas para remover 10.');
+  selecionados.splice(-10).forEach(n=>{const b=document.querySelector(`.numero[data-num="${n}"]`);if(b)b.classList.remove('marcado');});
+  atualizarTotais();atualizarContador();
+};
+function abrirModalPix(valor){
+  const n=Number(valor);
+  if(!Number.isFinite(n)||n<=0)return alert('Não foi possível calcular o valor da reserva.');
+  $('valorPix').textContent=formatarDinheiro(n);$('pixMsg').style.display='none';
+  try{gerarQRCodePix(n);$('modalPix').style.display='flex';}
+  catch(err){console.error('Erro ao gerar Pix:',err);alert('Não foi possível gerar o QR Code Pix. Confira a chave e a conexão.');}
+}
+function fecharModalPix(){$('modalPix').style.display='none';}
+function campoPix(id,valor){valor=String(valor);return id+String(valor.length).padStart(2,'0')+valor;}
+function calcularCRC16(texto){
+  let crc=0xFFFF;
+  for(let i=0;i<texto.length;i++){crc^=texto.charCodeAt(i)<<8;for(let j=0;j<8;j++)crc=crc&0x8000?((crc<<1)^0x1021)&0xFFFF:(crc<<1)&0xFFFF;}
+  return crc.toString(16).toUpperCase().padStart(4,'0');
+}
+function gerarPixPayload(chave,nome,cidade,valor){
+  const v=Number(valor);if(!Number.isFinite(v)||v<=0)throw new Error('Valor Pix inválido.');
+  const limpar=(s,max)=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9 ]/g,'').substring(0,max).toUpperCase();
+  const conta=campoPix('00','BR.GOV.BCB.PIX')+campoPix('01',chave);
+  const payload=campoPix('00','01')+campoPix('26',conta)+campoPix('52','0000')+campoPix('53','986')+campoPix('54',v.toFixed(2))+campoPix('58','BR')+campoPix('59',limpar(nome,25))+campoPix('60',limpar(cidade,15))+campoPix('62',campoPix('05','***'))+'6304';
+  return payload+calcularCRC16(payload);
+}
+function gerarQRCodePix(valor){
+  if(typeof QRCode==='undefined')throw new Error('Biblioteca QRCode não carregada.');
+  const payload=gerarPixPayload(CHAVE_PIX_RIFA,NOME_RECEBEDOR_PIX,CIDADE_RECEBEDOR_PIX,valor);
+  $('qrcode').innerHTML='';$('pixCopiaCola').value=payload;
+  new QRCode($('qrcode'),{text:payload,width:250,height:250,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+}
+async function copiarPixCopiaCola() {
+  const campo = $('pixCopiaCola');
+
+  if (!campo.value.trim()) {
+    return alert('O código Pix está vazio.');
+  }
+
+  let copiado = false;
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(campo.value);
+      copiado = true;
+    } else {
+      campo.focus();
+      campo.select();
+      copiado = document.execCommand('copy');
+    }
+  } catch (e) {
+    campo.focus();
+    campo.select();
+
+    try {
+      copiado = document.execCommand('copy');
+    } catch (_) {
+      copiado = false;
+    }
+  }
+
+  if (!copiado) {
+    return alert(
+      'Não foi possível copiar o Pix. Tente selecionar e copiar o código manualmente.'
+    );
+  }
+
+  $('pixMsg').style.display = 'block';
+
+  if (reservaPendentePix) {
+    await confirmarReservaAposCopiarPix();
+  }
+}
+
+async function confirmarReservaAposCopiarPix() {
+  if (!reservaPendentePix || confirmandoReservaPix) return;
+
+  confirmandoReservaPix = true;
+
+  try {
+    const pendente = reservaPendentePix;
+
+    if (!podeMarcarAgora()) {
+      alert('O horário de marcação foi encerrado.');
+      return;
+    }
+
+    // Verifica novamente se os números continuam disponíveis.
+    const snap = await db.ref('numerosBloqueados').once('value');
+    const dadosBloqueados = snap.val() || {};
+    const bloqueadosAtuais = new Set(Object.keys(dadosBloqueados));
+
+    const conflito = pendente.numeros.some(
+      n => bloqueadosAtuais.has(n)
+    );
+
+    if (conflito) {
+      reservaPendentePix = null;
+
+      $('modalPix').style.display = 'none';
+
+      await atualizarBloqueados();
+
+      alert(
+        'Um ou mais números foram reservados por outra pessoa. Escolha novamente e gere outro Pix.'
+      );
+
+      return;
+    }
+
+    // Atualiza a lista local de números bloqueados.
+    bloqueados = bloqueadosAtuais;
+
+    // Calcula eventuais números extras.
+    const qtdExtras = Math.floor(pendente.numeros.length / 10);
+
+    const disponiveisExtras = [...document.querySelectorAll('.numero')]
+      .filter(btn =>
+        !bloqueadosAtuais.has(btn.dataset.num) &&
+        !pendente.numeros.includes(btn.dataset.num)
+      )
+      .map(btn => btn.dataset.num);
+
+    const extras = embaralhar(disponiveisExtras).slice(0, qtdExtras);
+
+    const todosNumeros = [...pendente.numeros, ...extras];
+
+    const dataHoje = localDateString();
+    const dataHora = new Date().toISOString();
+
+    const chave =
+      'ID-' + Date.now() + '-' +
+      Math.random().toString(36).slice(2, 7);
+
+    const pixDestaReserva = pendente.pixCopiaCola ||
+  gerarPixPayload(
+    CHAVE_PIX_RIFA,
+    NOME_RECEBEDOR_PIX,
+    CIDADE_RECEBEDOR_PIX,
+    pendente.valorTotal
+  );
+
+const dadosReserva = {
+  nome: pendente.nome,
+  numeros: pendente.numeros,
+  dezenasExtras: extras,
+  horario: pendente.horario,
+  status: '⏳ AGUARDANDO PAGAMENTO',
+  resultado: '⏳ AGUARDANDO',
+  dataHora,
+  valorTotal: pendente.valorTotal,
+  quantidade: pendente.numeros.length,
+
+  // Pix individual, salvo permanentemente nesta reserva.
+  pixCopiaCola: pixDestaReserva,
+
+  pixCopiado: true,
+  pixCopiadoEm: new Date().toISOString()
+};
+
+    // Grava a reserva e bloqueia os números.
+    const updates = {};
+
+    updates[
+      `compras-dia/${dataHoje}/${pendente.horario}/${chave}`
+    ] = dadosReserva;
+
+    todosNumeros.forEach(n => {
+      updates[`numerosBloqueados/${n}`] = {
+        bloqueadoEm: Date.now(),
+        extra: extras.includes(n),
+        nome: pendente.nome,
+        status: '⏳ AGUARDANDO PAGAMENTO',
+        reservaId: chave,
+        data: dataHoje,
+        horario: pendente.horario
+      };
+    });
+
+    await db.ref().update(updates);
+
+    // Limpa a seleção depois de gravar com sucesso.
+    selecionados = [];
+
+    document.querySelectorAll('.numero.marcado').forEach(btn => {
+      btn.classList.remove('marcado');
+    });
+
+    reservaPendentePix = null;
+
+    $('modalPix').style.display = 'none';
+
+    atualizarContador();
+    atualizarTotais();
+
+    await atualizarBloqueados();
+    await carregarReservasDaSemana();
+
+    alert(
+      'Reserva registrada! Agora realize o pagamento Pix e aguarde a validação.'
+    );
+
+  } catch (erro) {
+    console.error('Erro ao confirmar reserva:', erro);
+
+    alert(
+      'Não foi possível registrar a reserva. Verifique sua conexão e tente novamente.'
+    );
+
+  } finally {
+    confirmandoReservaPix = false;
+  }
+}
+
+function gerarCountdown(id,dataHora,status){
+  const el=$(id);if(!el)return;
+  if(status&&String(status).toUpperCase().includes('PAGO')){el.innerHTML='<span class="verde">✅ STATUS PAGO</span>';return;}
+  const inicio=Date.parse(dataHora);if(!Number.isFinite(inicio)){el.textContent='⏳ Aguardando atualização do status';return;}
+  let timer;
+  function atualizar(){
+    const restante=inicio+ESPERA_STATUS_MS-Date.now();
+    if (restante <= 0) {
+  el.innerHTML =
+    '<span class="amarelo">📋 PIX COPIADO — AGUARDANDO PAGAMENTO</span>';
+  clearInterval(timer);
+  return;
+}
+    const m=Math.floor(restante/60000),s=Math.floor((restante%60000)/1000);
+    el.innerHTML=`⏳ Status será atualizado em <span class="${restante>60000?'vermelho':'verde'}">${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</span>`;
+  }
+  atualizar();timer=setInterval(atualizar,1000);
+}
+
+
+function agendarAtualizacaoStatusParaPago(dataHoraCompra, caminhoReserva) {
+  const inicio = Date.parse(dataHoraCompra);
+
+  if (!Number.isFinite(inicio)) return;
+
+  const restante = inicio + ESPERA_STATUS_MS - Date.now();
+
+  setTimeout(() => {
+    atualizarStatusParaPago(caminhoReserva);
+  }, Math.max(0, restante));
+}
+
+
+
+function atualizarStatusParaPago(caminhoReserva) {
+  const referencia = db.ref(caminhoReserva);
+
+  referencia.once("value")
+    .then(snapshot => {
+      const reserva = snapshot.val();
+
+      if (!reserva) return;
+
+      const statusAtual = String(reserva.status || "").toUpperCase();
+
+      // Não alterar reservas já pagas ou canceladas.
+      if (
+        statusAtual.includes("PAGO") ||
+        statusAtual.includes("VALIDADO") ||
+        statusAtual.includes("CANCELADO")
+      ) {
+        return;
+      }
+
+      // Só atualizar reservas que ainda aguardam pagamento.
+      if (statusAtual.includes("AGUARDANDO")) {
+        return referencia.update({
+          status: "📋 PIX COPIADO — AGUARDANDO PAGAMENTO",
+          atualizadoEm: new Date().toISOString()
+        }).then(() => {
+          carregarReservasDaSemana();
+          atualizarBloqueados();
+        });
+      }
+    })
+    .catch(erro => {
+      console.error("Erro ao atualizar status:", erro);
+    });
+}
+
+function reagendarPagamentosAutomaticos() {
+  const inicio = getInicioDaSemana();
+  const fim = getFimDaSemana();
+  const datas = [];
+
+  const data = new Date(inicio + "T12:00:00");
+  const ultima = new Date(fim + "T12:00:00");
+
+  while (data <= ultima) {
+    datas.push(localDateString(data));
+    data.setDate(data.getDate() + 1);
+  }
+
+  return Promise.all(
+    datas.map(dia =>
+      db.ref("compras-dia/" + dia).once("value").then(snapshot => {
+        const reservas = snapshot.val() || {};
+
+        Object.keys(reservas).forEach(horario => {
+          Object.keys(reservas[horario] || {}).forEach(id => {
+            const reserva = reservas[horario][id];
+
+            if (
+              reserva &&
+              reserva.dataHora &&
+              String(reserva.status || "")
+                .toUpperCase()
+                .includes("AGUARDANDO")
+            ) {
+              agendarAtualizacaoStatusParaPago(
+                reserva.dataHora,
+                `compras-dia/${dia}/${horario}/${id}`
+              );
+            }
+          });
+        });
+      })
+    )
+  ).catch(erro => {
+    console.error("Erro ao reagendar status automático:", erro);
+  });
+}
+function abrirModalQuantidade(qtd) {
+  const modal = document.getElementById('modalQuantidade');
+  const mensagem = document.getElementById('mensagemQuantidade');
+
+  document.getElementById('qtdAtualModal').textContent = qtd;
+
+  if (qtd === 0) {
+    mensagem.textContent = 'Marque pelo menos 5 dezenas para continuar.';
+  } else {
+    const falta = 5 - (qtd % 5);
+
+    mensagem.textContent = qtd % 5 === 0
+      ? 'Quantidade válida! Você já pode continuar.'
+      : `Faltam ${falta} dezena(s) para completar o próximo grupo de 5.`;
+  }
+
+  modal.style.display = 'flex';
+}
+
+function fecharModalQuantidade() {
+  document.getElementById('modalQuantidade').style.display = 'none';
+}
+
+function fecharModalQuantidade() {
+  document.getElementById('modalQuantidade').style.display = 'none';
+}
+
+function salvarReserva() {
+  if (confirmandoReservaPix) return;
+
+  if (selecionados.length === 0) {
+    return alert('Selecione pelo menos 1 número.');
+  }
+
+  if (!podeMarcarAgora()) {
+    return alert('Prazo encerrado para marcações neste horário.');
+  }
+
+  const nome = localStorage.getItem('nomeJogador');
+
+  if (!nome) {
+    abrirModalNome();
+    return alert('Digite seu nome para continuar.');
+  }
+
+  const numeros = [...selecionados];
+
+  const valorTotal = calcularValorComPacote(numeros.length);
+
+  reservaPendentePix = {
+  nome,
+  numeros,
+  horario: $('horarios').value,
+  valorTotal,
+
+  // Gera e guarda o código Pix exclusivo desta aposta.
+  pixCopiaCola: gerarPixPayload(
+    CHAVE_PIX_RIFA,
+    NOME_RECEBEDOR_PIX,
+    CIDADE_RECEBEDOR_PIX,
+    valorTotal
+  )
+};
+
+  fecharModalPacote();
+  abrirModalPix(valorTotal);
+}
+function salvarHistoricoAutomatico(){
+  const conteudo=codigo.innerText.trim();if(!conteudo||conteudo.includes('Nenhuma reserva'))return;
+  const agora=new Date(),data=localDateString(agora),hora=`${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}:${String(agora.getSeconds()).padStart(2,'0')}`;
+  const id=`${data}_${hora.replace(/:/g,'-')}`;
+  return db.ref('historico/'+id).set({data,dia:agora.toLocaleDateString('pt-BR',{weekday:'long'}),hora,conteudo,timestamp:Date.now()}).catch(err=>console.error('Erro ao salvar histórico:',err));
+}
+$('btnHistoricoData').onclick=()=>{$('inputDataHistorico').value=localDateString();$('modalHistoricoData').style.display='flex';};
+function fecharModalHistoricoData(){$('modalHistoricoData').style.display='none';}
+function carregarHistoricoPorData(){
+  const data=$('inputDataHistorico').value;if(!data)return alert('Selecione uma data válida.');
+  db.ref('historico').once('value').then(snap=>{
+    const todos=snap.val()||{},regs=Object.values(todos).filter(r=>r&&r.data===data&&r.conteudo&&!r.conteudo.includes('Nenhuma reserva')).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+    if(!regs.length){codigo.innerHTML=`<span class="vermelho">Nenhum histórico encontrado para ${data.split('-').reverse().join('/')}.</span>`;}
+    else{const r=regs[0];codigo.innerHTML=`<span class="verde">📅 HISTÓRICO DA DATA: ${data.split('-').reverse().join('/')}</span><br><br><span class="amarelo">Registro atualizado: ${escapeHtml(r.dia||'')} às ${escapeHtml(r.hora||'')}</span><br>------------------------------<br>${escapeHtml(r.conteudo).replace(/\n/g,'<br>')}`;}
+    fecharModalHistoricoData();if(!menuEl.classList.contains('open'))btnMenu.click();
+  }).catch(err=>{console.error(err);alert('Erro ao carregar histórico.');fecharModalHistoricoData();});
+}
+function salvarPixAdmin(){
+  const pix=$('inputPixAdmin').value.trim();if(!pix)return alert('Digite uma chave Pix válida.');
+  db.ref('admin/config/pix').set({chave:pix,atualizadoEm:Date.now()}).then(()=>{alert('Chave Pix salva no Firebase.');fecharPixAdmin();}).catch(err=>alert('Erro ao salvar chave Pix: '+err.message));
+}
+function fecharPixAdmin(){$('modalPixAdmin').style.display='none';}
+function atualizarDezenaPremiadaPublica(){
+  db.ref('admin/config/dezenaPremiada').once('value').then(snap=>{
+    const raw=snap.val(),el=$('dezenaAtual');
+    if(raw===null||raw===undefined||raw===''){el.style.display='none';const g=$('ganhadorPublico');if(g)g.remove();document.querySelectorAll('.numero').forEach(b=>{b.style.boxShadow='none';b.style.border='none';if(!b.classList.contains('bloqueado')&&!b.classList.contains('extra'))b.style.background=b.classList.contains('marcado')?'#27ae60':'#3498db';});return;}
+    const dezena=String(raw).padStart(2,'0');el.style.display='block';el.textContent='🏆 Dezena premiada: '+dezena;
+    document.querySelectorAll('.numero').forEach(b=>{if(b.textContent===dezena){b.style.background='linear-gradient(135deg,#ffd700,#ffa500)';b.style.boxShadow='0 0 20px #ffd700e6';b.style.border='3px solid #fff';}else{b.style.boxShadow='none';b.style.border='none';if(!b.classList.contains('bloqueado')&&!b.classList.contains('extra'))b.style.background=b.classList.contains('marcado')?'#27ae60':'#3498db';}});
+    procurarGanhador(dezena);
+  }).catch(err=>console.error('Erro ao carregar dezena premiada:',err));
+}
+function procurarGanhador(dezena){
+  db.ref('compras-dia').once('value').then(snap=>{
+    const todas=snap.val()||{};let ganhador=null;
+    outer:for(const dia of Object.keys(todas).sort().reverse())for(const horario of Object.keys(todas[dia]||{}))for(const id of Object.keys(todas[dia][horario]||{})){
+      const r=todas[dia][horario][id]||{},nums=(r.numeros||[]).map(String),extras=(r.dezenasExtras||[]).map(String);
+      if(nums.includes(dezena)||extras.includes(dezena)){ganhador={nome:r.nome||'Participante',dezenaTipo:nums.includes(dezena)?'selecionada':'extra',numeros:nums.join('-'),extras:extras.join('-')};break outer;}
+    }
+    mostrarGanhadorPublico(ganhador,dezena);
+  }).catch(err=>console.error('Erro ao procurar ganhador:',err));
+}
+function mostrarGanhadorPublico(ganhador,dezena){
+  let el=$('ganhadorPublico');if(el)el.remove();el=document.createElement('p');el.id='ganhadorPublico';
+  el.style.cssText='color:#ffd700;font-weight:bold;font-size:20px;margin:15px 10px;padding:15px;background:#ffd7001a;border-radius:15px;border:2px solid #ffd700;overflow-wrap:anywhere';
+  if(ganhador)el.innerHTML=`🎊 <strong>GANHADOR(A) ENCONTRADO(A)!</strong><br><br>Nome: <span style="color:#fff">${escapeHtml(ganhador.nome)}</span><br>Dezena premiada: <span style="color:#fff">${escapeHtml(dezena)}</span> (${ganhador.dezenaTipo})<br>Suas dezenas: <span style="color:#fff">${escapeHtml(ganhador.numeros)}</span><br>${ganhador.extras?'Dezenas extras: <span style="color:#fff">'+escapeHtml(ganhador.extras)+'</span>':''}`;
+  else el.textContent=`❌ Nenhum ganhador encontrado para a dezena ${dezena}.`;
+  $('dezenaAtual').after(el);
+}
+function estaNoHorarioPremio(){const d=new Date(),h=d.getHours(),m=d.getMinutes();return(h===20)||(h>20&&h<23)||(h===23&&m<=30);}
+$('btnPixAdmin').onclick=()=>{
+  if(estaNoHorarioPremio()){$('modalPremio').style.display='flex';ultimoHorarioAlertaPremio=null;}
+  else{const agora=Date.now();if(!ultimoHorarioAlertaPremio||agora-ultimoHorarioAlertaPremio>=TEMPO_MINIMO_ENTRE_ALERTAS){alert('⏰ Solicitação de prêmio disponível no horário divulgado: quarta e sábado, das 20:00 às 23:30.');ultimoHorarioAlertaPremio=agora;}}
+};
+function fecharModalPremio(){$('modalPremio').style.display='none';}
+btnMenu.onclick=()=>{
+  menuEl.classList.toggle('open');menuEl.setAttribute('aria-hidden',String(!menuEl.classList.contains('open')));
+  if(menuEl.classList.contains('open')){carregarReservasDaSemana();if(temporizadorMenu)clearTimeout(temporizadorMenu);salvarHistoricoAutomatico();temporizadorMenu=setTimeout(()=>{menuEl.classList.remove('open');menuEl.setAttribute('aria-hidden','true');},60000);}
+  else{if(temporizadorMenu)clearTimeout(temporizadorMenu);salvarHistoricoAutomatico();}
+};
+document.addEventListener('click',e=>{if(menuEl.classList.contains('open')&&!btnMenu.contains(e.target)&&!menuEl.contains(e.target)){menuEl.classList.remove('open');menuEl.setAttribute('aria-hidden','true');if(temporizadorMenu)clearTimeout(temporizadorMenu);}});
+function podeVirarPerdeuAutomatico() {
+  const d = new Date();
+  const dia = d.getDay();
+  const hora = d.getHours();
+  const minuto = d.getMinutes();
+
+  // Quarta-feira: a partir das 20h30
+  if (dia === 3 && (hora > 20 || (hora === 20 && minuto >= 30))) {
+    return true;
+  }
+
+  // Domingo: a partir das 12h00
+  if (dia === 0 && hora >= 12) {
+    return true;
+  }
+
+  return false;
+}
+
+function atualizarResultadosAutomaticamente() {
+  if (!podeVirarPerdeuAutomatico()) return;
+
+  const hoje = localDateString();
+
+  db.ref('compras-dia/' + hoje).once('value')
+    .then(snap => {
+      const dados = snap.val();
+      if (!dados) return;
+
+      const updates = {};
+
+      Object.keys(dados).forEach(horario => {
+        Object.keys(dados[horario] || {}).forEach(id => {
+          const item = dados[horario][id];
+
+          if (
+            item &&
+            String(item.resultado || '').includes('AGUARDANDO')
+          ) {
+            updates[
+              `compras-dia/${hoje}/${horario}/${id}/resultado`
+            ] = '❌ PERDEU';
+          }
+        });
+      });
+
+      if (Object.keys(updates).length) {
+        db.ref().update(updates)
+          .then(() => carregarReservasDaSemana())
+          .catch(err => console.error('Erro ao atualizar resultados:', err));
+      }
+    })
+    .catch(err => console.error('Erro ao consultar reservas:', err));
+}
+db.ref('admin/config/dezenaPremiada').on('value',atualizarDezenaPremiadaPublica);
+garantirNome();exibirNome();atualizarDataJogo();atualizarTotais();atualizarContador();
+carregarReservasDaSemana();atualizarBloqueados();reagendarPagamentosAutomaticos();atualizarResultadosAutomaticamente();
+
+
+function marcarQuantidade(qtd) {
+  if (!Number.isInteger(qtd) || qtd < 1) return;
+
+  selecionados.forEach(n => {
+    const btn = document.querySelector(
+      `.numero[data-num="${n}"]`
+    );
+    if (btn) btn.classList.remove('marcado');
+  });
+
+  selecionados = [];
+
+  const disponiveis = getNumerosDisponiveis();
+
+  if (disponiveis.length < qtd) {
+    atualizarTotais();
+    atualizarContador();
+    return alert(
+      `Só existem ${disponiveis.length} dezenas disponíveis.`
+    );
+  }
+
+  embaralhar([...disponiveis]).slice(0, qtd).forEach(n => {
+    const btn = document.querySelector(
+      `.numero[data-num="${n}"]`
+    );
+
+    if (btn && !btn.classList.contains('bloqueado')) {
+      btn.classList.add('marcado');
+      selecionados.push(n);
+    }
+  });
+
+  atualizarTotais();
+  atualizarContador();
+  fecharModalQuantidade();
+  abrirModalPacote();
+}
+
+</script>
+</body>
+</html>
