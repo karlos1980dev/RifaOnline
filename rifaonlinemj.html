@@ -1425,7 +1425,12 @@ function gerarCountdown(id,dataHora,status){
   let timer;
   function atualizar(){
     const restante=inicio+ESPERA_STATUS_MS-Date.now();
-    if(restante<=0){el.innerHTML='<span class="verde">⏳ Atualização automática do status processada.</span>';clearInterval(timer);return;}
+    if (restante <= 0) {
+  el.innerHTML =
+    '<span class="amarelo">⏳ AGUARDANDO PIX</span>';
+  clearInterval(timer);
+  return;
+}
     const m=Math.floor(restante/60000),s=Math.floor((restante%60000)/1000);
     el.innerHTML=`⏳ Status será atualizado em <span class="${restante>60000?'vermelho':'verde'}">${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</span>`;
   }
@@ -1445,6 +1450,7 @@ function agendarAtualizacaoStatusParaPago(dataHoraCompra, caminhoReserva) {
   }, Math.max(0, restante));
 }
 
+
 function atualizarStatusParaPago(caminhoReserva) {
   const referencia = db.ref(caminhoReserva);
 
@@ -1454,13 +1460,12 @@ function atualizarStatusParaPago(caminhoReserva) {
 
       if (
         reserva &&
-        String(reserva.status || "")
-          .toUpperCase()
-          .includes("AGUARDANDO")
+        String(reserva.status || "").toUpperCase()
+          .includes("O NAO PAGAMENTO ANULAR A MARCACAO DAS DEZENAS")
       ) {
         return referencia.update({
-          status: "✅ PAGO - PIX VALIDADO",
-          pagoEm: new Date().toISOString()
+          status: "⏳ AGUARDANDO PIX",
+          atualizadoEm: new Date().toISOString()
         }).then(() => {
           carregarReservasDaSemana();
           atualizarBloqueados();
@@ -1633,15 +1638,59 @@ btnMenu.onclick=()=>{
   else{if(temporizadorMenu)clearTimeout(temporizadorMenu);salvarHistoricoAutomatico();}
 };
 document.addEventListener('click',e=>{if(menuEl.classList.contains('open')&&!btnMenu.contains(e.target)&&!menuEl.contains(e.target)){menuEl.classList.remove('open');menuEl.setAttribute('aria-hidden','true');if(temporizadorMenu)clearTimeout(temporizadorMenu);}});
-function podeVirarPerdeuAutomatico(){const d=new Date();return(d.getDay()===3||d.getDay()===6)&&(d.getHours()>20||(d.getHours()===20&&d.getMinutes()>=30));}
-function atualizarResultadosAutomaticamente(){
-  if(!podeVirarPerdeuAutomatico())return;
-  const hoje=localDateString();
-  db.ref('compras-dia/'+hoje).once('value').then(snap=>{
-    const dados=snap.val();if(!dados)return;const updates={};
-    Object.keys(dados).forEach(h=>Object.keys(dados[h]||{}).forEach(id=>{const item=dados[h][id];if(item&&String(item.resultado||'').includes('AGUARDANDO'))updates[`compras-dia/${hoje}/${h}/${id}/resultado`]='❌ PERDEU';}));
-    if(Object.keys(updates).length)db.ref().update(updates).then(carregarReservasDaSemana);
-  }).catch(err=>console.error(err));
+function podeVirarPerdeuAutomatico() {
+  const d = new Date();
+  const dia = d.getDay();
+  const hora = d.getHours();
+  const minuto = d.getMinutes();
+
+  // Quarta-feira: a partir das 20h30
+  if (dia === 3 && (hora > 20 || (hora === 20 && minuto >= 30))) {
+    return true;
+  }
+
+  // Domingo: a partir das 12h00
+  if (dia === 0 && hora >= 12) {
+    return true;
+  }
+
+  return false;
+}
+
+function atualizarResultadosAutomaticamente() {
+  if (!podeVirarPerdeuAutomatico()) return;
+
+  const hoje = localDateString();
+
+  db.ref('compras-dia/' + hoje).once('value')
+    .then(snap => {
+      const dados = snap.val();
+      if (!dados) return;
+
+      const updates = {};
+
+      Object.keys(dados).forEach(horario => {
+        Object.keys(dados[horario] || {}).forEach(id => {
+          const item = dados[horario][id];
+
+          if (
+            item &&
+            String(item.resultado || '').includes('AGUARDANDO')
+          ) {
+            updates[
+              `compras-dia/${hoje}/${horario}/${id}/resultado`
+            ] = '❌ PERDEU';
+          }
+        });
+      });
+
+      if (Object.keys(updates).length) {
+        db.ref().update(updates)
+          .then(() => carregarReservasDaSemana())
+          .catch(err => console.error('Erro ao atualizar resultados:', err));
+      }
+    })
+    .catch(err => console.error('Erro ao consultar reservas:', err));
 }
 db.ref('admin/config/dezenaPremiada').on('value',atualizarDezenaPremiadaPublica);
 garantirNome();exibirNome();atualizarDataJogo();atualizarTotais();atualizarContador();
