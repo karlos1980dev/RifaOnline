@@ -1,0 +1,525 @@
+<img src="<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Painel Admin - Rifa</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{margin:0;font-family:Arial;background:#0b0f1a;color:#fff;}
+.box{width:95%;max-width:560px;margin:20px auto;background:#141a2b;padding:18px;border-radius:14px;}
+h2{text-align:center;color:#00ffcc;margin-top:0;}
+.item{background:#0a0f1e;border-left:4px solid #00ffcc;padding:12px;border-radius:10px;margin-bottom:12px;}
+.valor{color:#00ffcc;font-weight:bold;font-size:18px;}
+.data{font-size:12px;color:#aaa;}
+select,button{width:100%;padding:8px;margin-top:6px;border:none;border-radius:8px;}
+.botoes{display:flex;gap:6px;margin-top:8px;}
+button{cursor:pointer;font-weight:bold;}
+.apagar{background:#dc3545;color:#fff;}
+.limpar{background:#6c757d;color:#fff;}
+.topo{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap;}
+.topo input{flex:1;min-width:140px;padding:8px;border-radius:8px;border:none;}
+.resumo{background:#0a0f1e;border-radius:10px;padding:10px;margin-bottom:12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.resumo div{font-weight:bold;}
+
+.danger{background:#e74c3c;color:#fff;}
+.warning{background:#f1c40f;color:#000;}
+.success{background:#27ae60;color:#fff;}
+
+textarea{width:100%;height:140px;margin-top:15px;background:#000;color:#0f0;border-radius:8px;padding:10px;border:none;resize:none;font-family:monospace;}
+.historicoItem{
+  background:#0a0f1e;
+  border-left:4px solid #f1c40f;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:12px;
+  white-space:pre-wrap;
+  font-family:monospace;
+  color:#0f0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>🛠️ Painel Admin</h2>
+  <h3>🧹 Painel de Limpeza Firebase</h3>
+  <button onclick="limparPixGanhador()" style="
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  background:#e74c3c;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:bold;
+">
+🧹 Limpar PIX do ganhador
+</button>
+<button class="success" onclick="modoCompras()">📋 Ver Compras do Dia</button>
+<button class="warning" onclick="modoHistorico()">📜 Ver Histórico</button>
+  <button class="warning" onclick="limparTextareaIndex()">🧹 Limpar textarea (Index)</button>
+  <button class="success" onclick="liberarNovoJogo()">🔓 Liberar novo jogo</button>
+  <button class="danger" onclick="limparTudoFirebase()">❌ APAGAR TUDO DO FIREBASE</button>
+<!-- DEZENA PREMIADA - INÍCIO -->
+<!-- DEZENA PREMIADA - INÍCIO -->
+<div style="display:flex; gap:6px; margin:10px 0;">
+  <button id="btnDezenaAdmin" style="
+    flex:1;
+    padding:10px;
+    background:#8098ff;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+  ">🏆 Definir Dezena Premiada</button>
+
+  <button id="btnLimparDezena" style="
+    flex:1;
+    padding:10px;
+    background:#e74c3c;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+  ">🗑️ Limpar Dezena</button>
+</div>
+
+<!-- Elemento para exibir a dezena atual -->
+<p id="dezenaAtual" style="color:#8098ff; font-weight:bold; font-size:16px; margin:10px 0; text-align:center;"></p>
+<!-- ... restante do modal ... -->
+
+
+
+<!-- Modal para definir dezena (ficará oculto até ser aberto) -->
+<div id="modalDezenaAdmin" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40000;
+">
+  <div style="
+    background:#fff;
+    color:#000;
+    width:92%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+  ">
+    <h2>🔐 Definir Dezena Premiada</h2>
+    <input id="inputDezenaAdmin" type="number" min="0" max="99" placeholder="Digite a dezena (0-99)"
+      style="
+        width:100%;
+        padding:12px;
+        font-size:16px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        margin-bottom:10px;
+        text-align:center;
+      "
+    >
+    <button id="btnSalvarDezena" style="
+      width:100%;
+      padding:10px;
+      background:#8098ff;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      font-weight:bold;
+    ">💾 Salvar Dezena</button>
+    <button id="btnFecharDezena" style="
+      width:100%;
+      margin-top:8px;
+      padding:8px;
+      background:#ccc;
+      border:none;
+      border-radius:8px;
+    ">Cancelar</button>
+  </div>
+</div>
+<!-- DEZENA PREMIADA - FIM -->
+
+  <textarea id="log" readonly>Pronto.</textarea>
+
+  <div class="topo">
+    <input type="date" id="dataSelecionada">
+  </div>
+
+  <div class="resumo">
+    <div>Total reservas: <span id="totalReservas">0</span></div>
+    <div>Total do dia: R$ <span id="totalDia">0,00</span></div>
+  </div>
+<div id="historicoBox" style="display:none"></div>
+  <div id="lista"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+/* ===== FIREBASE ===== */
+firebase.initializeApp({
+  apiKey: "AIzaSyCIDFHMmzGkN3HGLn-XA8ieC_5DDBvbJ7o",
+  authDomain: "rifa-782a3.firebaseapp.com",
+  databaseURL: "https://rifa-782a3-default-rtdb.firebaseio.com",
+  projectId: "rifa-782a3"
+});
+const db = firebase.database();
+
+/* ===== ELEMENTOS ===== */
+const lista = document.getElementById("lista");
+const totalReservasEl = document.getElementById("totalReservas");
+const totalDiaEl = document.getElementById("totalDia");
+const dataInput = document.getElementById("dataSelecionada");
+const log = document.getElementById("log");
+
+const VALOR_FIXO = 1.00;
+
+/* ===== DATA BR REAL (SEM PULAR DIA) ===== */
+function hojeBR(){
+  const d = new Date();
+  const ano = d.getFullYear();
+  const mes = String(d.getMonth()+1).padStart(2,'0');
+  const dia = String(d.getDate()).padStart(2,'0');
+  return `${ano}-${mes}-${dia}`;
+}
+
+const hoje = hojeBR();
+dataInput.value = hoje;
+
+/* ===== CARREGAR ===== */
+function carregar(data){
+  db.ref("compras-dia/"+data).off();
+  db.ref("compras-dia/"+data).on("value", snap=>{
+    lista.innerHTML="";
+    let total = 0;
+    let qtd = 0;
+
+    const dados = snap.val() || {};
+
+    Object.keys(dados).forEach(h=>{
+      Object.keys(dados[h]).forEach(id=>{
+        const d = dados[h][id];
+
+        const numeros = Array.isArray(d.numeros) ? d.numeros : Object.values(d.numeros||{});
+        const extras = Array.isArray(d.dezenasExtras) ? d.dezenasExtras : [];
+
+        const valor = numeros.length * VALOR_FIXO;
+        total += valor;
+        qtd++;
+
+        lista.innerHTML += `
+          <div class="item">
+            <strong>${d.nome||'Sem nome'}</strong><br>
+            Horário: <b>${h}</b><br>
+            Números: ${numeros.join('-')} ${extras.length?'<br>🎁 Extra: '+extras.join('-'):''}<br>
+            <span class="valor">R$ ${valor.toFixed(2)}</span><br>
+            <span class="data">${d.dataHora||''}</span>
+
+            <select onchange="alterarStatus('${data}','${h}','${id}',this.value)">
+              <option value="aguardando" ${d.status==='aguardando'?'selected':''}>Aguardando</option>
+              <option value="pagou" ${d.status==='pagou'?'selected':''}>Pagou</option>
+              <option value="cancelou" ${d.status==='cancelou'?'selected':''}>Cancelou</option>
+            </select>
+
+            <select onchange="alterarResultado('${data}','${h}','${id}',this.value)">
+              <option value="aguardando" ${d.resultado==='aguardando'?'selected':''}>Resultado aguardando</option>
+              <option value="ganhou" ${d.resultado==='ganhou'?'selected':''}>Ganhou</option>
+              <option value="perdeu" ${d.resultado==='perdeu'?'selected':''}>Perdeu</option>
+            </select>
+
+            <div class="botoes">
+              <button class="limpar" onclick="resetar('${data}','${h}','${id}')">Limpar</button>
+              <button class="apagar" onclick="excluir('${data}','${h}','${id}')">Excluir</button>
+            </div>
+          </div>`;
+      });
+    });
+
+    totalReservasEl.textContent = qtd;
+    totalDiaEl.textContent = total.toFixed(2).replace('.',',');
+  });
+}
+
+/* ===== AÇÕES ===== */
+function alterarStatus(d,h,id,v){ db.ref(`compras-dia/${d}/${h}/${id}`).update({status:v}); }
+function alterarResultado(d,h,id,v){ db.ref(`compras-dia/${d}/${h}/${id}`).update({resultado:v}); }
+function resetar(d,h,id){ db.ref(`compras-dia/${d}/${h}/${id}`).update({status:'aguardando',resultado:'aguardando'}); }
+function excluir(data, horario, id){
+  if(!confirm('Excluir reserva e liberar números?')) return;
+
+  db.ref(`compras-dia/${data}/${horario}/${id}`).once('value', snap=>{
+    const d = snap.val();
+    if(!d) return;
+
+    const todos = [
+      ...(d.numeros || []),
+      ...(d.dezenasExtras || [])
+    ];
+
+    const updates = {};
+    todos.forEach(n=>{
+      updates['numerosBloqueados/'+n] = null;
+    });
+
+    updates[`compras-dia/${data}/${horario}/${id}`] = null;
+
+    db.ref().update(updates);
+  });
+}
+/* ===== PAINEL ===== */
+function escrever(msg){ log.value += '\n'+msg; log.scrollTop = log.scrollHeight; }
+
+function limparTextareaIndex(){
+  db.ref('controle/limparTextarea').set({limpar:true,em:Date.now()});
+  escrever('✔ Textarea da index solicitado');
+}
+
+function liberarNovoJogo(){
+  Promise.all([
+    db.ref('numerosBloqueados').remove(),
+    db.ref('controle/limparTextarea').set({limpar:true,em:Date.now()})
+  ]).then(()=>escrever('✔ Novo jogo liberado'));
+}
+
+function limparTudoFirebase(){
+  const senha = prompt('Digite a senha ADMIN para apagar tudo');
+if(senha !== '12345') {
+  alert('Senha incorreta');
+  return;
+}
+  db.ref().remove().then(()=>escrever('❌ Firebase apagado'));
+}
+const historicoBox = document.getElementById('historicoBox');
+
+/* ===== MODOS ===== */
+function modoHistorico(){
+  lista.style.display = 'none';
+  historicoBox.style.display = 'block';
+  carregarHistorico();
+}
+
+function modoCompras(){
+  historicoBox.style.display = 'none';
+  lista.style.display = 'block';
+  carregar(dataInput.value);
+}
+
+/* ===== CARREGAR HISTÓRICO ===== */
+function carregarHistorico(){
+  historicoBox.innerHTML = '🔄 Carregando histórico...';
+
+  db.ref('historico').orderByChild('timestamp').once('value', snap=>{
+    historicoBox.innerHTML = '';
+
+    if(!snap.exists()){
+      historicoBox.innerHTML = 'Nenhum histórico encontrado.';
+      return;
+    }
+
+    const dados = snap.val();
+    const chaves = Object.keys(dados).reverse(); // mais recente primeiro
+
+    chaves.forEach(id=>{
+      const h = dados[id];
+
+      historicoBox.innerHTML += `
+        <div class="historicoItem">
+📅 ${h.data} (${h.dia})
+⏰ ${h.hora}
+----------------------------------
+${h.conteudo}
+        </div>
+      `;
+    });
+  });
+}
+/* ===== EVENTOS ===== */
+dataInput.addEventListener('change',()=>carregar(dataInput.value));
+carregar(hoje);
+/* ===== CONTROLE AUTOMÁTICO QUARTA / SÁBADO 23:30 ===== */
+const CONTROLE_KEY = 'controle/execucaoAuto';
+
+function verificarHorarioAutomatico(){
+  const agora = new Date();
+
+  const diaSemana = agora.getDay(); // 3 = quarta | 6 = sábado
+  const hora = agora.getHours();
+  const minuto = agora.getMinutes();
+
+  if(!((diaSemana === 3 || diaSemana === 6) && hora === 23 && minuto === 30)){
+    return;
+  }
+
+  const idExecucao = agora.toISOString().slice(0,10) + '_23-30';
+
+  db.ref(CONTROLE_KEY).once('value', snap=>{
+    if(snap.val() === idExecucao){
+      return; // já executou hoje
+    }
+
+    executarLimpezaAutomatica(idExecucao);
+  });
+}
+
+function executarLimpezaAutomatica(idExecucao){
+  db.ref('index/textarea').once('value', snap=>{
+    const conteudo = snap.val() || '';
+
+    const agora = new Date();
+    const dataBR = agora.toLocaleDateString('pt-BR');
+    const diaBR = agora.toLocaleDateString('pt-BR',{weekday:'long'});
+    const horaBR = '23:30';
+
+    /* ===== SALVA HISTÓRICO ===== */
+    db.ref('historico/'+idExecucao).set({
+      data: dataBR,
+      dia: diaBR,
+      hora: horaBR,
+      conteudo: conteudo,
+      timestamp: Date.now()
+    });
+
+    /* ===== LIMPA INDEX + LIBERA ===== */
+    Promise.all([
+      db.ref('index/textarea').set(''),
+      db.ref('numerosBloqueados').remove(),
+      db.ref('controle/limparTextarea').set({limpar:true,em:Date.now()}),
+      db.ref(CONTROLE_KEY).set(idExecucao)
+    ]).then(()=>{
+      escrever('⏰ Limpeza automática executada ('+diaBR+' 23:30)');
+    });
+  });
+}
+function limparPixGanhador() {
+  if (!confirm('Deseja realmente apagar o PIX do ganhador?')) return;
+
+  db.ref('admin/ganhador/pix').remove()
+    .then(() => {
+      alert('✅ PIX do ganhador removido');
+    })
+    .catch(err => {
+      alert('Erro ao limpar PIX');
+      console.error(err);
+    });
+}
+
+// Elementos da dezena premiada
+const dezenaAtualEl = document.getElementById('dezenaAtual');
+const modalDezenaAdmin = document.getElementById('modalDezenaAdmin');
+const inputDezenaAdmin = document.getElementById('inputDezenaAdmin');
+const btnDezenaAdmin = document.getElementById('btnDezenaAdmin');
+const btnSalvarDezena = document.getElementById('btnSalvarDezena');
+const btnFecharDezena = document.getElementById('btnFecharDezena');
+
+
+// Regra de acesso: SÓ PERMITE QUARTA E SÁBADO A PARTIR DAS 20:00
+
+function podeDefinirDezena() {
+  // Permite definir a dezena em qualquer dia e horário
+  return true;
+}
+
+
+// Atualiza a dezena premiada exibida no painel
+function atualizarDezenaExibida() {
+  db.ref('admin/config/dezenaPremiada').once('value').then(snap => {
+    const dezena = snap.val();
+    if (dezena) {
+      dezenaAtualEl.textContent = `🏆 Dezena premiada atual: ${dezena.padStart(2, '0')}`;
+    } else {
+      dezenaAtualEl.textContent = `🏆 Dezena premiada atual: Nenhuma`;
+    }
+  }).catch(err => {
+    console.error('Erro ao carregar dezena:', err);
+    dezenaAtualEl.textContent = `🏆 Erro ao carregar dezena`;
+  });
+}
+
+
+// Abre o modal para definir a dezena
+function abrirModalDezena() {
+  if (!podeDefinirDezena()) {
+    alert('🔒 A dezena premiada só pode ser definida às 20:00 de quarta e sábado!');
+    return;
+  }
+  inputDezenaAdmin.value = ''; // Limpa o campo
+  modalDezenaAdmin.style.display = 'flex';
+}
+
+
+// Salva a dezena no Firebase
+function salvarDezenaPremiada() {
+  const dezena = inputDezenaAdmin.value.trim();
+  
+  // Valida se é uma dezena válida (0-99)
+  if (dezena === '' || isNaN(dezena) || dezena < 0 || dezena > 99) {
+    alert('⚠ Digite uma dezena válida entre 0 e 99!');
+    return;
+  }
+
+  db.ref('admin/config/dezenaPremiada').set(dezena)
+    .then(() => {
+      alert('✅ Dezena premiada salva com sucesso!');
+      fecharModalDezena();
+      atualizarDezenaExibida();
+      // Escreve no log do painel (se existir)
+      if (log) log.value += `\n✔ Dezena premiada salva: ${dezena.padStart(2, '0')}`;
+    })
+    .catch(err => {
+      alert('❌ Erro ao salvar dezena. Tente novamente.');
+      console.error('Erro ao salvar dezena:', err);
+      
+    });
+}
+
+// Adiciona botão de limpar dezena
+const btnLimparDezena = document.getElementById('btnLimparDezena');
+
+btnLimparDezena.addEventListener('click', () => {
+  if (!confirm('Tem certeza que quer apagar a dezena premiada?')) return;
+
+  db.ref('admin/config/dezenaPremiada').remove()
+    .then(() => {
+      alert('✅ Dezena premiada apagada com sucesso!');
+      atualizarDezenaExibida();
+      if (log) log.value += `\n✔ Dezena premiada apagada`;
+    })
+    .catch(err => {
+      alert('❌ Erro ao apagar dezena. Tente novamente.');
+      console.error('Erro ao apagar dezena:', err);
+    });
+});
+
+// Fecha o modal
+function fecharModalDezena() {
+  modalDezenaAdmin.style.display = 'none';
+}
+
+
+// Adiciona eventos aos botões
+btnDezenaAdmin.addEventListener('click', abrirModalDezena);
+btnSalvarDezena.addEventListener('click', salvarDezenaPremiada);
+btnFecharDezena.addEventListener('click', fecharModalDezena);
+
+
+// Carrega a dezena ao iniciar o painel
+atualizarDezenaExibida();
+
+/* ===== VERIFICA A CADA 30s ===== */
+setInterval(verificarHorarioAutomatico, 30000); 
+
+</script>
+</body>
+</html>
