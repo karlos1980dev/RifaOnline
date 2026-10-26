@@ -1541,10 +1541,7 @@ function atualizarDataJogo(){const d=proximaDataDeJogo();$('dataJogo').textConte
 
 function atualizarTextareaReservasSemana(todas) {
   textoNumerosBloqueados(textoBloq => {
-    let html =
-      escapeHtml(textoBloq).replace(/\n/g, '<br>') +
-      escapeHtml(cabecalhoDataJogo()).replace(/\n/g, '<br>') +
-      '------------------------------<br>';
+    let html = '';
 
     if (!todas || !Object.keys(todas).length) {
       codigo.innerHTML = html + 'Nenhuma reserva nessa etapa.<br>';
