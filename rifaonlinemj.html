@@ -10,310 +10,579 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
-  <style>
-    /* ---------- GERAL ---------- */
-    :root {
-      --bg: #232;
-      --card: #111;
-      --accent: #8098ff;
-      --accent-dark: #6f86e6;
-      --green: #2ecc71;
-      --danger: #e74c3c;
-      --text: #fff;
-    }
+  
+<style>
+/* =========================
+   CONFIGURAÇÕES GERAIS
+========================= */
+:root {
+  --bg: #232323;
+  --card: #111111;
+  --accent: #8098ff;
+  --accent-dark: #6f86e6;
+  --green: #2ecc71;
+  --danger: #e74c3c;
+  --text: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding-top: 50px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+h1 {
+  margin: 8px 0;
+  font-size: 22px;
+}
+
+img.imagemIcone {
+  display: none;
+  width: 100%;
+  height: 70px;
+  margin: 0;
+  top: 0;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
 .contador {
+  margin: 10px 0;
+  color: #ff000a;
   font-size: 20px;
   font-weight: bold;
-  margin: 15px 0;
-  color:#ff000a;
 }
-    *{box-sizing:border-box}
-    body {
-        font-family: Arial, sans-serif;
-        background: var(--bg);
-        color:var(--text);
-        margin:0;
-        padding-top: 50px;
-        text-align:center;
-    }
 
-    img.imagemIcone{
-    display:none;
-      width:100%;
-      height:70px;
-      margin:0;
-      top:0;
-      border-radius:10px;
-      object-fit:cover;
-    }
+/* =========================
+   TOPO FIXO
+========================= */
 
-    h1{
-        font-size:22px;
-        margin:8px 0;
-        
-    }
-
-    /* ---------- TOPO FIXO ---------- */
-    #topoWrapper {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background: linear-gradient(90deg,var(--accent),var(--accent-dark));
-        display:flex;
-        align-items:center;
-        padding:8px 10px;
-        gap:4px;
-        z-index:1000;
-        border-bottom:2px solid rgba(0,0,0,0.3);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-
-    #btnMenu {
-        
-        color:#fff;
-        font-size:16px;
-        border:none;
-        border-radius:8px;
-        cursor:pointer;
-        flex: 0 0 55px;
-        height:px;
-    }
-
-    #topoInputs {
-        display:flex;
-        align-items:center;
-        gap:12px;
-        width:100%;
-    }
-
-    #topoInputs input,
-    #topoInputs select,
-    #salvar {
-        flex: 1;
-        padding:6px;
-        font-size:14px;
-        border-radius:8px;
-        border:none;
-        text-align:center;
-        background:#222;
-        color:#fff;
-    }
-
-    #salvar {
-        background: var(--green);
-        color:#000000;
-        cursor:pointer;
-        height:30px;
-        padding:8px;
-        font-size:16px;
-        flex: 1;
-        font-weight:700;
-    }
-
-    #nomeBox {
-      display:flex;
-      align-items:center;
-      gap:8px;
-      margin-left:6px;
-      color:#fff;
-      font-weight:700;
-    }
-
-    #btnEditarNome {
-    display:none;
-      background:transparent;
-      border:1px solid rgba(255,255,255,0.2);
-      color:#fff;
-      padding:6px 8px;
-      border-radius:8px;
-      cursor:pointer;
-    }
-
-    @media (max-width: 420px) {
-        #btnMenu { flex: 0 0 45px; }
-        #salvar { font-size:12px; padding:6px; }
-    }
-
-    /* ---------- MENU LATERAL ---------- */
-    #menu {
-        position: fixed;
-        top: 60px;
-        margin:0px;
-        left: -150%;
-        width: 85%;
-        max-width:420px;
-        height: 80%;
-        background:var(--card);
-        color:#fff;
-        padding:14px;
-        transition:0.28s;
-        overflow-y:auto;
-        z-index:9999;
-        box-shadow: 6px 6px 30px rgba(0,0,0,0.6);
-        border-radius: 8px;
-    }
-    #menu.open { left:0; }
-
-    #menu h3 { margin-top:0; }
-
-#menu textarea {
-    display: block;
-    width: calc(100% - 0px);  /* largura total, sem deslocar */
-    max-width: 100%;
-    height: 350px;
-
-    background: #000;
-    color: #0f0;
-    border: 1px solid #0f0;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 16px;
-    resize: none;
-    box-sizing: border-box;
-    overflow-y: auto;
-
-    /* 🟢 DEIXA COLADO NA ESQUERDA */
-    margin-left: 0;
-    transform: translateX(0);    /* zera o deslocamento */
-    filter: none;                /* remove a sombra que jogava para o lado */
-}
-    /* ---------- NUMEROS ---------- */
-    #conteudo { display:flex; padding:12px; max-width:1000px; margin: 0 auto; }
-
-    #numeros {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      gap: 6px;
-      width: 100%;
-      padding: 5px;
-      box-sizing: border-box;
-    }
-
-    .numero {
-      aspect-ratio: 1 / 1;
-      width: 100%;
-      border-radius: 8px;
-      background: #3498db;
-      color: #fff;
-      border: none;
-      font-weight: bold;
-      font-size: clamp(10px, 2.8vw, 18px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor:pointer;
-      user-select:none;
-    }
-
-    .numero:active { transform: scale(.98); }
-    .marcado { background:#27ae60 !important; }
-    .bloqueado { background:#777 !important; color:#ccc; cursor:not-allowed; }
-
-    #rodapeInfo { margin-top:12px; color:gold; font-weight:bold; }
-
-    /* ---------- MODAL NOME ---------- */
-    #modalNome {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.75);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 20000;
-    }
-
-    #modalNome.show { display:flex; }
-
-    #modalBox input {
-        width: 100%;
-        padding: 12px;
-        font-size: 16px;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        border:1px solid #ddd;
-    }
-
-    #modalBox button {
-        background: #27ae60;
-        color: #fff;
-        padding: 10px 20px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
-        font-weight: bold;
-    }
-
-    .pequeno { font-size:13px; color:#ccc; margin-top:10px; }
-.visualizador {
+/* TOPO FIXO UNIFORME */
+#topoWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   width: 100%;
-  height: 350px;
-  background: #111;
-  color: #fff;
-  padding: 10px;
-  border-radius: 10px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  font-family: monospace;
-  border: 1px solid #444;
+  padding: 8px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+  border-bottom: 2px solid rgba(0,0,0,.3);
+  box-shadow: 0 4px 8px rgba(0,0,0,.2);
 }
-.verde { color:#00ff00; font-weight:bold; }
-.amarelo { color:gold; font-weight:bold; }
-.vermelho { color:#ff4d4d; font-weight:bold; }
-/* FORÇA ALINHAMENTO À ESQUERDA NO MENU */
+
+#btnMenu {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 4px;
+  background: var(--green);
+  color: #000;
+  font-size: 13px;
+  font-weight: bold;
+  border: none;
+  border-radius: 7px;
+}
+
+#topoInputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 3;
+  min-width: 0;
+}
+
+#topoInputs input,
+#topoInputs select,
+#topoInputs .btnPagar {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  height: 34px;
+  margin: 0;
+  padding: 4px 2px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  border: none;
+  border-radius: 7px;
+}
+
+#topoInputs input,
+#topoInputs select {
+  background: #222;
+  color: #fff;
+}
+
+#topoInputs select {
+  text-align-last: center;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+#topoInputs .btnPagar {
+  background: linear-gradient(135deg, #00e676, #00a844);
+  color: #000;
+  cursor: pointer;
+}
+
+#nomeBox {
+  display: none !important;
+}
+
+@media (max-width: 380px) {
+  #topoWrapper {
+    gap: 4px;
+    padding: 6px;
+  }
+
+  #topoInputs {
+    gap: 4px;
+  }
+
+  #btnMenu,
+  #topoInputs input,
+  #topoInputs select,
+  #topoInputs .btnPagar {
+    height: 32px;
+    font-size: 11px;
+  }
+}
+
+#btnEditarNome {
+  display: none;
+  padding: 6px 8px;
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#nomeExibicao {
+display:none;
+  color: #2ecc71;
+}
+
+/* =========================
+   MENU LATERAL
+========================= */
+#menu {
+  position: fixed;
+  top: 60px;
+  left: -150%;
+  z-index: 9999;
+  width: 90%;
+  max-width: 420px;
+  height: calc(100dvh - 75px);
+  margin: 0;
+  padding: 8px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--card);
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 6px 6px 30px rgba(0,0,0,.6);
+  transition: left .28s ease;
+}
+
+#menu.open {
+  left: 0;
+}
+
+#menu h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
 #menu,
 #menu * {
   text-align: left;
 }
-#nomeExibicao {
-  color: #2ecc71; /* verde */
+
+/* Área de texto tradicional */
+#menu textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 100px;
+  margin: 0;
+  padding: 8px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  resize: none;
+  background: #000;
+  color: #0f0;
+  border: 1px solid #0f0;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 13px;
+  line-height: 1.25;
 }
+
+/* Visualizador HTML do menu */
+.visualizador {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 350px;
+  margin: 0;
+  padding: 5px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  background: #111;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.verde {
+  color: #00ff00;
+  font-weight: bold;
+}
+
+.amarelo {
+  color: gold;
+  font-weight: bold;
+}
+
+.vermelho {
+  color: #ff4d4d;
+  font-weight: bold;
+}
+
+/* =========================
+   RESERVAS COMPACTAS
+========================= */
+.reserva-card {
+  display: block;
+  width: 100%;
+  margin: 5px 0;
+  padding: 7px;
+  overflow-wrap: anywhere;
+  background: #171a21;
+  color: #fff;
+  border: 1px solid #343a46;
+  border-radius: 7px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.reserva-card-horario {
+  display: block;
+  margin: 0 0 5px;
+  padding: 6px;
+  background: #292d37;
+  color: #ffd54a;
+  border-left: 3px solid #ffd54a;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.reserva-card-info {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+.reserva-card-linha {
+  display: flex;
+  justify-content: flex-start;
+  align-items: baseline;
+  gap: 5px;
+  margin: 0;
+  padding: 3px 0;
+  border-bottom: 1px solid #292e38;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.reserva-card-label {
+  flex: 0 0 auto;
+  color: #b9c0cc;
+}
+
+.reserva-card-valor {
+  min-width: 0;
+  max-width: 75%;
+  color: #fff;
+  font-weight: 600;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.reserva-card-status {
+  margin: 5px 0 0;
+  padding: 5px;
+  background: #302a19;
+  color: #ffd54a;
+  border: 1px solid #5b4a20;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.reserva-card-status.pago {
+  background: #123324;
+  color: #55e99a;
+  border-color: #226c45;
+}
+
+.reserva-card-status.cancelado {
+  background: #391b1b;
+  color: #ff7373;
+  border-color: #6c2929;
+}
+
+.reserva-card-resultado {
+  margin: 4px 0 0;
+  padding: 5px;
+  background: #222630;
+  color: #e0e6ef;
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.reserva-card-pix-titulo {
+  margin: 7px 0 4px;
+  color: #55e99a;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.reserva-card-pix {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-height: 60px;
+  margin: 4px 0;
+  padding: 6px;
+  overflow-wrap: anywhere;
+  resize: vertical;
+  background: #080a0e;
+  color: #7ef0a8;
+  border: 1px solid #35483b;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.reserva-card-botao-pix {
+  display: block;
+  width: 100%;
+  min-height: 36px;
+  margin: 4px 0 0;
+  padding: 7px;
+  background: #1769ff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+}
+
+.reserva-card-botao-pix:active {
+  background: #0e54d5;
+  transform: scale(.99);
+}
+
+.reserva-card-contagem {
+  margin: 4px 0 0;
+  padding: 5px;
+  background: #252a33;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.reserva-card-separador {
+  margin: 6px 0;
+  border: none;
+  border-top: 1px dashed #555d6b;
+}
+
+/* Evita parágrafos com margens grandes dentro das reservas */
+.reserva-card p {
+  margin: 3px 0;
+}
+
+/* =========================
+   NÚMEROS
+========================= */
+#conteudo {
+  display: flex;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 12px;
+}
+
+#numeros {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+  padding: 5px;
+}
+
+.numero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  background: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: clamp(10px, 2.8vw, 18px);
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+
+.numero:active {
+  transform: scale(.98);
+}
+
+.marcado {
+  background: #27ae60 !important;
+}
+
+.bloqueado {
+  background: #777 !important;
+  color: #ccc;
+  cursor: not-allowed;
+}
+
 .numero.extra {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
+  background: linear-gradient(135deg, #ffd700, #ffa500);
   color: #000;
   font-weight: bold;
   border: 2px solid #fff3b0;
-  box-shadow: 0 0 8px rgba(255, 215, 0, 0.9);
+  box-shadow: 0 0 8px rgba(255,215,0,.9);
 }
+
 .numero.bloqueado.extra {
-  background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+  background: linear-gradient(135deg, #ffd700, #ffa500) !important;
   color: #000 !important;
   border: 2px solid #fff3b0;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.95);
+  box-shadow: 0 0 10px rgba(255,215,0,.95);
 }
 
+#rodapeInfo {
+  margin-top: 12px;
+  color: gold;
+  font-weight: bold;
+}
+
+/* =========================
+   MODAL NOME
+========================= */
+#modalNome {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 20000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,.75);
+}
+
+#modalNome.show {
+  display: flex;
+}
+
+#modalBox input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+#modalBox button {
+  padding: 10px 20px;
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.pequeno {
+  margin-top: 10px;
+  color: #ccc;
+  font-size: 13px;
+}
+
+/* =========================
+   MODAL PACOTE
+========================= */
 #modalPacote {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.85);
-  display: none;
-  justify-content: center;
-  align-items: center;
+  inset: 0;
   z-index: 25000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.85);
 }
-#modalPacote.show { display: flex; }
+
+#modalPacote.show {
+  display: flex;
+}
 
 #modalPacoteBox {
-  background: #111;
-  color: #fff;
+  position: relative;
   width: 90%;
   max-width: 350px;
   padding: 25px;
+  background: #111;
+  color: #fff;
   border-radius: 15px;
   text-align: center;
-  box-shadow: 0 0 20px rgba(128, 152, 255, 0.5);
-  position: relative;
+  box-shadow: 0 0 20px rgba(128,152,255,.5);
 }
 
 #btnFecharModal {
   position: absolute;
-  top: 10px; right: 10px;
+  top: 10px;
+  right: 10px;
   background: transparent;
-  border: none;
   color: #fff;
+  border: none;
   font-size: 20px;
   cursor: pointer;
 }
@@ -330,14 +599,15 @@
 
 #valorPacote {
   color: #2ecc71;
-  font-weight: bold;
   font-size: 18px;
+  font-weight: bold;
 }
 
 #btnPacoteContainer {
   display: flex;
-  gap: 15px;
+  flex-wrap: wrap;
   justify-content: center;
+  gap: 10px;
   margin: 20px 0;
 }
 
@@ -348,36 +618,21 @@
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform .2s;
 }
 
-.btnPacote:hover { transform: scale(1.05); }
+.btnPacote:hover {
+  transform: scale(1.05);
+}
 
-#btnMais10 { background: #2ecc71; color: #000; }
-#btnMenos10 { background: #e74c3c; color: #fff; }
-.fechar-modal-pix {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 50%;
-  background: #ff3333;
+#btnMais10 {
+  background: #2ecc71;
+  color: #000;
+}
+
+#btnMenos10 {
+  background: #e74c3c;
   color: #fff;
-  font-size: 22px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-#btnPacoteContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  margin: 20px 0;
 }
 
 #btnPacoteContainer #btnMais10,
@@ -392,162 +647,38 @@
   background: #2ecc71;
   color: #000;
   font-weight: bold;
-  animation: piscarPagar 0.8s infinite alternate;
+  animation: piscarPagar .8s infinite alternate;
 }
 
-@keyframes piscarPagar {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0.65;
-    transform: scale(0.97);
-  }
-}
-
-/* MODAL INTUITIVO DE QUANTIDADE */
-.modal-quantidade {
-  position: fixed;
-  inset: 0;
-  display: none;
+.fechar-modal-pix {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px;
-  background: rgba(0, 0, 0, .84);
-  backdrop-filter: blur(5px);
-  z-index: 50000;
-}
-
-.quantidade-box {
-  position: relative;
-  width: 100%;
-  max-width: 360px;
-  padding: 25px 20px 20px;
-  border-radius: 20px;
-  background: linear-gradient(160deg, #202331, #101116);
+  width: 36px;
+  height: 36px;
+  background: #ff3333;
   color: #fff;
-  text-align: center;
-  border: 1px solid #8098ff;
-  box-shadow: 0 0 30px rgba(128, 152, 255, .25);
-  animation: aparecerQuantidade .25s ease-out;
-}
-
-@keyframes aparecerQuantidade {
-  from { opacity: 0; transform: translateY(15px) scale(.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.quantidade-fechar {
-  position: absolute;
-  right: 10px;
-  top: 8px;
-  width: 34px;
-  height: 34px;
   border: none;
   border-radius: 50%;
-  background: #333746;
-  color: #fff;
-  font-size: 25px;
-  cursor: pointer;
-}
-
-.quantidade-icone {
-  font-size: 45px;
-  margin-bottom: 8px;
-}
-
-.quantidade-box h2 {
-  color: #8098ff;
-  margin: 0 0 10px;
-  font-size: 23px;
-}
-
-.quantidade-descricao {
-  color: #ddd;
-  font-size: 14px;
-  line-height: 1.5;
-  margin: 0 0 18px;
-}
-
-.quantidade-exemplo {
-  padding: 14px 10px;
-  border-radius: 12px;
-  background: #292c38;
-}
-
-.quantidade-exemplo > span {
-  display: block;
-  color: #ccc;
-  font-size: 13px;
-  margin-bottom: 12px;
-}
-
-.quantidade-opcoes {
-  display: flex;
-  justify-content: center;
-  gap: 7px;
-  flex-wrap: wrap;
-}
-
-.quantidade-opcoes span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  background: #8098ff;
-  color: #111;
-  font-size: 15px;
+  font-size: 22px;
   font-weight: bold;
-}
-
-.quantidade-status {
-  margin: 16px 0;
-  padding: 12px;
-  border-radius: 12px;
-  background: rgba(46, 204, 113, .09);
-  border: 1px solid rgba(46, 204, 113, .3);
-}
-
-.quantidade-status p {
-  margin: 4px 0;
-  font-size: 13px;
-  color: #ccc;
-}
-
-.quantidade-status strong {
-  display: block;
-  color: #2ecc71;
-  font-size: 23px;
-  margin: 6px 0;
-}
-
-#mensagemQuantidade {
-  color: #ffd166;
-  line-height: 1.4;
-}
-
-.btn-continuar-quantidade {
-  width: 100%;
-  padding: 14px 10px;
-  border: none;
-  border-radius: 11px;
-  background: #8098ff;
-  color: #111;
-  font-weight: 800;
-  font-size: 15px;
   cursor: pointer;
 }
+
+/* =========================
+   BOTÃO PAGAR
+========================= */
 .btnPagar {
   display: block;
   flex: 1;
   min-width: 0;
-  width: auto;
+  width: 50px;
   height: 30px;
+  margin: 10;
   padding: 6px 4px;
-  margin: 0;
   background: linear-gradient(135deg, #00e676, #00a844);
   color: #fff;
   border: none;
@@ -556,7 +687,7 @@
   font-weight: 900;
   text-transform: uppercase;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 230, 118, .35);
+  box-shadow: 0 4px 12px rgba(0,230,118,.35);
   animation: piscarPagar 1s infinite;
 }
 
@@ -564,18 +695,127 @@
   transform: scale(.97);
 }
 
+@keyframes piscarPagar {
+  from {
+    opacity: 1;
+    transform: scale(1);
+    color:white;
+  }
+  to {
+    opacity: .65;
+    transform: scale(.97);
+  }
+}
+
+/* =========================
+   MODAL DE QUANTIDADE
+========================= */
+.modal-quantidade {
+  position: fixed;
+  inset: 0;
+  z-index: 50000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0,0,0,.84);
+  backdrop-filter: blur(5px);
+}
+
+.quantidade-box {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  padding: 25px 20px 20px;
+  background: linear-gradient(160deg, #202331, #101116);
+  color: #fff;
+  border: 1px solid #8098ff;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(128,152,255,.25);
+  animation: aparecerQuantidade .25s ease-out;
+}
+
+@keyframes aparecerQuantidade {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.quantidade-fechar {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  background: #333746;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.quantidade-icone {
+  margin-bottom: 8px;
+  font-size: 45px;
+}
+
+.quantidade-box h2 {
+  margin: 0 0 10px;
+  color: #8098ff;
+  font-size: 23px;
+}
+
+.quantidade-descricao {
+  margin: 0 0 18px;
+  color: #ddd;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.quantidade-exemplo {
+  padding: 14px 10px;
+  background: #292c38;
+  border-radius: 12px;
+}
+
+.quantidade-exemplo > span {
+  display: block;
+  margin-bottom: 12px;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.quantidade-opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+}
+
+.quantidade-opcoes span,
 .quantidade-opcoes button {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 42px;
   height: 42px;
-  border: 2px solid transparent;
-  border-radius: 10px;
+  padding: 0;
   background: #8098ff;
   color: #111;
+  border: 2px solid transparent;
+  border-radius: 10px;
   font-size: 15px;
   font-weight: bold;
+}
+
+.quantidade-opcoes button {
   cursor: pointer;
   transition: .2s;
 }
@@ -590,7 +830,118 @@
   box-shadow: 0 0 10px #2ecc71;
 }
 
-  </style>
+.quantidade-status {
+  margin: 16px 0;
+  padding: 12px;
+  background: rgba(46,204,113,.09);
+  border: 1px solid rgba(46,204,113,.3);
+  border-radius: 12px;
+}
+
+.quantidade-status p {
+  margin: 4px 0;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.quantidade-status strong {
+  display: block;
+  margin: 6px 0;
+  color: #2ecc71;
+  font-size: 23px;
+}
+
+#mensagemQuantidade {
+  color: #ffd166;
+  line-height: 1.4;
+}
+
+.btn-continuar-quantidade {
+  width: 100%;
+  padding: 14px 10px;
+  background: #8098ff;
+  color: #111;
+  border: none;
+  border-radius: 11px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+@media (max-width: 420px) {
+  #btnMenu {
+    flex-basis: 30px;
+  }
+
+  #topoInputs {
+    gap: 4px;
+  }
+
+  #topoInputs input,
+  #topoInputs select {
+    padding: 5px 3px;
+    font-size: 12px;
+  }
+
+  #salvar {
+    padding: 5px 3px;
+    font-size: 11px;
+  }
+
+  #numeros {
+    gap: 4px;
+    padding: 3px;
+  }
+
+  #menu {
+    width: 94%;
+    padding: 6px;
+  }
+
+  .visualizador {
+    padding: 4px;
+    font-size: 12px;
+  }
+
+  .reserva-card {
+    margin: 4px 0;
+    padding: 6px;
+  }
+
+  .reserva-card-linha {
+    gap: 4px;
+    padding: 2px 0;
+  }
+
+  .reserva-card-valor {
+    max-width: 75%;
+  }
+}
+
+@media (max-width: 350px) {
+  #btnMenu {
+    flex-basis: 30px;
+    font-size: 13px;
+  }
+
+  #topoWrapper {
+    padding: 8px 6px;
+  }
+
+  #topoInputs input,
+  #topoInputs select {
+    font-size: 11px;
+  }
+
+  .reserva-card {
+    font-size: 12px;
+  }
+}
+</style>
+
 </head>
 <body>
      
@@ -738,22 +1089,34 @@
   </strong>
 </h1>
 
-  <div id="topoWrapper" role="banner" aria-label="Topo">
-    <button style="color:#000;background: var(--green);font-weight:bold;padding:4px 20px;"id="btnMenu" aria-label="Abrir menu" title="Abrir menu">VER</button>
+  
+<div id="topoWrapper" role="banner" aria-label="Topo">
+  <button id="btnMenu" type="button">MINHAS APOSTA</button>
 
-    <div id="topoInputs" role="form" aria-label="Formulário topo">
-      <input style="width:70px;font-weight:bold;" type="number" id="valor" value="1.00" readonly>
-      <select id="horarios" style="font-weight:bold;width:120px" aria-label="Horário">
-        <option value="20:00">FEDERAL</option type="disablet" readonly>    
-      </select>
-      <button class="btnPagar" onclick="salvarReserva()">PAGAR</button>
-    </div>
+  <div id="topoInputs">
+    <input
+      type="text"
+      id="valor"
+      value="R$ 1,00"
+      readonly
+      aria-label="Valor por dezena"
+    >
 
-    <div id="nomeBox" style="margin-left:10px; background:black; color:white; padding:0px 10px;border-radius:10px;" >
-      <span id="nomeExibicao" aria-live="polite">Bem-vindo</span>
-      <button id="btnEditarNome" title="Alterar nome">Editar</button>
-    </div>
+    <select id="horarios" aria-label="Horário">
+      <option value="20:00">FEDERAL</option>
+    </select>
+
+    <button class="btnPagar" type="button" onclick="salvarReserva()">
+      PAGAR
+    </button>
   </div>
+
+  <div id="nomeBox">
+    <span id="nomeExibicao">Bem-vindo</span>
+    <button id="btnEditarNome" type="button">Editar</button>
+  </div>
+</div>
+
 <div id="modalPixAdmin" style="
   position:fixed;
   inset:0;
@@ -1033,7 +1396,7 @@ const numerosDiv=$('numeros'),codigo=$('codigo'),menuEl=$('menu'),btnMenu=$('btn
 const salvarBtn=$('salvar'),nomeExibicao=$('nomeExibicao'),modalNome=$('modalNome'),inputNome=$('inputNome');
 const totalPagarSpan=$('totalPagar'),totalReceberSpan=$('totalReceber'),valorPacoteSpan=$('valorPacote');
 const modalPacote=$('modalPacote');
-const CHAVE_PIX_RIFA='d3cef174-0f3d-46d5-9bf2-9d64214bc8d3',NOME_RECEBEDOR_PIX='MULTIJOGO',CIDADE_RECEBEDOR_PIX='SALVADOR';
+const CHAVE_PIX_RIFA='c264f410-08f2-400f-928e-3e26e200d98a',NOME_RECEBEDOR_PIX='MULTIJOGO',CIDADE_RECEBEDOR_PIX='SALVADOR';
 const VALOR_UNITARIO=1,VALOR_PACOTE_10=9,ESPERA_STATUS_MS=5*60*1000;
 let selecionados = [];
 let bloqueados = new Set();
@@ -1175,28 +1538,253 @@ function proximaDataDeJogo(){
 }
 function cabecalhoDataJogo(){const d=proximaDataDeJogo();return `📅 DATA DO JOGO: ${d.toLocaleDateString('pt-BR')} às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}\n==========================\n\n`;}
 function atualizarDataJogo(){const d=proximaDataDeJogo();$('dataJogo').textContent=`📅 Próximo Sorteio: ${d.toLocaleDateString('pt-BR',{weekday:'long'})} - ${d.toLocaleDateString('pt-BR')}`;}
-function atualizarTextareaReservasSemana(todas){
-  textoNumerosBloqueados(textoBloq=>{
-    let html=escapeHtml(textoBloq).replace(/\n/g,'<br>')+escapeHtml(cabecalhoDataJogo()).replace(/\n/g,'<br>')+'------------------------------<br>';
-    if(!todas||!Object.keys(todas).length){codigo.innerHTML=html+'Nenhuma reserva nessa etapa.<br>';return;}
-    Object.keys(todas).sort().reverse().forEach(dataStr=>{
-      const dadosDia=todas[dataStr]||{};
-      Object.keys(dadosDia).sort().reverse().forEach(horario=>{
-        html+=`<br><strong>[ HORÁRIO ] =&gt; ${escapeHtml(horario)}</strong><br>`;
-        Object.keys(dadosDia[horario]||{}).sort().reverse().forEach(k=>{
-          const d=dadosDia[horario][k]||{},nums=Array.isArray(d.numeros)?d.numeros:[],extras=Array.isArray(d.dezenasExtras)?d.dezenasExtras:[];
-          const qtd=nums.length,total=Number(d.valorTotal??calcularValorComPacote(qtd));
-          const status=d.status||'⏳ AGUARDANDO',resultado=d.resultado||'⏳ AGUARDANDO';
-          const corStatus=status.toUpperCase().includes('PAGO')||status.toUpperCase().includes('VALIDADO')?'verde':status.toUpperCase().includes('CANCEL')?'vermelho':'amarelo';
-          const corResultado=resultado.includes('GANHOU')?'verde':resultado.includes('PERDEU')?'vermelho':'amarelo';
-          const id='countdown-'+(dataStr+'-'+horario+'-'+k).replace(/[^a-zA-Z0-9-_]/g,'');
-          html+=`Nome: <span class="verde">${escapeHtml(d.nome||'Sem nome')}</span><br>Quantidade: ${qtd}<br>Dezena escolhida: ${escapeHtml(nums.join('-'))}${extras.length?'<br>🎁 Dezenas extras: '+escapeHtml(extras.join('-')):''}<br>Valor a pagar: R$ ${formatarDinheiro(total)}<br>Status: <span class="${corStatus}">${escapeHtml(status)}</span><br>Resultado: <span class="${corResultado}">${escapeHtml(resultado)}</span><br><div id="${id}" class="amarelo"></div><br>---------------------------<br>`;
-          setTimeout(()=>{const el=$(id);if(el)gerarCountdown(id,d.dataHora,d.status);},0);
+
+function atualizarTextareaReservasSemana(todas) {
+  textoNumerosBloqueados(textoBloq => {
+    let html = '';
+
+    if (!todas || !Object.keys(todas).length) {
+      codigo.innerHTML = html + 'Nenhuma reserva nessa etapa.<br>';
+      return;
+    }
+
+    Object.keys(todas).sort().reverse().forEach(dataStr => {
+      const dadosDia = todas[dataStr] || {};
+
+      Object.keys(dadosDia).sort().reverse().forEach(horario => {
+        html += `<br><strong>[ HORÁRIO ] =&gt; ${escapeHtml(horario)}</strong><br>`;
+
+        Object.keys(dadosDia[horario] || {}).sort().reverse().forEach(k => {
+          const d = dadosDia[horario][k] || {};
+          const nums = Array.isArray(d.numeros) ? d.numeros : [];
+          const extras = Array.isArray(d.dezenasExtras) ? d.dezenasExtras : [];
+          const qtd = Number(d.quantidade || nums.length || 0);
+
+          const total = Number(
+            d.valorTotal ?? calcularValorComPacote(qtd)
+          );
+
+          const status = String(d.status || '⏳ AGUARDANDO PAGAMENTO');
+          const resultado = String(d.resultado || '⏳ AGUARDANDO');
+
+          const statusMaiusculo = status.toUpperCase();
+
+          const corStatus =
+            statusMaiusculo.includes('PAGO') ||
+            statusMaiusculo.includes('VALIDADO')
+              ? 'verde'
+              : statusMaiusculo.includes('CANCEL')
+                ? 'vermelho'
+                : 'amarelo';
+
+          const resultadoMaiusculo = resultado.toUpperCase();
+
+          const corResultado =
+            resultadoMaiusculo.includes('GANHOU')
+              ? 'verde'
+              : resultadoMaiusculo.includes('PERDEU')
+                ? 'vermelho'
+                : 'amarelo';
+
+          const identificador = (dataStr + '-' + horario + '-' + k)
+            .replace(/[^a-zA-Z0-9_-]/g, '');
+
+          const id = 'countdown-' + identificador;
+          const pixId = 'pix-reserva-' + identificador;
+
+          let pixReserva = String(d.pixCopiaCola || '');
+
+          if (!pixReserva) {
+            try {
+              pixReserva = gerarPixPayload(
+                CHAVE_PIX_RIFA,
+                NOME_RECEBEDOR_PIX,
+                CIDADE_RECEBEDOR_PIX,
+                total
+              );
+            } catch (erro) {
+              console.error('Erro ao gerar Pix da reserva:', erro);
+              pixReserva = '';
+            }
+          }
+
+          html += `
+            <div style="
+              margin:12px 0;
+              padding:12px;
+              border:1px solid #444;
+              border-radius:10px;
+              background:#181818;
+              color:#fff;
+              overflow-wrap:anywhere;
+              line-height:1.7;
+            ">
+              <strong style="color:#ffd700;">
+  ---------------------------<br>
+  [ HORÁRIO DO JOGO ] =&gt; ${
+    [1, 2, 3].includes(new Date(dataStr + 'T12:00:00').getDay())
+      ? '20:00'
+      : '11:00'
+  }<br>
+  [ RESULTADOS] =&gt; ${
+    [1, 2, 3].includes(new Date(dataStr + 'T12:00:00').getDay())
+      ? '20:30'
+      : '12:00'
+  }
+</strong>
+
+<br>
+              <strong>Nome:</strong>
+              <span class="verde">${escapeHtml(d.nome || 'Sem nome')}</span>
+
+              <br>
+              <strong>Quantidade:</strong> ${qtd}
+
+              <br>
+              <strong>Dezena escolhida:</strong>
+              ${escapeHtml(nums.length ? nums.join(', ') : 'Não informada')}
+
+              ${
+                extras.length
+                  ? `<br><strong>Dezenas extras:</strong> ${escapeHtml(extras.join(', '))}`
+                  : ''
+              }
+
+              <br>
+              <strong>Valor a pagar:</strong> R$ ${formatarDinheiro(total)}
+
+              <br>
+              <strong>Status:</strong>
+              <span class="${corStatus}">${escapeHtml(status)}</span>
+
+              <br>
+              <strong>Resultado:</strong>
+              <span class="${corResultado}">${escapeHtml(resultado)}</span>
+
+              <br><br>
+
+              <strong style="color:#00ff00;">
+                📲 PIX COPIA E COLA DESTA RESERVA
+              </strong>
+
+              <textarea
+                id="${pixId}"
+                readonly
+                onclick="this.select()"
+                style="
+                  display:block;
+                  width:100%;
+                  min-height:90px;
+                  margin-top:8px;
+                  padding:9px;
+                  box-sizing:border-box;
+                  background:#000;
+                  color:#00ff00;
+                  border:1px solid #00ff00;
+                  border-radius:8px;
+                  font-size:12px;
+                  resize:vertical;
+                "
+              >${escapeHtml(pixReserva || 'Pix não disponível')}</textarea>
+
+              <button
+                type="button"
+                onclick="copiarPixReserva('${pixId}')"
+                style="
+                  display:block;
+                  width:100%;
+                  margin-top:8px;
+                  padding:12px;
+                  background:#1769ff;
+                  color:#fff;
+                  border:none;
+                  border-radius:8px;
+                  font-size:14px;
+                  font-weight:bold;
+                  cursor:pointer;
+                "
+              >
+                📋 COPIAR PIX DESTA RESERVA
+              </button>
+
+              <br>
+              <div id="${id}" class="amarelo"></div>
+            </div>
+
+            <div style="color:#666;">
+              ---------------------------
+            </div>
+          `;
+
+          setTimeout(() => {
+            const el = $(id);
+            if (el) gerarCountdown(id, d.dataHora, d.status);
+          }, 0);
         });
       });
     });
-    codigo.innerHTML=html;
+
+    codigo.innerHTML = html;
   });
+}
+
+async function copiarPixReserva(textareaId) {
+  const campo = document.getElementById(textareaId);
+
+  if (!campo || !campo.value.trim() ||
+      campo.value === 'Pix não disponível') {
+    alert('O Pix desta reserva não está disponível.');
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(campo.value);
+    alert('Pix desta reserva copiado!');
+  } catch (erro) {
+    campo.focus();
+    campo.select();
+    campo.setSelectionRange(0, campo.value.length);
+
+    const sucesso = document.execCommand('copy');
+
+    alert(
+      sucesso
+        ? 'Pix desta reserva copiado!'
+        : 'Não foi possível copiar. Selecione o código e copie manualmente.'
+    );
+  }
+}
+
+
+async function copiarPixReserva(textareaId) {
+  const campo = document.getElementById(textareaId);
+
+  if (!campo || !campo.value.trim()) {
+    alert('Pix não encontrado nesta aposta.');
+    return;
+  }
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(campo.value);
+    } else {
+      campo.focus();
+      campo.select();
+
+      const copiado = document.execCommand('copy');
+
+      if (!copiado) {
+        throw new Error('Não foi possível copiar.');
+      }
+    }
+
+    alert('✅ Pix desta aposta copiado!');
+  } catch (erro) {
+    campo.focus();
+    campo.select();
+
+    alert('Selecione o código Pix acima e copie manualmente.');
+  }
 }
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function carregarReservasDaSemana(){
@@ -1350,19 +1938,31 @@ async function confirmarReservaAposCopiarPix() {
       'ID-' + Date.now() + '-' +
       Math.random().toString(36).slice(2, 7);
 
-    const dadosReserva = {
-      nome: pendente.nome,
-      numeros: pendente.numeros,
-      dezenasExtras: extras,
-      horario: pendente.horario,
-      status: '⏳ AGUARDANDO PAGAMENTO',
-      resultado: '⏳ AGUARDANDO',
-      dataHora,
-      valorTotal: pendente.valorTotal,
-      quantidade: pendente.numeros.length,
-      pixCopiado: true,
-      pixCopiadoEm: new Date().toISOString()
-    };
+    const pixDestaReserva = pendente.pixCopiaCola ||
+  gerarPixPayload(
+    CHAVE_PIX_RIFA,
+    NOME_RECEBEDOR_PIX,
+    CIDADE_RECEBEDOR_PIX,
+    pendente.valorTotal
+  );
+
+const dadosReserva = {
+  nome: pendente.nome,
+  numeros: pendente.numeros,
+  dezenasExtras: extras,
+  horario: pendente.horario,
+  status: '⏳ AGUARDANDO PAGAMENTO',
+  resultado: '⏳ AGUARDANDO',
+  dataHora,
+  valorTotal: pendente.valorTotal,
+  quantidade: pendente.numeros.length,
+
+  // Pix individual, salvo permanentemente nesta reserva.
+  pixCopiaCola: pixDestaReserva,
+
+  pixCopiado: true,
+  pixCopiadoEm: new Date().toISOString()
+};
 
     // Grava a reserva e bloqueia os números.
     const updates = {};
@@ -1417,7 +2017,7 @@ async function confirmarReservaAposCopiarPix() {
     confirmandoReservaPix = false;
   }
 }
-<!--  -->
+
 function gerarCountdown(id,dataHora,status){
   const el=$(id);if(!el)return;
   if(status&&String(status).toUpperCase().includes('PAGO')){el.innerHTML='<span class="verde">✅ STATUS PAGO</span>';return;}
@@ -1427,7 +2027,7 @@ function gerarCountdown(id,dataHora,status){
     const restante=inicio+ESPERA_STATUS_MS-Date.now();
     if (restante <= 0) {
   el.innerHTML =
-    '<span class="amarelo">⏳ AGUARDANDO PIX</span>';
+    '<span class="amarelo">📋 PIX COPIADO — AGUARDANDO PAGAMENTO</span>';
   clearInterval(timer);
   return;
 }
@@ -1451,6 +2051,7 @@ function agendarAtualizacaoStatusParaPago(dataHoraCompra, caminhoReserva) {
 }
 
 
+
 function atualizarStatusParaPago(caminhoReserva) {
   const referencia = db.ref(caminhoReserva);
 
@@ -1458,13 +2059,23 @@ function atualizarStatusParaPago(caminhoReserva) {
     .then(snapshot => {
       const reserva = snapshot.val();
 
+      if (!reserva) return;
+
+      const statusAtual = String(reserva.status || "").toUpperCase();
+
+      // Não alterar reservas já pagas ou canceladas.
       if (
-        reserva &&
-        String(reserva.status || "").toUpperCase()
-          .includes("O NAO PAGAMENTO ANULAR A MARCACAO DAS DEZENAS")
+        statusAtual.includes("PAGO") ||
+        statusAtual.includes("VALIDADO") ||
+        statusAtual.includes("CANCELADO")
       ) {
+        return;
+      }
+
+      // Só atualizar reservas que ainda aguardam pagamento.
+      if (statusAtual.includes("AGUARDANDO")) {
         return referencia.update({
-          status: "⏳ AGUARDANDO PIX",
+          status: "📋 PIX COPIADO — AGUARDANDO PAGAMENTO",
           atualizadoEm: new Date().toISOString()
         }).then(() => {
           carregarReservasDaSemana();
@@ -1569,11 +2180,19 @@ function salvarReserva() {
   const valorTotal = calcularValorComPacote(numeros.length);
 
   reservaPendentePix = {
-    nome,
-    numeros,
-    horario: $('horarios').value,
+  nome,
+  numeros,
+  horario: $('horarios').value,
+  valorTotal,
+
+  // Gera e guarda o código Pix exclusivo desta aposta.
+  pixCopiaCola: gerarPixPayload(
+    CHAVE_PIX_RIFA,
+    NOME_RECEBEDOR_PIX,
+    CIDADE_RECEBEDOR_PIX,
     valorTotal
-  };
+  )
+};
 
   fecharModalPacote();
   abrirModalPix(valorTotal);
