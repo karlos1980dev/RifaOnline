@@ -1,0 +1,795 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111111">
+<title>Jogo da Memória Online</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;padding:15px;
+ background:#111;color:white;
+ font-family:Arial,sans-serif;
+ text-align:center;
+}
+h1{font-size:24px;margin:15px 0}
+h2{font-size:19px}
+input{
+ width:100%;max-width:300px;
+ padding:14px;margin:7px auto;
+ border:1px solid #555;border-radius:9px;
+ background:#222;color:white;font-size:17px;
+ text-align:center;
+}
+button{
+ padding:13px 17px;
+ margin:6px;
+ border:0;border-radius:9px;
+ background:#087dce;color:white;
+ font-size:16px;font-weight:bold;
+ cursor:pointer;
+}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.sec{background:#444}
+button.green{background:#078c45}
+button.red{background:#a52b2b}
+button:active{transform:scale(.97)}
+#login,#jogo{
+ max-width:460px;margin:15px auto;
+}
+.painel{
+ background:#202020;
+ border:1px solid #444;
+ border-radius:14px;
+ padding:16px;margin:12px auto;
+}
+#status{
+ color:#ffdf58;font-weight:bold;
+ margin:15px 0;min-height:22px;
+}
+#codigoSala{
+ font-size:29px;color:#00ff8c;
+ font-weight:bold;letter-spacing:5px;
+}
+.placar{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:10px;margin:15px 0;
+}
+.jogador{
+ background:#242424;
+ border:2px solid #444;
+ border-radius:12px;padding:13px 5px;
+}
+.jogador.ativo{
+ border-color:#00ff73;
+ box-shadow:0 0 12px #00ff7355;
+}
+.nome{font-size:14px;color:#ccc}
+.pontos{font-size:30px;font-weight:bold;color:#00ff73}
+.tabuleiro{
+ display:grid;
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:9px;
+ max-width:380px;
+ margin:15px auto;
+}
+.carta{
+ aspect-ratio:1;
+ min-width:0;
+ border:2px solid #555;
+ border-radius:11px;
+ background:linear-gradient(145deg,#333,#171717);
+ display:flex;align-items:center;justify-content:center;
+ font-size:clamp(25px,8vw,39px);
+ cursor:pointer;
+ user-select:none;
+ transition:.2s;
+}
+.carta.virada{
+ background:white;color:black;
+ border-color:white;
+ transform:scale(1.03);
+}
+.carta.encontrada{
+ background:#087b38;color:white;
+ border-color:#00ff73;
+ cursor:default;
+}
+.carta.bloqueada{cursor:not-allowed;opacity:.75}
+#ganhou{
+ position:fixed;inset:0;
+ background:#000e;
+ display:none;
+ align-items:center;justify-content:center;
+ flex-direction:column;
+ z-index:99;padding:20px;
+}
+#ganhou.mostrar{display:flex}
+#ganhou h2{
+ color:#00ff73;font-size:35px;
+ text-shadow:0 0 20px #00ff73;
+ animation:brilho 1s infinite alternate;
+}
+@keyframes brilho{
+ from{transform:scale(1)}
+ to{transform:scale(1.08)}
+}
+.pequeno{font-size:12px;color:#aaa}
+.hidden{display:none!important}
+@media(max-width:360px){
+ body{padding:8px}
+ .tabuleiro{gap:6px}
+ .carta{border-radius:7px}
+}
+</style>
+</head>
+
+<body>
+
+<h1>🧠 JOGO DA MEMÓRIA</h1>
+<p>Desafie outra pessoa online!</p>
+
+<div id="login">
+
+ <div class="painel">
+  <h2>🎮 Criar uma partida</h2>
+  <input id="nomeCriar" placeholder="Seu nome" maxlength="18">
+  <button class="green" id="btnCriar">CRIAR SALA</button>
+ </div>
+
+ <div class="painel">
+  <h2>🔑 Entrar em uma partida</h2>
+  <input id="nomeEntrar" placeholder="Seu nome" maxlength="18">
+  <input id="codigoEntrar" placeholder="CÓDIGO DA SALA"
+   maxlength="6" style="text-transform:uppercase">
+  <button id="btnEntrar">ENTRAR NA SALA</button>
+ </div>
+
+ <p id="status">Conectando ao servidor...</p>
+ <p class="pequeno">Cada partida aceita somente 2 jogadores.</p>
+</div>
+
+<div id="jogo" class="hidden">
+
+ <div class="painel">
+  <div>📡 CÓDIGO DA PARTIDA</div>
+  <div id="codigoSala">------</div>
+  <button class="sec" id="btnCopiar">COPIAR CÓDIGO</button>
+  <p id="espera">Aguardando o segundo jogador...</p>
+ </div>
+
+ <div class="placar">
+  <div class="jogador" id="boxP1">
+   <div class="nome" id="nomeP1">Jogador 1</div>
+   <div class="pontos" id="pontosP1">0</div>
+   <small>Jogador 1</small>
+  </div>
+
+  <div class="jogador" id="boxP2">
+   <div class="nome" id="nomeP2">Jogador 2</div>
+   <div class="pontos" id="pontosP2">0</div>
+   <small>Jogador 2</small>
+  </div>
+ </div>
+
+ <div class="painel">
+  <div id="statusJogo">Aguardando jogadores...</div>
+  <p id="vez">Sua vez será indicada aqui.</p>
+  <div id="tabuleiro" class="tabuleiro"></div>
+  <p id="pares">Pares encontrados: 0 / 12</p>
+ </div>
+
+ <button class="red" id="btnSair">SAIR DA SALA</button>
+</div>
+
+<div id="ganhou">
+ <h2 id="textoVitoria">🏆 VITÓRIA!</h2>
+ <p id="detalheVitoria"></p>
+ <button class="green" id="btnNova">JOGAR NOVAMENTE</button>
+ <button class="sec" id="btnFechar">FECHAR</button>
+</div>
+
+<script type="module">
+
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+
+import {
+ getAuth,
+ signInAnonymously
+} from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+
+import {
+ getDatabase,
+ ref,
+ set,
+ get,
+ onValue,
+ off,
+ runTransaction,
+ onDisconnect
+} from "https://www.gstatic.com/firebasejs/13.3.0/firebase-database.js";
+
+
+/* CONFIGURAÇÃO FIREBASE */
+
+const firebaseConfig = {
+ apiKey: "AIzaSyCWzoLG8P-neN7MAz5j4eAEfkkMEB45n0M",
+ authDomain: "new-prototype-2d19j.firebaseapp.com",
+ databaseURL: "https://new-prototype-2d19j-default-rtdb.firebaseio.com/",
+ projectId: "new-prototype-2d19j",
+ storageBucket: "new-prototype-2d19j.firebasestorage.app",
+ messagingSenderId: "697592133543",
+ appId: "1:697592133543:web:dd8c31b3ed514cce342882"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+
+/* CONFIGURAÇÕES DO JOGO */
+
+const emojis = [
+ "🍎","🍌","🍒","🍇","🍉","🍓",
+ "🍍","🥝","🍑","🥥","🍋","🍊"
+];
+
+let usuario = null;
+let salaAtual = null;
+let jogador = null;
+let salaRef = null;
+let pararEscuta = null;
+let dadosAtuais = null;
+let timerResolucao = null;
+let fimMostrado = false;
+let ultimaSalaFinalizada = null;
+
+const $ = id => document.getElementById(id);
+
+function mensagem(txt){
+ $("status").textContent = txt;
+}
+
+function embaralhar(lista){
+ const a = [...lista];
+ for(let i=a.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [a[i],a[j]]=[a[j],a[i]];
+ }
+ return a;
+}
+
+function novoCodigo(){
+ const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+ let codigo="";
+ for(let i=0;i<6;i++){
+  codigo+=chars[Math.floor(Math.random()*chars.length)];
+ }
+ return codigo;
+}
+
+function novoJogo(){
+ return {
+  cards:embaralhar([...emojis,...emojis]),
+  matched:[],
+  opened:[],
+  turn:1,
+  scores:{p1:0,p2:0},
+  totalPairs:0,
+  resolving:false,
+  resolveAt:0,
+  finished:false
+ };
+}
+
+
+/* AUTENTICAÇÃO */
+
+try{
+ const credencial=await signInAnonymously(auth);
+ usuario=credencial.user;
+ mensagem("Conectado! Você já pode jogar.");
+ $("btnCriar").disabled=false;
+ $("btnEntrar").disabled=false;
+}catch(e){
+ console.error(e);
+ mensagem("Erro de autenticação: "+e.message);
+ $("btnCriar").disabled=true;
+ $("btnEntrar").disabled=true;
+}
+
+
+/* CRIAR SALA */
+
+$("btnCriar").onclick=async()=>{
+ if(!usuario)return;
+
+ const nome=$("nomeCriar").value.trim();
+
+ if(!nome){
+  alert("Digite seu nome!");
+  return;
+ }
+
+ $("btnCriar").disabled=true;
+ mensagem("Criando sua sala...");
+
+ try{
+  let codigo="";
+  let criada=false;
+
+  for(let tentativa=0;tentativa<5;tentativa++){
+   codigo=novoCodigo();
+
+   const sala=ref(db,"rooms/"+codigo);
+
+   const resultado=await runTransaction(sala,atual=>{
+    if(atual!==null)return;
+    return {
+     players:{
+      p1:{
+       uid:usuario.uid,
+       name:nome,
+       online:true
+      },
+      p2:null
+     },
+     game:novoJogo(),
+     createdAt:Date.now()
+    };
+   });
+
+   if(resultado.committed){
+    criada=true;
+    break;
+   }
+  }
+
+  if(!criada)throw new Error("Não foi possível gerar uma sala.");
+
+  await entrarNaSala(codigo,"p1");
+
+ }catch(e){
+  console.error(e);
+  mensagem("Erro: "+e.message);
+  $("btnCriar").disabled=false;
+ }
+};
+
+
+/* ENTRAR NA SALA */
+
+$("btnEntrar").onclick=async()=>{
+ if(!usuario)return;
+
+ const nome=$("nomeEntrar").value.trim();
+ const codigo=$("codigoEntrar").value.trim().toUpperCase();
+
+ if(!nome||codigo.length!==6){
+  alert("Informe seu nome e o código de 6 caracteres.");
+  return;
+ }
+
+ $("btnEntrar").disabled=true;
+ mensagem("Entrando na sala...");
+
+ try{
+  const sala=ref(db,"rooms/"+codigo);
+
+  const resultado=await runTransaction(sala,atual=>{
+   if(!atual)return;
+
+   if(atual.players.p1?.uid===usuario.uid){
+    return atual;
+   }
+
+   if(atual.players.p2?.uid===usuario.uid){
+    return atual;
+   }
+
+   if(!atual.players.p2){
+    atual.players.p2={
+     uid:usuario.uid,
+     name:nome,
+     online:true
+    };
+    return atual;
+   }
+
+   return;
+  });
+
+  if(!resultado.committed){
+   throw new Error("Sala inexistente ou já ocupada.");
+  }
+
+  const dados=resultado.snapshot.val();
+
+  const slot=dados.players.p1.uid===usuario.uid
+   ?"p1":"p2";
+
+  await entrarNaSala(codigo,slot);
+
+ }catch(e){
+  console.error(e);
+  mensagem(e.message);
+  $("btnEntrar").disabled=false;
+ }
+};
+
+
+/* ENTRAR E OUVIR A SALA */
+
+async function entrarNaSala(codigo,slot){
+
+ if(pararEscuta)pararEscuta();
+ if(timerResolucao)clearTimeout(timerResolucao);
+
+ salaAtual=codigo;
+ jogador=slot;
+ salaRef=ref(db,"rooms/"+codigo);
+
+ $("login").classList.add("hidden");
+ $("jogo").classList.remove("hidden");
+ $("codigoSala").textContent=codigo;
+
+ fimMostrado=false;
+ ultimaSalaFinalizada=null;
+
+ const onlineRef=ref(db,".info/connected");
+
+ const pararOnline=onValue(onlineRef,async snap=>{
+  if(snap.val()===true && salaAtual===codigo){
+   try{
+    const presenca=ref(
+     db,"rooms/"+codigo+"/players/"+slot+"/online"
+    );
+    await onDisconnect(presenca).set(false);
+    await set(presenca,true);
+   }catch(e){
+    console.error("Erro de presença:",e);
+   }
+  }
+ });
+
+ const listener=onValue(salaRef,snap=>{
+  if(!snap.exists()){
+   mensagem("Esta sala não existe mais.");
+   sairDaSala();
+   return;
+  }
+
+  const dados=snap.val();
+
+  const meuJogador=dados.players?.[slot];
+
+  if(!meuJogador || meuJogador.uid!==usuario.uid){
+   mensagem("Você não pertence mais a esta sala.");
+   sairDaSala();
+   return;
+  }
+
+  dadosAtuais=dados;
+  renderizar(dados);
+  agendarResolucao(dados);
+ });
+
+ pararEscuta=()=>{
+  off(salaRef);
+  pararOnline();
+ };
+
+}
+
+
+/* RENDERIZAR JOGO */
+
+function renderizar(dados){
+
+ const p1=dados.players?.p1;
+ const p2=dados.players?.p2;
+ const game=dados.game;
+
+ $("nomeP1").textContent=p1?.name||"Jogador 1";
+ $("nomeP2").textContent=p2?.name||"Aguardando...";
+
+ $("pontosP1").textContent=game.scores.p1;
+ $("pontosP2").textContent=game.scores.p2;
+
+ $("boxP1").classList.toggle("ativo",game.turn===1);
+ $("boxP2").classList.toggle("ativo",game.turn===2);
+
+ $("espera").textContent=p2
+  ?"Dois jogadores conectados! Boa partida!"
+  :"Aguardando o segundo jogador entrar...";
+
+ const status=$("statusJogo");
+
+ if(!p2){
+  status.textContent="⏳ Esperando adversário";
+ }else if(game.finished){
+  status.textContent="🏆 PARTIDA FINALIZADA";
+ }else if(game.resolving){
+  status.textContent="⏳ Conferindo as cartas...";
+ }else{
+  status.textContent="🎮 Partida em andamento";
+ }
+
+ const vez=game.turn===1?p1?.name:p2?.name;
+
+ if(!p2){
+  $("vez").textContent="Compartilhe o código com seu adversário.";
+ }else if(game.finished){
+  $("vez").textContent="Partida encerrada!";
+ }else if(game.resolving){
+  $("vez").textContent="Aguarde...";
+ }else{
+  $("vez").textContent=
+   (game.turn=== (jogador==="p1"?1:2)
+    ?"👉 É SUA VEZ! "
+    :"⏳ Vez de ")+vez;
+ }
+
+ $("pares").textContent=
+  "Pares encontrados: "+game.totalPairs+" / 12";
+
+ const tabuleiro=$("tabuleiro");
+ tabuleiro.innerHTML="";
+
+ game.cards.forEach((emoji,index)=>{
+
+  const carta=document.createElement("div");
+  carta.className="carta";
+
+  const encontrada=game.matched.includes(index);
+  const aberta=game.opened.includes(index);
+
+  if(encontrada){
+   carta.classList.add("encontrada");
+   carta.textContent=emoji;
+  }else if(aberta){
+   carta.classList.add("virada");
+   carta.textContent=emoji;
+  }else{
+   carta.textContent="❓";
+  }
+
+  const minhaVez=game.turn===(jogador==="p1"?1:2);
+
+  if(!p2||!minhaVez||game.resolving||
+     game.finished||encontrada||aberta){
+   carta.classList.add("bloqueada");
+  }else{
+   carta.onclick=()=>virar(index);
+  }
+
+  tabuleiro.appendChild(carta);
+ });
+
+ if(game.finished){
+  mostrarResultado(dados);
+ }else{
+  fimMostrado=false;
+ }
+
+}
+
+
+/* VIRAR CARTA COM TRANSAÇÃO */
+
+async function virar(index){
+
+ if(!salaAtual||!usuario||!dadosAtuais)return;
+
+ const codigo=salaAtual;
+ const slot=jogador;
+
+ const resultado=await runTransaction(salaRef,dados=>{
+
+  if(!dados||!dados.game)return;
+
+  const g=dados.game;
+
+  if(!dados.players.p2)return;
+  if(g.finished||g.resolving)return;
+  if(g.turn!==(slot==="p1"?1:2))return;
+  if(g.matched.includes(index))return;
+  if(g.opened.includes(index))return;
+  if(g.opened.length>=2)return;
+
+  if(g.opened.length===0){
+   g.opened=[index];
+   return dados;
+  }
+
+  const primeira=g.opened[0];
+  g.opened=[primeira,index];
+
+  if(g.cards[primeira]===g.cards[index]){
+
+   g.matched.push(primeira,index);
+   g.opened=[];
+   g.scores[slot]++;
+   g.totalPairs++;
+
+   if(g.totalPairs===12){
+    g.finished=true;
+   }
+
+  }else{
+   g.resolving=true;
+   g.resolveAt=Date.now()+1100;
+  }
+
+  return dados;
+ });
+
+ if(!resultado.committed){
+  console.log("Jogada não realizada.");
+ }
+}
+
+
+/* RESOLVER ERRO E PASSAR A VEZ */
+
+function agendarResolucao(dados){
+
+ if(timerResolucao){
+  clearTimeout(timerResolucao);
+  timerResolucao=null;
+ }
+
+ const g=dados.game;
+
+ if(!g?.resolving)return;
+
+ const espera=Math.max(0,(g.resolveAt||Date.now())-Date.now());
+
+ timerResolucao=setTimeout(async()=>{
+
+  if(!salaRef||!dadosAtuais)return;
+
+  await runTransaction(salaRef,d=>{
+
+   if(!d?.game)return;
+
+   const game=d.game;
+
+   if(!game.resolving)return;
+   if(Date.now()<(game.resolveAt||0))return;
+
+   game.opened=[];
+   game.resolving=false;
+   game.resolveAt=0;
+   game.turn=game.turn===1?2:1;
+
+   return d;
+  });
+
+ },espera+100);
+}
+
+
+/* RESULTADO */
+
+function mostrarResultado(dados){
+
+ if(fimMostrado)return;
+
+ fimMostrado=true;
+ ultimaSalaFinalizada=salaAtual;
+
+ const p1=dados.players.p1;
+ const p2=dados.players.p2;
+ const s1=dados.game.scores.p1;
+ const s2=dados.game.scores.p2;
+
+ let titulo="🤝 EMPATE!";
+ let detalhe="Os dois jogadores fizeram "+s1+" pares.";
+
+ if(s1>s2){
+  titulo="🏆 "+p1.name+" VENCEU!";
+  detalhe=s1+" pares contra "+s2+".";
+ }else if(s2>s1){
+  titulo="🏆 "+p2.name+" VENCEU!";
+  detalhe=s2+" pares contra "+s1+".";
+ }
+
+ $("textoVitoria").textContent=titulo;
+ $("detalheVitoria").textContent=detalhe;
+
+ $("ganhou").classList.add("mostrar");
+}
+
+
+/* NOVA PARTIDA */
+
+$("btnNova").onclick=async()=>{
+
+ if(!salaRef||!dadosAtuais)return;
+
+ if(!dadosAtuais.players.p2){
+  alert("Aguardando o adversário.");
+  return;
+ }
+
+ const confirmou=confirm("Deseja iniciar uma nova partida para os dois jogadores?");
+
+ if(!confirmou)return;
+
+ await runTransaction(salaRef,dados=>{
+
+  if(!dados||!dados.players)return;
+  if(dados.players.p1?.uid!==usuario.uid&&
+     dados.players.p2?.uid!==usuario.uid)return;
+
+  dados.game=novoJogo();
+
+  return dados;
+ });
+
+ $("ganhou").classList.remove("mostrar");
+ fimMostrado=false;
+};
+
+
+/* COPIAR CÓDIGO */
+
+$("btnCopiar").onclick=async()=>{
+ try{
+  await navigator.clipboard.writeText(salaAtual);
+  alert("Código copiado: "+salaAtual);
+ }catch(e){
+  prompt("Copie o código da sala:",salaAtual);
+ }
+};
+
+
+/* SAIR */
+
+function sairDaSala(){
+
+ if(pararEscuta)pararEscuta();
+ if(timerResolucao)clearTimeout(timerResolucao);
+
+ pararEscuta=null;
+ timerResolucao=null;
+ salaAtual=null;
+ jogador=null;
+ salaRef=null;
+ dadosAtuais=null;
+ fimMostrado=false;
+
+ $("ganhou").classList.remove("mostrar");
+ $("jogo").classList.add("hidden");
+ $("login").classList.remove("hidden");
+
+ $("btnCriar").disabled=false;
+ $("btnEntrar").disabled=false;
+
+ mensagem("Você saiu da partida.");
+}
+
+$("btnSair").onclick=()=>{
+ if(confirm("Deseja sair da sala?")){
+  sairDaSala();
+ }
+};
+
+$("btnFechar").onclick=()=>{
+ $("ganhou").classList.remove("mostrar");
+};
+
+$("codigoEntrar").addEventListener("input",e=>{
+ e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"");
+});
+
+</script>
+
+</body>
+</html>
