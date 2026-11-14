@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -364,62 +363,113 @@ $("btnCriar").onclick=async()=>{
 
 /* ENTRAR NA SALA */
 
-$("btnEntrar").onclick=async()=>{
- if(!usuario)return;
 
- const nome=$("nomeEntrar").value.trim();
- const codigo=$("codigoEntrar").value.trim().toUpperCase();
+/* ENTRAR NA SALA - CORRIGIDO */
 
- if(!nome||codigo.length!==6){
-  alert("Informe seu nome e o código de 6 caracteres.");
-  return;
- }
+$("btnEntrar").onclick = async () => {
 
- $("btnEntrar").disabled=true;
- mensagem("Entrando na sala...");
-
- try{
-  const sala=ref(db,"rooms/"+codigo);
-
-  const resultado=await runTransaction(sala,atual=>{
-   if(!atual)return;
-
-   if(atual.players.p1?.uid===usuario.uid){
-    return atual;
-   }
-
-   if(atual.players.p2?.uid===usuario.uid){
-    return atual;
-   }
-
-   if(!atual.players.p2){
-    atual.players.p2={
-     uid:usuario.uid,
-     name:nome,
-     online:true
-    };
-    return atual;
-   }
-
-   return;
-  });
-
-  if(!resultado.committed){
-   throw new Error("Sala inexistente ou já ocupada.");
+  if (!usuario) {
+    alert("Aguarde a autenticação do Firebase.");
+    return;
   }
 
-  const dados=resultado.snapshot.val();
+  const nome = $("nomeEntrar").value.trim();
+  const codigo = $("codigoEntrar").value.trim().toUpperCase();
 
-  const slot=dados.players.p1.uid===usuario.uid
-   ?"p1":"p2";
+  if (!nome) {
+    alert("Digite seu nome!");
+    return;
+  }
 
-  await entrarNaSala(codigo,slot);
+  if (codigo.length !== 6) {
+    alert("Digite o código completo de 6 caracteres.");
+    return;
+  }
 
- }catch(e){
-  console.error(e);
-  mensagem(e.message);
-  $("btnEntrar").disabled=false;
- }
+  $("btnEntrar").disabled = true;
+  mensagem("Verificando sala no Firebase...");
+
+  try {
+
+    const sala = ref(db, "rooms/" + codigo);
+
+    const resultado = await runTransaction(sala, atual => {
+
+      // Sala inexistente
+      if (atual === null) return;
+
+      if (!atual.players || !atual.players.p1) return;
+
+      // O próprio jogador já pertence à sala
+      if (atual.players.p1.uid === usuario.uid) {
+        return atual;
+      }
+
+      if (atual.players.p2?.uid === usuario.uid) {
+        return atual;
+      }
+
+      // Sala ocupada
+      if (atual.players.p2 !== null &&
+          atual.players.p2 !== undefined) {
+        return;
+      }
+
+      // Adiciona segundo jogador
+      atual.players.p2 = {
+        uid: usuario.uid,
+        name: nome,
+        online: true
+      };
+
+      return atual;
+
+    });
+
+    if (!resultado.committed) {
+
+      const dados = resultado.snapshot.val();
+
+      if (!resultado.snapshot.exists()) {
+        throw new Error(
+          "SALA NÃO ENCONTRADA! Confira o código digitado."
+        );
+      }
+
+      if (dados?.players?.p2) {
+        throw new Error(
+          "SALA OCUPADA! Essa partida já possui dois jogadores."
+        );
+      }
+
+      throw new Error(
+        "Não foi possível entrar. Verifique os dados da sala."
+      );
+    }
+
+    const dados = resultado.snapshot.val();
+
+    let slot;
+
+    if (dados.players.p1.uid === usuario.uid) {
+      slot = "p1";
+    } else if (dados.players.p2?.uid === usuario.uid) {
+      slot = "p2";
+    } else {
+      throw new Error("Não foi possível identificar seu jogador.");
+    }
+
+    await entrarNaSala(codigo, slot);
+
+  } catch (e) {
+
+    console.error("ERRO AO ENTRAR:", e);
+
+    mensagem("Erro: " + e.message);
+
+    $("btnEntrar").disabled = false;
+  }
+
 };
 
 
@@ -494,6 +544,12 @@ function renderizar(dados){
  const p1=dados.players?.p1;
  const p2=dados.players?.p2;
  const game=dados.game;
+ game.matched = Array.isArray(game.matched) ? game.matched : [];
+game.opened = Array.isArray(game.opened) ? game.opened : [];
+game.scores = game.scores || {p1:0,p2:0};
+game.scores.p1 = Number(game.scores.p1 || 0);
+game.scores.p2 = Number(game.scores.p2 || 0);
+game.totalPairs = Number(game.totalPairs || 0);
 
  $("nomeP1").textContent=p1?.name||"Jogador 1";
  $("nomeP2").textContent=p2?.name||"Aguardando...";
@@ -593,7 +649,17 @@ async function virar(index){
 
   if(!dados||!dados.game)return;
 
-  const g=dados.game;
+  const g = dados.game;
+
+// Proteção contra dados antigos ou incompletos
+g.matched = Array.isArray(g.matched) ? g.matched : [];
+g.opened = Array.isArray(g.opened) ? g.opened : [];
+
+g.scores = g.scores || {p1:0,p2:0};
+g.scores.p1 = Number(g.scores.p1 || 0);
+g.scores.p2 = Number(g.scores.p2 || 0);
+
+g.totalPairs = Number(g.totalPairs || 0);
 
   if(!dados.players.p2)return;
   if(g.finished||g.resolving)return;
