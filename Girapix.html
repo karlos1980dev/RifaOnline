@@ -1,0 +1,467 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#10172b">
+<title>FILA PIX - MAIS PIX</title>
+<link rel="icon" href="https://raw.githubusercontent.com/karlos1980dev/RifaOnline/refs/heads/main/pixmais.jpg">
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+:root{--bg:#0b1020;--panel:#151e36;--gold:#f5ca61;--green:#27d69a;--text:#f7f8fc;--muted:#aab5d0;--line:rgba(255,255,255,.09)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 10% 0%,rgba(91,75,180,.2),transparent 35%),var(--bg);color:var(--text);font-family:Arial,sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+header{text-align:center;padding:16px 12px 20px;background:linear-gradient(135deg,#182445,#10172b 65%,#172b3c);border-bottom:1px solid var(--line)}
+.logo{width:100%;max-width:500px;max-height:135px;object-fit:cover;border-radius:15px}
+.brand{margin:10px 0 4px;font-size:28px;font-weight:900;letter-spacing:2px;color:var(--gold)}
+.subtitle{margin:0;color:#c0c9dd;font-size:12px}
+.container{max-width:720px;margin:auto;padding:12px}
+.card{background:linear-gradient(145deg,#1d2a48,#131d34);border:1px solid var(--line);border-radius:17px;padding:15px;margin-bottom:13px;box-shadow:0 12px 30px #0002}
+.section-title{display:flex;align-items:center;gap:9px;font-size:18px;margin:0 0 13px;font-weight:800}
+.section-icon{width:35px;height:35px;display:grid;place-items:center;background:#f5ca611a;border:1px solid #f5ca6135;border-radius:11px}
+.gold{color:var(--gold)}.muted{color:var(--muted)}
+.small{font-size:12px;line-height:1.6;color:var(--muted)}
+.hero-value{background:linear-gradient(120deg,#f4c65a,#ffe8a6);color:#171b29;border-radius:16px;padding:18px;text-align:center;margin-bottom:14px}
+.hero-value span,.hero-value small{display:block;font-size:11px;font-weight:bold}
+.hero-value strong{display:block;font-size:35px;margin:5px 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.stat{background:#101a31;border:1px solid var(--line);border-radius:13px;padding:13px 7px;text-align:center}
+.stat strong{display:block;font-size:23px;color:var(--gold)}
+.stat span{display:block;font-size:10px;color:var(--muted);margin-top:5px}
+.progress-area{margin-top:16px}.progress-head{display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px}
+.progress{height:10px;border-radius:20px;background:#0b1327;overflow:hidden}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#20bd8a,#a6f4c8);transition:width .5s}
+.field-label{font-size:12px;color:#cbd3e5;font-weight:bold;display:block;margin:12px 0 6px}
+input,select{width:100%;padding:13px;color:white;background:#0e1830;border:1px solid #394969;border-radius:11px;outline:none}
+input:focus,select:focus{border-color:var(--gold)}input::placeholder{color:#7785a5}
+.btn{border:0;border-radius:11px;padding:14px;font-weight:900;transition:.2s}
+.btn:active{transform:scale(.98)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-gold{width:100%;color:#171b29;background:linear-gradient(120deg,#eab94b,#ffe7a1)}
+.btn-green{width:100%;background:linear-gradient(120deg,#17b77d,#55e7ad);color:#06271c}
+.btn-blue{width:100%;background:#2b69c9;color:white}
+.btn-outline{width:100%;background:transparent;border:1px solid #647394;color:white}
+.notice{padding:12px;border:1px solid #f5ca6140;background:#f5ca6110;border-radius:12px;color:#f5dda0;font-size:12px;line-height:1.5;margin-top:12px}
+.status-box{background:#0d1830;border:1px solid var(--line);border-radius:12px;padding:13px;font-size:13px;line-height:1.5;margin-top:12px}
+.status-pill{display:inline-flex;padding:5px 8px;border-radius:30px;font-size:9px;font-weight:900;background:#f5ca6120;color:var(--gold)}
+.status-pill.green{background:#27d69a20;color:#56eab1}
+.status-pill.orange{background:#ffad4a20;color:#ffc078}
+.empty{padding:22px 10px;text-align:center;color:#8f9bb8;font-size:13px}
+#listaAtivos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:start}
+.person-card{min-width:0;padding:8px 6px;border-radius:12px;border:1px solid #f5ca6138;background:linear-gradient(155deg,#202e4c,#111c34);overflow:hidden}
+.person-name{text-align:center;font-size:11px;line-height:1.3;font-weight:900;overflow-wrap:anywhere}
+.person-position{text-align:center;font-size:8px;color:var(--muted);margin:5px}
+.pix-amount{text-align:center;font-size:17px;font-weight:900;color:var(--green);margin:9px 0 3px}
+.pix-description{text-align:center;color:var(--muted);font-size:8px;margin-bottom:5px}
+.qr-wrap{background:#fff;border-radius:8px;padding:5px;width:100%;aspect-ratio:1;margin:7px auto;display:grid;place-items:center;overflow:hidden}
+.qr-wrap canvas,.qr-wrap img{display:block!important;width:100%!important;height:auto!important;max-width:100%!important}
+.pix-key{background:#0a142a;border:1px solid var(--line);border-radius:8px;padding:6px;margin-top:7px}
+.pix-key strong{display:block;color:var(--gold);font-size:9px;text-align:center;margin-bottom:6px}
+.pix-code{width:100%;min-height:90px;resize:vertical;background:#071020;color:#55e7ad;border:1px solid #334563;border-radius:8px;padding:8px;font-size:9px;overflow-wrap:anywhere;word-break:break-all}
+.action-grid{display:grid;grid-template-columns:1fr;gap:6px;margin-top:7px}
+.action-grid .btn{width:100%;padding:10px 3px;font-size:9px;border-radius:8px;line-height:1.3}
+.queue-item{display:flex;gap:12px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:14px;background:#101a31;margin:9px 0}
+.queue-item.first{border-color:#e7bd58;background:linear-gradient(110deg,#44381f,#17243d)}
+.queue-number{flex:0 0 42px;height:42px;display:grid;place-items:center;border-radius:13px;background:#263655;color:var(--gold);font-weight:900}
+.first .queue-number{background:var(--gold);color:#171b29}
+.queue-info{min-width:0;flex:1}.queue-name{font-weight:800;font-size:14px;overflow-wrap:anywhere}
+.queue-sub{font-size:11px;color:var(--muted);margin-top:5px}
+.history-item{border-left:3px solid var(--gold);background:#101a31;border-radius:0 11px 11px 0;padding:12px;margin:9px 0}
+.history-item strong{font-size:13px}.history-item small{display:block;color:var(--muted);font-size:11px;margin-top:5px;line-height:1.5;overflow-wrap:anywhere}
+footer{text-align:center;padding:22px 12px 35px;color:#71809f;font-size:11px}
+#toast{position:fixed;z-index:9999;left:5%;bottom:18px;width:90%;max-width:500px;padding:14px;border-radius:12px;background:#263654;color:white;text-align:center;box-shadow:0 8px 30px #0008;display:none;font-size:13px}
+.hidden{display:none!important}
+#modalEntrada{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(3,7,18,.96)}
+.modal-box{width:100%;max-width:420px;padding:25px 20px;border:1px solid #f5ca6159;border-radius:22px;background:linear-gradient(145deg,#202e4c,#101a31);box-shadow:0 20px 70px #000b}
+.modal-logo{width:100%;max-width:220px;height:90px;object-fit:cover;border-radius:13px;display:block;margin:0 auto 15px}
+.modal-titulo{text-align:center;color:var(--gold);font-size:27px;font-weight:900;letter-spacing:2px;margin:0 0 7px}
+.modal-subtitulo{text-align:center;color:#bac6df;font-size:12px;line-height:1.6;margin:0 0 20px}
+.modal-erro{display:none;color:#ff9c9c;background:#ff45451a;border:1px solid #ff45454a;border-radius:10px;padding:10px;font-size:12px;margin-top:12px}
+.modal-info{text-align:center;color:#8998b8;font-size:10px;line-height:1.5;margin-top:16px}
+.link-box{background:#0b1429;border:1px solid #f5ca6140;padding:12px;border-radius:12px;margin-top:12px}
+.link-box strong{display:block;color:var(--gold);font-size:11px;margin-bottom:8px}
+.link-text{font-size:11px;color:#55e7ad;overflow-wrap:anywhere;line-height:1.5}
+@media(max-width:380px){.container{padding:8px}.card{padding:12px}#listaAtivos{gap:5px}.person-card{padding:6px 4px}.person-name{font-size:10px}.pix-code{font-size:8px}.action-grid .btn{font-size:8px;padding:8px 1px}.stats{gap:5px}.stat strong{font-size:19px}}
+</style>
+</head>
+<body>
+
+<div id="modalEntrada">
+ <div class="modal-box">
+  <img class="modal-logo" src="https://res.cloudinary.com/dtw3turzb/image/upload/v1780396251/images-79.jpg" alt="MAIS PIX">
+  <h1 class="modal-titulo">PIX MAIS</h1>
+  <p class="modal-subtitulo">Informe seu nome e sua chave Pix para entrar e acompanhar a fila.</p>
+  <form id="formEntrada">
+   <label class="field-label">SEU NOME</label>
+   <input type="text" id="modalNome" placeholder="Digite seu nome completo" maxlength="70" required>
+   <label class="field-label">SUA CHAVE PIX</label>
+   <input type="text" id="modalChave" placeholder="CPF, telefone, e-mail ou chave aleatória" maxlength="120" required>
+   <button class="btn btn-gold" id="btnEntrar" type="submit" style="margin-top:18px">ENTRAR →</button>
+   <div class="modal-erro" id="modalErro"></div>
+  </form>
+  <div class="modal-info">🔒 Seus dados serão utilizados para registrar sua solicitação na fila.</div>
+ </div>
+</div>
+
+<div id="appContent" class="hidden">
+<header>
+ <img class="logo" src="https://res.cloudinary.com/dtw3turzb/image/upload/v1780396251/images-79.jpg" alt="MAIS PIX">
+ <div class="brand">FILA PIX</div>
+ <p class="subtitle">PARTICIPE • ACOMPANHE • CONECTE-SE</p>
+</header>
+
+<main class="container">
+<section class="card">
+ <div class="hero-value"><span>VALOR POR PARTICIPANTE</span><strong>R$ 2,00</strong><small>PIX INDIVIDUAL</small></div>
+ <div class="stats">
+  <div class="stat"><strong id="totalAtivos">0</strong><span>ATIVOS</span></div>
+  <div class="stat"><strong id="totalEspera">0</strong><span>NA ESPERA</span></div>
+  <div class="stat"><strong id="vagas">6</strong><span>VAGAS LIVRES</span></div>
+ </div>
+ <div class="progress-area">
+  <div class="progress-head"><span class="muted">Ocupação da lista principal</span><strong id="percentual">0%</strong></div>
+  <div class="progress"><div class="progress-fill" id="barra"></div></div>
+ </div>
+</section>
+
+<section style="display:none;"class="card">
+ <h2 class="section-title"><span class="section-icon">📍</span>Meu status</h2>
+ <div id="meuStatus" class="empty">Suas solicitações aparecerão aqui depois do cadastro.</div>
+ <div id="bloqueio" class="status-box hidden"></div>
+</section>
+
+<section class="card">
+ <h2 class="section-title"><span class="section-icon">🔗</span>Meu link de indicação</h2>
+ <p class="small">Compartilhe o endereço do site. Quando alguém abrir seu link, a visita será registrada no painel administrativo, mesmo que a pessoa não faça cadastro.</p>
+ <div class="link-box">
+  <strong>SEU LINK EXCLUSIVO</strong>
+  <div class="link-text" id="meuLink">Carregando...</div>
+ </div>
+ <button class="btn btn-green" id="btnCompartilhar" style="margin-top:10px">🔗 COMPARTILHAR LINK</button>
+ <button class="btn btn-outline" id="btnCopiarLink" style="margin-top:8px">COPIAR MEU LINK</button>
+ <div class="small" id="resumoIndicacao" style="margin-top:10px">Suas visitas serão contabilizadas aqui.</div>
+</section>
+
+<section class="card">
+ <h2 class="section-title"><span class="section-icon">👥</span>Participantes ativos</h2>
+ <p class="small">Confira o QR Code e o Pix Copia e Cola de cada participante.</p>
+ <div id="listaAtivos"><div class="empty">Carregando participantes...</div></div>
+</section>
+
+<section class="card">
+ <h2 class="section-title"><span class="section-icon">⏳</span>Fila de espera</h2>
+ <p class="small">Acompanhe a ordem das solicitações aguardando aprovação.</p>
+ <div id="listaEspera"><div class="empty">Carregando fila...</div></div>
+</section>
+
+<section class="card">
+ <h2 class="section-title"><span class="section-icon">🧾</span>Enviar comprovante</h2>
+ <p class="small">Selecione o participante para o qual realizou o Pix e envie o comprovante.</p>
+ <label class="field-label">PARTICIPANTE</label>
+ <select id="participanteComprovante"><option value="">Selecione um participante</option></select>
+ <label class="field-label">COMPROVANTE</label>
+ <input type="file" id="arquivoComprovante" accept="image/*,application/pdf">
+ <button class="btn btn-green" id="btnComprovante" type="button" style="margin-top:10px">ENVIAR COMPROVANTE</button>
+ <div class="notice">O comprovante será armazenado para conferência do administrador. O envio não confirma automaticamente o pagamento.</div>
+</section>
+
+<section class="card">
+ <h2 class="section-title"><span class="section-icon">📜</span>Histórico das minhas solicitações</h2>
+ <div id="historico"><div class="empty">Nenhum registro no histórico deste navegador.</div></div>
+</section>
+</main>
+<footer><strong class="gold">MAIS PIX • FILA PIX</strong><p>Acompanhe sua posição e confira os dados antes de pagar.</p></footer>
+</div>
+<div id="toast"></div>
+
+<script>
+/* FIREBASE */
+const firebaseConfig={
+ apiKey:"AIzaSyCnqXmiLEMzH-GUN3nEkkdOTv_xrbxUj2A",
+ authDomain:"tudoaqui-b1d09.firebaseapp.com",
+ databaseURL:"https://tudoaqui-b1d09-default-rtdb.firebaseio.com",
+ projectId:"tudoaqui-b1d09",
+ storageBucket:"tudoaqui-b1d09.appspot.com",
+ messagingSenderId:"588034588401",
+ appId:"1:588034588401:web:4731b181a31c4a354fb350"
+};
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const db=firebase.database(),storage=firebase.storage();
+const ativosRef=db.ref("lista"),pendentesRef=db.ref("pendentes");
+const comprovantesRef=db.ref("comprovantes"),indicacoesRef=db.ref("indicacoes");
+
+const VALOR_PIX="2.00",MAX_ATIVOS=6,MAX_ESPERA=12;
+const STORAGE_BLOQUEIO="maisPixBloqueio24h";
+const STORAGE_HISTORICO="maisPixHistorico";
+const STORAGE_CLIENTE="maisPixClienteId";
+const STORAGE_VISITANTE="maisPixVisitanteId";
+
+let ativos=[],pendentes=[],clienteNome=localStorage.getItem("maisPixNome")||"",clienteChave=localStorage.getItem("maisPixChave")||"";
+let clienteId=localStorage.getItem(STORAGE_CLIENTE);
+if(!clienteId){clienteId="CLI_"+Date.now()+"_"+Math.random().toString(36).slice(2,10);localStorage.setItem(STORAGE_CLIENTE,clienteId);}
+let visitanteId=localStorage.getItem(STORAGE_VISITANTE);
+if(!visitanteId){visitanteId="VIS_"+Date.now()+"_"+Math.random().toString(36).slice(2,12);localStorage.setItem(STORAGE_VISITANTE,visitanteId);}
+
+/* UTILITÁRIOS */
+function toast(msg){
+ const el=document.getElementById("toast");el.textContent=msg;el.style.display="block";
+ clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.style.display="none",3500);
+}
+function escapar(t){return String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function ordenar(obj){return Object.entries(obj||{}).map(([id,item])=>({id,...item})).sort((a,b)=>Number(a.timestamp||0)-Number(b.timestamp||0));}
+function dataHora(t){return t?new Date(Number(t)).toLocaleString("pt-BR"):"Data não informada";}
+function historicoLer(){try{return JSON.parse(localStorage.getItem(STORAGE_HISTORICO)||"[]");}catch(e){return [];}}
+function historicoSalvar(lista){localStorage.setItem(STORAGE_HISTORICO,JSON.stringify(lista.slice(0,30)));renderHistorico();}
+function historicoAdicionar(item){const l=historicoLer();l.unshift(item);historicoSalvar(l);}
+
+/* IDENTIFICAÇÃO DO INDICADOR PELO LINK ?ref=ID */
+const parametros=new URLSearchParams(location.search);
+const indicadorId=parametros.get("ref")||"";
+const meuLink=location.origin+location.pathname+"?ref="+encodeURIComponent(clienteId);
+document.getElementById("meuLink").textContent=meuLink;
+
+/* REGISTRA UMA VISITA ÚNICA POR NAVEGADOR E POR INDICADOR */
+async function registrarVisita(){
+ if(!indicadorId||indicadorId===clienteId)return;
+ if(!/^CLI_[a-zA-Z0-9_-]+$/.test(indicadorId))return;
+ try{
+  const visitaRef=indicacoesRef.child(indicadorId).child("visitas").child(visitanteId);
+  const resultado=await visitaRef.transaction(atual=>{
+   if(atual)return;
+   return {visitanteId,timestamp:Date.now(),data:new Date().toISOString(),origem:location.pathname,cadastro:false};
+  });
+  if(resultado.committed)console.log("Visita registrada.");
+ }catch(e){console.error("Falha ao registrar visita:",e);}
+}
+registrarVisita();
+
+/* PIX BR CODE */
+function tlv(id,valor){
+ valor=String(valor);const tamanho=new TextEncoder().encode(valor).length;
+ if(tamanho>99)throw new Error("Campo Pix excedeu o tamanho permitido.");
+ return id+String(tamanho).padStart(2,"0")+valor;
+}
+function crc16(payload){
+ let crc=0xFFFF;const bytes=new TextEncoder().encode(payload);
+ for(let i=0;i<bytes.length;i++){crc^=bytes[i]<<8;for(let j=0;j<8;j++){crc=(crc&0x8000)?(crc<<1)^0x1021:crc<<1;crc&=0xFFFF;}}
+ return crc.toString(16).toUpperCase().padStart(4,"0");
+}
+function limparNome(nome){
+ return String(nome||"PARTICIPANTE").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z0-9 ]/g,"").trim().substring(0,25).toUpperCase()||"PARTICIPANTE";
+}
+function criarPix(chave,nome,valor=VALOR_PIX){
+ chave=String(chave||"").trim();if(!chave)throw new Error("Chave Pix não informada.");
+ const numero=Number(valor);if(!Number.isFinite(numero)||numero<=0)throw new Error("Valor Pix inválido.");
+ const conta=tlv("26",tlv("00","br.gov.bcb.pix")+tlv("01",chave));
+ const adicional=tlv("05","***");
+ const payload=tlv("00","01")+tlv("01","11")+conta+tlv("52","0000")+tlv("53","986")+tlv("54",numero.toFixed(2))+tlv("58","BR")+tlv("59",limparNome(nome))+tlv("60","SALVADOR")+tlv("62",adicional)+"6304";
+ return payload+crc16(payload);
+}
+function gerarQR(el,pix){
+ el.innerHTML="";if(!pix){el.textContent="Pix não disponível";return;}
+ try{new QRCode(el,{text:pix,width:300,height:300,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.L});}
+ catch(e){el.textContent="Erro ao gerar QR Code";}
+}
+async function copiarTexto(texto){
+ try{
+  if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(texto);
+  else{const c=document.createElement("textarea");c.value=texto;c.style.position="fixed";c.style.opacity="0";document.body.appendChild(c);c.select();if(!document.execCommand("copy"))throw Error();c.remove();}
+  toast("Copiado com sucesso!");
+ }catch(e){toast("Não foi possível copiar automaticamente.");}
+}
+
+/* COMPARTILHAR LINK */
+document.getElementById("btnCopiarLink").addEventListener("click",()=>copiarTexto(meuLink));
+document.getElementById("btnCompartilhar").addEventListener("click",async()=>{
+ const texto="Conheça o FILA PIX - MAIS PIX!\nAcesse pelo meu link:\n"+meuLink;
+ if(navigator.share){
+  try{await navigator.share({title:"FILA PIX - MAIS PIX",text:texto,url:meuLink});}catch(e){}
+ }else{
+  const whatsapp="https://wa.me/?text="+encodeURIComponent(texto);
+  window.open(whatsapp,"_blank");
+ }
+});
+
+/* RESUMO */
+function renderResumo(){
+ const total=ativos.length,espera=pendentes.length;
+ const pct=Math.min(100,Math.round(total/MAX_ATIVOS*100));
+ document.getElementById("totalAtivos").textContent=total;
+ document.getElementById("totalEspera").textContent=espera;
+ document.getElementById("vagas").textContent=Math.max(0,MAX_ATIVOS-total);
+ document.getElementById("percentual").textContent=pct+"%";
+ document.getElementById("barra").style.width=pct+"%";
+}
+
+/* INDICAÇÕES DO CLIENTE */
+function carregarResumoIndicacoes(){
+ if(!clienteId)return;
+ indicacoesRef.child(clienteId).child("visitas").on("value",snap=>{
+  const dados=snap.val()||{},visitas=Object.keys(dados).length;
+  const cadastros=Object.values(dados).filter(v=>v&&v.cadastro).length;
+  document.getElementById("resumoIndicacao").textContent=
+   "👀 "+visitas+" visita(s) única(s) • 📝 "+cadastros+" cadastro(s) originado(s).";
+ });
+}
+
+/* LISTA ATIVA */
+function renderAtivos(){
+ const box=document.getElementById("listaAtivos"),select=document.getElementById("participanteComprovante");
+ box.innerHTML="";select.innerHTML='<option value="">Selecione um participante</option>';
+ if(!ativos.length){box.innerHTML='<div class="empty">🌟 Ainda não há participantes ativos.</div>';atualizarMeuStatus();return;}
+ ativos.forEach((p,index)=>{
+  let pix="";try{pix=criarPix(p.chave,p.nome,VALOR_PIX);}catch(e){}
+  const div=document.createElement("div");div.className="person-card";
+  div.innerHTML=`
+   <div class="person-name">${index+1}. ${escapar(p.nome||"Participante")}</div>
+   <div class="person-position">POSIÇÃO ${index+1}</div>
+   <div style="text-align:center"><span class="status-pill green">● ATIVO</span></div>
+   <div class="pix-amount">R$ 2,00</div><div class="pix-description">PIX INDIVIDUAL</div>
+   <div class="qr-wrap"></div>
+   <div class="pix-key"><strong>PIX COPIA E COLA</strong><textarea class="pix-code" readonly>${escapar(pix)}</textarea></div>
+   <div class="action-grid"><button class="btn btn-green" data-copy> COPIAR PIX </button></div>`;
+  box.appendChild(div);if(pix)gerarQR(div.querySelector(".qr-wrap"),pix);
+  div.querySelector("[data-copy]").addEventListener("click",()=>pix?copiarTexto(pix):toast("Chave Pix indisponível."));
+  const op=document.createElement("option");op.value=p.id;op.textContent=(index+1)+" - "+(p.nome||"Participante");select.appendChild(op);
+ });
+ atualizarMeuStatus();
+}
+
+/* FILA */
+function renderEspera(){
+ const box=document.getElementById("listaEspera");box.innerHTML="";
+ if(!pendentes.length)box.innerHTML='<div class="empty">🎉 Não há solicitações aguardando aprovação.</div>';
+ else pendentes.slice(0,MAX_ESPERA).forEach((p,index)=>{
+  const div=document.createElement("div");div.className="queue-item"+(index===0?" first":"");
+  div.innerHTML=`<div class="queue-number">${String(index+1).padStart(2,"0")}</div><div class="queue-info"><div class="queue-name">${escapar(p.nome||"Participante")}</div><div class="queue-sub">Solicitação recebida • ${dataHora(p.timestamp)}</div></div><span class="status-pill orange">AGUARDANDO</span>`;
+  box.appendChild(div);
+ });
+ renderResumo();atualizarMeuStatus();
+}
+
+/* STATUS PESSOAL */
+function encontrarMinhaSolicitacao(){
+ const hist=historicoLer();if(!hist.length)return null;const ultimo=hist[0];
+ const p=pendentes.find(x=>x.id===ultimo.requestId);
+ if(p)return {tipo:"pendente",item:p,registro:ultimo};
+ const a=ativos.find(x=>x.id===ultimo.requestId||(x.clienteId===clienteId&&x.nome===ultimo.nome));
+ if(a)return {tipo:"ativo",item:a,registro:ultimo};
+ return {tipo:"naoEncontrado",registro:ultimo};
+}
+function atualizarMeuStatus(){
+ const box=document.getElementById("meuStatus"),r=encontrarMinhaSolicitacao();
+ if(!r){box.innerHTML='<div class="empty">Suas solicitações aparecerão aqui depois do cadastro.</div>';return;}
+ if(r.tipo==="pendente"){
+  const pos=pendentes.findIndex(x=>x.id===r.item.id)+1;
+  box.innerHTML=`<div class="status-box"><span class="status-pill orange">● AGUARDANDO APROVAÇÃO</span><h3>${escapar(r.item.nome)}</h3><p class="small">Sua solicitação foi recebida e aguarda análise.</p><strong class="gold">Posição na fila: ${pos}</strong></div>`;
+ }else if(r.tipo==="ativo"){
+  box.innerHTML=`<div class="status-box"><span class="status-pill green">● APROVADO / ATIVO</span><h3>${escapar(r.item.nome||r.registro.nome)}</h3><p class="small">Sua solicitação está na lista de participantes ativos.</p></div>`;
+ }else{
+  box.innerHTML=`<div class="status-box"><span class="status-pill">SOLICITAÇÃO REGISTRADA</span><p class="small">Não encontramos sua solicitação nas listas atuais.</p><strong>${escapar(r.registro.nome||"")}</strong></div>`;
+ }
+}
+function renderHistorico(){
+ const box=document.getElementById("historico"),lista=historicoLer();box.innerHTML="";
+ if(!lista.length){box.innerHTML='<div class="empty">Nenhum registro no histórico deste navegador.</div>';return;}
+ lista.forEach(item=>{
+  const div=document.createElement("div");div.className="history-item";
+  div.innerHTML=`<strong>${escapar(item.nome||"Solicitação")}</strong><small>Chave Pix: ${escapar(item.chave||"Não informada")}</small><small>Data: ${escapar(item.data||"")}</small><small>Status: ${escapar(item.status||"ENVIADA")}</small>`;
+  box.appendChild(div);
+ });
+}
+
+/* ABRIR SISTEMA */
+function abrirSistema(nome,chave){
+ nome=String(nome||localStorage.getItem("maisPixNome")||"").trim();
+ chave=String(chave||localStorage.getItem("maisPixChave")||"").trim();
+ if(!nome||!chave)return false;
+ clienteNome=nome;clienteChave=chave;
+ localStorage.setItem("maisPixNome",nome);localStorage.setItem("maisPixChave",chave);
+ document.getElementById("modalEntrada").style.display="none";
+ document.getElementById("appContent").classList.remove("hidden");
+ document.getElementById("meuLink").textContent=location.origin+location.pathname+"?ref="+encodeURIComponent(clienteId);
+ carregarResumoIndicacoes();return true;
+}
+
+/* BLOQUEIO 24H */
+function verificarBloqueio(){
+ const ate=Number(localStorage.getItem(STORAGE_BLOQUEIO)||0),caixa=document.getElementById("bloqueio");
+ clearTimeout(window.bloqueioTimer);
+ if(ate>Date.now()){
+  caixa.classList.remove("hidden");
+  const atualizar=()=>{
+   const r=ate-Date.now();if(r<=0){localStorage.removeItem(STORAGE_BLOQUEIO);caixa.classList.add("hidden");return;}
+   const h=Math.floor(r/3600000),m=Math.floor(r%3600000/60000),s=Math.floor(r%60000/1000);
+   caixa.innerHTML="<strong>⏳ NOVA SOLICITAÇÃO LIBERADA EM</strong><br>"+h+"h "+m+"min "+s+"s";
+   window.bloqueioTimer=setTimeout(atualizar,1000);
+  };atualizar();
+ }else caixa.classList.add("hidden");
+}
+
+/* RECUPERAR SESSÃO */
+if(localStorage.getItem("maisPixNome")&&localStorage.getItem("maisPixChave")){
+ abrirSistema();verificarBloqueio();
+}
+
+/* CADASTRO */
+document.getElementById("formEntrada").addEventListener("submit",async e=>{
+ e.preventDefault();
+ const botao=document.getElementById("btnEntrar"),erro=document.getElementById("modalErro");
+ const nome=document.getElementById("modalNome").value.trim(),chave=document.getElementById("modalChave").value.trim();
+ erro.style.display="none";
+ if(nome.length<3||chave.length<5){erro.textContent="Informe seu nome e uma chave Pix válida.";erro.style.display="block";return;}
+ if(Number(localStorage.getItem(STORAGE_BLOQUEIO)||0)>Date.now()){erro.textContent="Você já enviou uma solicitação nas últimas 24 horas.";erro.style.display="block";return;}
+ if(ativos.length>=MAX_ATIVOS&&pendentes.length>=MAX_ESPERA){erro.textContent="A fila está cheia no momento.";erro.style.display="block";return;}
+ botao.disabled=true;botao.textContent="ENVIANDO...";
+ try{
+  const novo=pendentesRef.push(),timestamp=Date.now();
+  const registro={nome,chave,status:"PENDENTE",timestamp,data:new Date().toISOString(),clienteId,indicadoPor:indicadorId||null,visitanteId};
+  await novo.set(registro);
+  historicoAdicionar({requestId:novo.key,clienteId,nome,chave,data:new Date().toLocaleString("pt-BR"),status:"SOLICITAÇÃO ENVIADA",indicadoPor:indicadorId||""});
+  localStorage.setItem(STORAGE_BLOQUEIO,String(Date.now()+86400000));
+  if(indicadorId){
+   await indicacoesRef.child(indicadorId).child("visitas").child(visitanteId).update({
+    cadastro:true,nomeCadastrado:nome,requestId:novo.key,cadastroTimestamp:Date.now()
+   }).catch(err=>console.warn("Não foi possível vincular cadastro à visita",err));
+  }
+  abrirSistema(nome,chave);verificarBloqueio();atualizarMeuStatus();toast("Solicitação enviada com sucesso!");
+ }catch(error){
+  console.error(error);erro.textContent="Erro ao enviar. Verifique sua conexão e as regras do Firebase.";erro.style.display="block";
+  botao.disabled=false;botao.textContent="ENTRAR →";
+ }
+});
+
+/* ENVIO DE COMPROVANTE */
+document.getElementById("btnComprovante").addEventListener("click",async()=>{
+ const participante=document.getElementById("participanteComprovante").value;
+ const arquivo=document.getElementById("arquivoComprovante").files[0];
+ const botao=document.getElementById("btnComprovante");
+ if(!participante)return toast("Selecione um participante.");
+ if(!arquivo)return toast("Selecione o comprovante.");
+ if(arquivo.size>8*1024*1024)return toast("O arquivo deve ter no máximo 8 MB.");
+ const pessoa=ativos.find(p=>p.id===participante);if(!pessoa)return toast("Participante não encontrado.");
+ botao.disabled=true;botao.textContent="ENVIANDO...";
+ try{
+  const nomeArquivo=Date.now()+"_"+arquivo.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+  const caminho="comprovantes/"+participante+"/"+nomeArquivo,ref=storage.ref(caminho);
+  await ref.put(arquivo);const url=await ref.getDownloadURL();
+  await comprovantesRef.push({participanteId:participante,nomeParticipante:pessoa.nome||"",arquivo:nomeArquivo,caminho,url,data:new Date().toISOString(),timestamp:Date.now(),status:"PENDENTE",clienteId});
+  document.getElementById("arquivoComprovante").value="";toast("Comprovante enviado para análise!");
+ }catch(error){console.error(error);toast("Erro ao enviar comprovante. Confira as regras do Firebase Storage.");}
+ finally{botao.disabled=false;botao.textContent="ENVIAR COMPROVANTE";}
+});
+
+/* ATUALIZAÇÃO EM TEMPO REAL */
+ativosRef.on("value",snap=>{ativos=ordenar(snap.val()).slice(0,MAX_ATIVOS);renderAtivos();renderResumo();atualizarMeuStatus();},e=>{console.error(e);document.getElementById("listaAtivos").innerHTML='<div class="empty">Não foi possível carregar a lista. Verifique o Firebase.</div>';});
+pendentesRef.on("value",snap=>{pendentes=ordenar(snap.val()).slice(0,MAX_ESPERA);renderEspera();renderResumo();atualizarMeuStatus();},e=>{console.error(e);document.getElementById("listaEspera").innerHTML='<div class="empty">Não foi possível carregar a fila.</div>';});
+
+renderHistorico();
+</script>
+</body>
+</html>
