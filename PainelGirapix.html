@@ -1,0 +1,353 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#10172b">
+<title>ADMIN - FILA PIX MAIS PIX</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1020;color:#f7f8fc;font-family:Arial,sans-serif}
+header{padding:20px 14px;text-align:center;background:linear-gradient(135deg,#182445,#10172b);border-bottom:1px solid #ffffff18}
+header h1{color:#f5ca61;margin:0;font-size:25px}
+header p{font-size:12px;color:#aab5d0}
+.container{max-width:1100px;margin:auto;padding:14px}
+.card{background:linear-gradient(145deg,#1d2a48,#131d34);border:1px solid #ffffff17;border-radius:15px;padding:15px;margin-bottom:14px}
+h2{font-size:17px;margin:0 0 14px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.stat{background:#0d1830;border:1px solid #ffffff12;border-radius:12px;padding:15px 7px;text-align:center}
+.stat strong{display:block;color:#f5ca61;font-size:25px}
+.stat span{display:block;color:#aab5d0;font-size:10px;margin-top:5px}
+input,select{width:100%;padding:12px;background:#0d1830;color:white;border:1px solid #405071;border-radius:9px;margin:5px 0 10px;outline:none}
+button{border:0;border-radius:9px;padding:11px;font-weight:bold;cursor:pointer}
+.gold{background:#f5ca61;color:#171b29}
+.green{background:#27d69a;color:#06271c}
+.red{background:#d84c5c;color:white}
+.blue{background:#2b69c9;color:white}
+.gray{background:#34425e;color:white}
+.btnrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.btnrow button{flex:1;min-width:100px}
+.item{background:#0d1830;border:1px solid #ffffff17;border-radius:12px;padding:13px;margin:9px 0;overflow-wrap:anywhere}
+.item strong{color:#f5ca61}
+.item small{display:block;color:#aab5d0;margin-top:5px;line-height:1.5}
+.badge{display:inline-block;background:#ffad4a20;color:#ffc078;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:bold}
+.badge.green{background:#27d69a20;color:#56eab1}
+.badge.red{background:#ff555520;color:#ff9b9b}
+.empty{text-align:center;padding:22px;color:#9ba9c6;font-size:13px}
+.link{color:#62c5ff;overflow-wrap:anywhere}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{text-align:left;padding:10px 7px;border-bottom:1px solid #ffffff18;vertical-align:top}
+th{color:#f5ca61}
+.table-wrap{overflow-x:auto}
+#login{position:fixed;inset:0;z-index:10;background:#080d1b;display:flex;align-items:center;justify-content:center;padding:20px}
+.loginbox{width:100%;max-width:370px;background:#192744;border:1px solid #f5ca6150;border-radius:18px;padding:23px}
+.loginbox h2{text-align:center;color:#f5ca61}
+.loginbox button{width:100%;margin-top:8px}
+.hidden{display:none!important}
+.notice{font-size:11px;color:#f5d994;line-height:1.5;background:#f5ca6112;border:1px solid #f5ca6130;padding:10px;border-radius:9px;margin-top:10px}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}.container{padding:9px}.card{padding:12px}table{min-width:650px}}
+</style>
+</head>
+<body>
+
+<div id="login">
+ <div class="loginbox">
+  <h2>🔐 MAIS PIX ADMIN</h2>
+  <p style="text-align:center;color:#aab5d0;font-size:12px">Digite o código administrativo.</p>
+  <input id="senha" type="password" placeholder="Código de acesso">
+  <button class="gold" onclick="entrar()">ACESSAR PAINEL</button>
+  <p id="erroLogin" style="color:#ff9999;font-size:12px;text-align:center"></p>
+ </div>
+</div>
+
+<header>
+ <h1>FILA PIX • ADMIN</h1>
+ <p>GERENCIAMENTO • VISITAS • INDICAÇÕES • CADASTROS</p>
+</header>
+
+<main class="container hidden" id="painel">
+
+<section class="card">
+ <h2>📊 RESUMO GERAL</h2>
+ <div class="stats">
+  <div class="stat"><strong id="totalVisitas">0</strong><span>VISITAS ÚNICAS</span></div>
+  <div class="stat"><strong id="totalIndicadores">0</strong><span>INDICADORES</span></div>
+  <div class="stat"><strong id="totalCadastros">0</strong><span>CADASTROS INDICADOS</span></div>
+  <div class="stat"><strong id="totalPendentes">0</strong><span>NA FILA DE ESPERA</span></div>
+ </div>
+</section>
+
+<section class="card">
+ <h2>🔎 PESQUISAR INDICADOR</h2>
+ <input id="pesquisa" placeholder="Digite nome ou ID do participante..." oninput="renderIndicadores()">
+ <div id="listaIndicadores"><div class="empty">Carregando indicações...</div></div>
+</section>
+
+<section class="card">
+ <h2>👥 SOLICITAÇÕES PENDENTES</h2>
+ <div id="listaPendentes"><div class="empty">Carregando...</div></div>
+</section>
+
+<section class="card">
+ <h2>✅ PARTICIPANTES ATIVOS</h2>
+ <div id="listaAtivos"><div class="empty">Carregando...</div></div>
+</section>
+
+<section class="card">
+ <h2>🧾 COMPROVANTES RECEBIDOS</h2>
+ <div id="listaComprovantes"><div class="empty">Carregando...</div></div>
+</section>
+
+<section class="card">
+ <h2>📥 RELATÓRIO DE VISITANTES</h2>
+ <p style="font-size:12px;color:#aab5d0">Selecione um indicador para consultar os acessos registrados pelo link dele.</p>
+ <select id="filtroIndicador" onchange="renderVisitantes()">
+  <option value="">Todos os indicadores</option>
+ </select>
+ <div id="listaVisitantes"><div class="empty">Selecione um indicador.</div></div>
+</section>
+
+<section class="card">
+ <button class="gray" onclick="location.reload()" style="width:100%">ATUALIZAR PAINEL</button>
+ <div class="notice">
+ O código de acesso deste exemplo é uma barreira visual no navegador. Para proteger os dados de verdade, configure autenticação e regras de segurança no Firebase. Não deixe o banco aberto para qualquer pessoa.
+ </div>
+</section>
+</main>
+
+<script>
+const firebaseConfig={
+ apiKey:"AIzaSyCnqXmiLEMzH-GUN3nEkkdOTv_xrbxUj2A",
+ authDomain:"tudoaqui-b1d09.firebaseapp.com",
+ databaseURL:"https://tudoaqui-b1d09-default-rtdb.firebaseio.com",
+ projectId:"tudoaqui-b1d09",
+ storageBucket:"tudoaqui-b1d09.appspot.com",
+ messagingSenderId:"588034588401",
+ appId:"1:588034588401:web:4731b181a31c4a354fb350"
+};
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const db=firebase.database(),storage=firebase.storage();
+const listaRef=db.ref("lista"),pendentesRef=db.ref("pendentes");
+const indicacoesRef=db.ref("indicacoes"),comprovantesRef=db.ref("comprovantes");
+
+/* ALTERE O CÓDIGO ABAIXO */
+const CODIGO_ADMIN="12345";
+
+let ativos=[],pendentes=[],indicacoes={},comprovantes={};
+
+function entrar(){
+ const s=document.getElementById("senha").value;
+ if(s!==CODIGO_ADMIN){
+  document.getElementById("erroLogin").textContent="Código incorreto.";
+  return;
+ }
+ sessionStorage.setItem("maisPixAdminAutorizado","sim");
+ document.getElementById("login").classList.add("hidden");
+ document.getElementById("painel").classList.remove("hidden");
+ iniciarPainel();
+}
+if(sessionStorage.getItem("maisPixAdminAutorizado")==="sim"){
+ document.getElementById("login").classList.add("hidden");
+ document.getElementById("painel").classList.remove("hidden");
+ iniciarPainel();
+}
+document.getElementById("senha").addEventListener("keydown",e=>{if(e.key==="Enter")entrar();});
+
+function esc(t){
+ return String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function data(t){return t?new Date(Number(t)).toLocaleString("pt-BR"):"Não informado";}
+function ordenar(obj){
+ return Object.entries(obj||{}).map(([id,item])=>({id,...item})).sort((a,b)=>Number(a.timestamp||0)-Number(b.timestamp||0));
+}
+function contarVisitas(){
+ let visitas=0,cadastros=0;
+ Object.values(indicacoes).forEach(reg=>{
+  const lista=Object.values((reg&&reg.visitas)||{});
+  visitas+=lista.length;
+  cadastros+=lista.filter(v=>v&&v.cadastro).length;
+ });
+ document.getElementById("totalVisitas").textContent=visitas;
+ document.getElementById("totalIndicadores").textContent=Object.keys(indicacoes).length;
+ document.getElementById("totalCadastros").textContent=cadastros;
+ document.getElementById("totalPendentes").textContent=pendentes.length;
+ renderIndicadores();renderVisitantes();
+}
+
+/* INDICADORES */
+function nomeIndicador(id){
+ const pessoa=ativos.find(x=>x.id===id)||pendentes.find(x=>x.clienteId===id);
+ return pessoa?.nome||"Participante não localizado";
+}
+function renderIndicadores(){
+ const busca=document.getElementById("pesquisa").value.toLowerCase().trim();
+ const box=document.getElementById("listaIndicadores");box.innerHTML="";
+ const itens=Object.entries(indicacoes).map(([id,reg])=>{
+  const visitas=Object.values((reg&&reg.visitas)||{});
+  return {id,nome:nomeIndicador(id),visitas:visitas.length,cadastros:visitas.filter(v=>v&&v.cadastro).length,reg};
+ }).filter(x=>(x.nome+" "+x.id).toLowerCase().includes(busca))
+ .sort((a,b)=>b.visitas-a.visitas);
+ if(!itens.length){box.innerHTML='<div class="empty">Nenhuma indicação encontrada.</div>';return;}
+ itens.forEach(x=>{
+  const div=document.createElement("div");div.className="item";
+  const link=location.origin+"/pixgiramais?ref="+encodeURIComponent(x.id);
+  div.innerHTML=`
+   <strong>${esc(x.nome)}</strong>
+   <small>ID: ${esc(x.id)}</small>
+   <small>👀 Visitas únicas: <b>${x.visitas}</b></small>
+   <small>📝 Cadastros originados: <b>${x.cadastros}</b></small>
+   <small class="link">${esc(link)}</small>
+   <div class="btnrow">
+    <button class="blue" data-ver>VER VISITANTES</button>
+    <button class="gray" data-copiar>COPIAR LINK</button>
+   </div>`;
+  div.querySelector("[data-ver]").onclick=()=>{
+   document.getElementById("filtroIndicador").value=x.id;renderVisitantes();
+   document.getElementById("listaVisitantes").scrollIntoView({behavior:"smooth"});
+  };
+  div.querySelector("[data-copiar]").onclick=()=>copiar(link);
+  box.appendChild(div);
+ });
+ atualizarFiltro();
+}
+function atualizarFiltro(){
+ const select=document.getElementById("filtroIndicador"),valor=select.value;
+ select.innerHTML='<option value="">Todos os indicadores</option>';
+ Object.keys(indicacoes).forEach(id=>{
+  const op=document.createElement("option");op.value=id;op.textContent=nomeIndicador(id)+" • "+id;select.appendChild(op);
+ });
+ if([...select.options].some(o=>o.value===valor))select.value=valor;
+}
+
+/* VISITANTES */
+function renderVisitantes(){
+ const filtro=document.getElementById("filtroIndicador").value;
+ const box=document.getElementById("listaVisitantes");box.innerHTML="";
+ let lista=[];
+ Object.entries(indicacoes).forEach(([id,reg])=>{
+  if(filtro&&filtro!==id)return;
+  Object.entries((reg&&reg.visitas)||{}).forEach(([visitante,v])=>{
+   lista.push({indicador:id,visitante,...v});
+  });
+ });
+ lista.sort((a,b)=>Number(b.timestamp||0)-Number(a.timestamp||0));
+ if(!lista.length){box.innerHTML='<div class="empty">Nenhuma visita registrada para este filtro.</div>';return;}
+ lista.forEach(v=>{
+  const div=document.createElement("div");div.className="item";
+  div.innerHTML=`
+   <strong>Visita recebida</strong>
+   <small>Indicador: ${esc(nomeIndicador(v.indicador))}</small>
+   <small>ID do indicador: ${esc(v.indicador)}</small>
+   <small>ID anônimo do visitante: ${esc(v.visitante)}</small>
+   <small>Data e horário: ${esc(data(v.timestamp))}</small>
+   <small>Status: ${v.cadastro?'<span class="badge green">CADASTRO REALIZADO</span>':'<span class="badge">SOMENTE VISITA</span>'}</small>
+   ${v.nomeCadastrado?'<small>Nome cadastrado: '+esc(v.nomeCadastrado)+'</small>':''}`;
+  box.appendChild(div);
+ });
+}
+
+/* SOLICITAÇÕES */
+function renderPendentes(){
+ const box=document.getElementById("listaPendentes");box.innerHTML="";
+ if(!pendentes.length){box.innerHTML='<div class="empty">Nenhuma solicitação aguardando.</div>';return;}
+ pendentes.forEach(p=>{
+  const div=document.createElement("div");div.className="item";
+  div.innerHTML=`
+   <strong>${esc(p.nome)}</strong>
+   <small>Chave Pix: ${esc(p.chave)}</small>
+   <small>Recebido: ${esc(data(p.timestamp))}</small>
+   <small>ID do cliente: ${esc(p.clienteId||"Não informado")}</small>
+   <small>Indicado por: ${esc(p.indicadoPor||"Acesso direto")}</small>
+   <div class="btnrow">
+    <button class="green" data-aprovar>APROVAR</button>
+    <button class="red" data-excluir>EXCLUIR</button>
+   </div>`;
+  div.querySelector("[data-aprovar]").onclick=()=>aprovar(p);
+  div.querySelector("[data-excluir]").onclick=()=>excluirPendente(p);
+  box.appendChild(div);
+ });
+}
+async function aprovar(p){
+ if(!confirm("Aprovar "+p.nome+" e mover para a lista de ativos?"))return;
+ try{
+  if(ativos.length>=6){alert("A lista principal já possui 6 participantes.");return;}
+  await listaRef.child(p.id).set({...p,status:"ATIVO",aprovadoEm:Date.now()});
+  await pendentesRef.child(p.id).remove();
+  alert("Participante aprovado!");
+ }catch(e){console.error(e);alert("Erro ao aprovar. Verifique as regras do Firebase.");}
+}
+async function excluirPendente(p){
+ if(!confirm("Excluir a solicitação de "+p.nome+"?"))return;
+ try{await pendentesRef.child(p.id).remove();alert("Solicitação excluída.");}
+ catch(e){alert("Não foi possível excluir.");}
+}
+
+/* ATIVOS */
+function renderAtivos(){
+ const box=document.getElementById("listaAtivos");box.innerHTML="";
+ if(!ativos.length){box.innerHTML='<div class="empty">Nenhum participante ativo.</div>';return;}
+ ativos.forEach(p=>{
+  const div=document.createElement("div");div.className="item";
+  div.innerHTML=`
+   <strong>${esc(p.nome)}</strong>
+   <small>Chave Pix: ${esc(p.chave)}</small>
+   <small>ID: ${esc(p.id)}</small>
+   <small>Status: <span class="badge green">ATIVO</span></small>
+   <div class="btnrow"><button class="red" data-remover>REMOVER DA LISTA</button></div>`;
+  div.querySelector("[data-remover]").onclick=async()=>{
+   if(!confirm("Remover "+p.nome+" da lista de ativos?"))return;
+   try{await listaRef.child(p.id).remove();}catch(e){alert("Erro ao remover.");}
+  };
+  box.appendChild(div);
+ });
+}
+
+/* COMPROVANTES */
+function renderComprovantes(){
+ const box=document.getElementById("listaComprovantes");box.innerHTML="";
+ const lista=Object.entries(comprovantes).map(([id,v])=>({id,...v})).sort((a,b)=>Number(b.timestamp||0)-Number(a.timestamp||0));
+ if(!lista.length){box.innerHTML='<div class="empty">Nenhum comprovante recebido.</div>';return;}
+ lista.forEach(c=>{
+  const div=document.createElement("div");div.className="item";
+  div.innerHTML=`
+   <strong>${esc(c.nomeParticipante||"Participante")}</strong>
+   <small>Arquivo: ${esc(c.arquivo||"")}</small>
+   <small>Recebido: ${esc(data(c.timestamp))}</small>
+   <small>Status: <span class="badge">${esc(c.status||"PENDENTE")}</span></small>
+   <div class="btnrow">
+    <button class="blue" data-abrir>ABRIR COMPROVANTE</button>
+    <button class="green" data-ok>MARCAR CONFERIDO</button>
+   </div>`;
+  div.querySelector("[data-abrir]").onclick=()=>window.open(c.url,"_blank");
+  div.querySelector("[data-ok]").onclick=async()=>{
+   try{await comprovantesRef.child(c.id).update({status:"CONFERIDO",conferidoEm:Date.now()});}
+   catch(e){alert("Não foi possível atualizar o comprovante.");}
+  };
+  box.appendChild(div);
+ });
+}
+
+/* COPIAR */
+async function copiar(t){
+ try{await navigator.clipboard.writeText(t);alert("Link copiado!");}
+ catch(e){const c=document.createElement("textarea");c.value=t;document.body.appendChild(c);c.select();document.execCommand("copy");c.remove();alert("Link copiado!");}
+}
+
+/* FIREBASE EM TEMPO REAL */
+let iniciado=false;
+function iniciarPainel(){
+ if(iniciado)return;iniciado=true;
+ pendentesRef.on("value",s=>{pendentes=Object.entries(s.val()||{}).map(([id,v])=>({id,...v})).sort((a,b)=>Number(a.timestamp||0)-Number(b.timestamp||0));renderPendentes();contarVisitas();});
+ listaRef.on("value",s=>{ativos=Object.entries(s.val()||{}).map(([id,v])=>({id,...v}));renderAtivos();renderIndicadores();});
+ indicacoesRef.on("value",s=>{indicacoes=s.val()||{};contarVisitas();});
+ comprovantesRef.on("value",s=>{comprovantes=s.val()||{};renderComprovantes();});
+}
+</script>
+</body>
+</html>
