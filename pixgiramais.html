@@ -683,9 +683,7 @@ Histórico das minhas solicitações
 <div class="empty">Nenhum registro no histórico deste navegador.</div>
 </div>
 
-<button class="btn btn-outline" id="limparHistorico" type="button">
-LIMPAR HISTÓRICO DESTE NAVEGADOR
-</button>
+
 
 </section>
 
@@ -1686,21 +1684,7 @@ botao.textContent="ENTRAR →";
 
 });
 
-/* LIMPAR HISTÓRICO */
 
-document.getElementById("limparHistorico").addEventListener("click",()=>{
-
-if(!confirm("Deseja limpar o histórico deste navegador?"))return;
-
-localStorage.removeItem(STORAGE_HISTORICO);
-
-renderHistorico();
-
-atualizarMeuStatus();
-
-toast("Histórico local limpo.");
-
-});
 
 /* ENVIO DE COMPROVANTE */
 
